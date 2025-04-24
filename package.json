@@ -1,0 +1,17 @@
+{
+  "name": "bobo",
+  "version": "1.0.0",
+  "description": "HTML遊戲頁面服務器",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "vite --host",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}

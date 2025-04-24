@@ -3,6 +3,7 @@ import { resolve } from 'path'
 
 export default defineConfig({
   root: '.',
+  base: '/',
   server: {
     open: '/Games.html',
     port: 8080

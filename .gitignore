@@ -1,0 +1,24 @@
+# 依賴目錄
+node_modules/
+
+# 構建輸出
+dist/
+
+# 環境變量
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 日誌
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 編輯器和操作系統文件
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo 

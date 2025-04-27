@@ -1,0 +1,210 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule</title>
+    <link rel="icon" href="https://png.pngtree.com/png-vector/20230704/ourmid/pngtree-cartoon-illustration-of-a-stack-of-books-png-image_7410495.png">
+    <style>
+        body {
+            background-color: transparent;
+            color: black;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center center;
+        }
+
+        /* 合併重複的 table 樣式 */
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin: auto;
+            position: relative;
+        }
+
+        td {
+            width: 50%;
+            border: 1px solid black;
+            vertical-align: top;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.8);
+            position: relative;
+        }
+
+        .green-day {
+            background-color: rgba(65, 190, 35, 0.7);
+            color: black;
+        }
+
+        .gold-day {
+            background-color: rgba(255, 255, 0, 0.7);
+            color: black;
+        }
+
+        /* 統一的標題樣式 */
+        .section-title {
+            font-size: clamp(24px, 6vw, 48px);
+            font-weight: bold;
+        }
+
+        /* 統一的圖片樣式 */
+        .icon-img {
+            width: 1em;
+            height: auto;
+            vertical-align: middle;
+            margin: 0 0.2em;
+        }
+
+        /* 邊框樣式類 */
+        .no-right-border {
+            border-right: none;
+        }
+
+        .no-left-border {
+            border-left: none;
+        }
+
+        a {
+            color: black;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        @media (max-width: 600px) {
+            td, a, span {
+                font-size: 18px;
+            }
+        }
+
+        td, a, span {
+            font-size: clamp(16px, 3vw, 32px);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 新增底部導航圖片樣式 */
+        .nav-icon {
+            width: 2em;
+            height: auto;
+            vertical-align: middle;
+        }
+
+
+        
+    </style>
+</head>
+
+<body background="33.jpg">
+    <base target="_blank">
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const links = document.querySelectorAll(".link-logo");
+
+            links.forEach(async (link) => {
+                const url = new URL(link.href);
+                const clearFaviconUrl = `https://www.google.com/s2/favicons?sz=36&domain=${url.hostname}`;
+                const fallbackFaviconUrl = `https://icons.duckduckgo.com/ip3/${url.hostname}.ico`;
+
+                const img = document.createElement("img");
+                img.alt = `${url.hostname} logo`;
+                img.className = 'icon-img';
+
+                try {
+                    const response = await fetch(clearFaviconUrl);
+                    if (response.ok) {
+                        img.src = clearFaviconUrl;
+                    } else {
+                        throw new Error("Clear favicon not available");
+                    }
+                } catch (error) {
+                    img.src = fallbackFaviconUrl;
+                }
+
+                img.onerror = () => {
+                    if (!img.classList.contains("error")) {
+                        img.classList.add("error");
+                        img.src = "path/to/default-image.png";
+                        img.alt = "Default logo";
+                    }
+                };
+
+                link.prepend(img);
+            });
+        });
+    </script>
+
+    <div class="table-wrapper">
+        <table class="scale-table">
+            <tr>
+                <td class="no-right-border">
+                    <span class="section-title">🏫School</span><br>
+                        <a href="https://gbn.glenbrook225.org/" class="link-logo">Glenbrook North High School</a><br>
+                        <a href="https://gbn.glenbrook225.org/resources/news-events-schedules/daily-announcements" class="link-logo">GBN Daily Announcements</a><br>
+                        <a href="https://gbn.glenbrook225.org/resources/news-events-schedules/calendar" class="link-logo">GBN Calendar</a><br>
+                        <a href="https://glenbrook225.powerschool.com" class="link-logo">PowerSchool</a><br>
+                        <a href="https://glenbrook.mywconline.com/" class="link-logo">ARC</a><br>
+                    </span>
+                </td>
+                <td class="no-left-border">
+                    <span class="section-title">🌐Webl</span><br>
+                        <a href="https://drive.google.com/"><img src="https://static-00.iconduck.com/assets.00/google-drive-icon-2048x2048-j5sa1hcp.png" class="icon-img">Drive</a><br>
+                        <a href="https://mail.google.com/" class="link-logo">Gmail</a><br>
+                        <a href="https://chatgpt.com/"><img src="https://cdn.oaistatic.com/assets/favicon-180x180-od45eci6.webp" class="icon-img">ChatGPT</a><br>
+                        <a href="https://translate.google.com" class="link-logo">Google Translate</a><br>
+
+                        
+                        <a style="color: rgb(0, 145, 255); font-weight: normal; text-decoration: none; vertical-align: sub;">Games：</a>
+                        <a href="https://app.classkick.com/" class="link-logo"></a>
+                        <a href="https://quizizz.com/join"><img src="https://cf.quizizz.com/img/favicon/apple-touch-icon.png" class="icon-img"></a>
+                        <a href="https://quizlet.com/live" class="link-logo"></a>
+                        <a href="https://kahoot.it/" class="link-logo"></a>
+                        <a href="https://gimkit.com/join" class="link-logo"></a><br>
+                    
+                    </span>
+                
+                </td>
+            </tr>
+            <tr>
+                <td class="green-day">
+                    <span class="section-title">GREEN DAY</span><br>
+                    <a href="https://classroom.google.com/c/NzA3NTc2Njg4NzM2">Soph.P.E.-classroom</a><br>
+                    <span>Sophomore SRT</span><br>
+                    <a href="https://classroom.google.com/c/NjkxODA3NTE3NzE0">ALGEBRA 2 -classroom</a>
+                    <a href="https://www.geogebra.org/calculator"><img src="https://www.geogebra.org/sp-assets/assets/images/ogImage.c3863704.png" class="icon-img"></a>
+                    <a href="https://www.ixl.com/dashboard" class="link-logo"></a><br>
+                    <a href="https://classroom.google.com/c/NzAzMTYyMzk1Mzc4">ESL163-classroom</a>
+                    <a href="https://soraapp.com/home" class="link-logo"></a>
+                </td>
+                <td class="gold-day">
+                    <span class="section-title">GOLD DAY</span><br>
+                    <a href="https://docs.google.com/document/d/1w9gzjoaLieXM7JvO1iAbnzfTXVGrPGwSoUblVi5r6lc/">Reading & Writing</a>
+                    <a href="https://classroom.google.com/c/NzA0MTg1NjkzNTc1">|classroom</a><br>
+                    <a href="https://docs.google.com/document/d/14DuYmalnerRcQ55mmkLcNA0KO1oYTQojIiOvv-6QaJY/">Earth Science</a>
+                    <a href="https://classroom.google.com/c/NzA3ODQ4NTY0MTI1">|classroom</a><br>
+                    <a href="https://docs.google.com/document/d/11qOwrWZSFYgSKoAPQ5j805BDQ3KrMbzPm43JEaHqc48">World History</a>
+                    <a href="https://classroom.google.com/c/NzA3NDQwMzY3OTEz">|classroom</a>
+                    <a href="https://www.ilovepdf.com" class="link-logo"></a><br>
+                    <a href="https://sites.google.com/glenbrook225.org/mandarin-3-li-laoshi/home">Mandarin</a>
+                    <a href="https://docs.google.com/document/d/1ZF-cm-i3ae0sTe-U4eXAVs5jxLkZ6NVrIWf_41j1wRI/">|HW</a>
+                    <a href="https://classroom.google.com/c/NjkxOTE2NDEzNzM0">|classroom</a>
+                    <a href="https://quizlet.com/latest" class="link-logo"></a>
+                    <br><br><br><br><br>
+                
+                </td>
+            </tr>
+        </table>
+        <p align="right">
+
+            <a href="Games.html"><img src="https://static.vecteezy.com/system/resources/thumbnails/017/744/677/small_2x/video-game-icon-png.png" width="110"></a>
+        </p>
+    </div>
+    
+</body>
+</html>

@@ -7,7 +7,7 @@
   <link rel="icon" href="https://static.vecteezy.com/system/resources/thumbnails/017/744/677/small_2x/video-game-icon-png.png">
   <style>
     body {
-      background-color: #33a066;
+      background-color: transparent;
       color: #000055;
       margin: 0;
       padding: 20px;
@@ -16,6 +16,7 @@
 
     table {
       width: 90%;
+      background-color: #33a0665f;
       border-collapse: collapse;
       margin: 1em auto;
       box-sizing: border-box;
@@ -74,7 +75,7 @@
       text-overflow: ellipsis;
       max-width: 100%;
       box-sizing: border-box;
-      /* vertical-align: bottom; */
+      /*vertical-align: bottom;*/
     }
 
     img {
@@ -94,7 +95,7 @@
   </style>
 </head>
 
-<body>
+<body background="未來科技之門.png">
 
 
   <script>
@@ -103,6 +104,9 @@
         faviconTags.forEach(tag => {
             const parentLink = tag.closest('a');
             if (parentLink) {
+                // ⭐ 加上 target="_blank"
+                parentLink.setAttribute('target', '_blank');
+
                 const url = new URL(parentLink.href);
                 const faviconUrl = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=256&url=${url.origin}`;
                 
@@ -115,7 +119,7 @@
             }
         });
     });
-    </script>
+</script>
     
 <!------------------------------------------------------------------>
     
@@ -123,6 +127,8 @@
 
 <table border="1" width="80%">
 <tr valign="top">
+
+<!--第一段-->
 
 <td width="33%">
 <b class="section-title">Gaming Platform</b><br>
@@ -133,6 +139,7 @@
 <a href="https://www.crazygames.com/"><img src="https://imgs.crazygames.com/favicons/favicon-transparent.png" class="icon-img">Crazy Games</a><br>
 <a href="https://poki.com/" ><favicon></favicon>Poki</a><br>
 <a href="https://classicgamezone.com/" ><favicon></favicon>Retro Games</a><br>
+<a href="https://zaixianwan.app/" ><img src="https://zaixianwan.app/pwa-192x192.png" class="icon-img">老遊戲在線玩</a><br>
 <a href="https://www.jxgame.net/" ><img src="https://www.jxgame.net/skin/icon-32.png" class="icon-img">精选益智小游戏</a><br>
 <a href="https://gameforge.com" ><favicon></favicon>Gameforge</a><br>
 <a href="https://agargame.io/hot-games"><img src="https://agargame.io/cache/data/image/options/agar-io-logo1-m144x144.png" class="icon-img">Agar.io</a><br>
@@ -141,6 +148,7 @@
 <a href="https://scratch.mit.edu/"><img src="https://upload.wikimedia.org/wikipedia/commons/7/75/Scratch.logo.S.png" class="icon-img">Scratch</a><br>
 <a href="https://stretch3.github.io/" ><favicon></favicon>Stretch3</a><br>
 </td>
+<!--第二段-->
 <td width="33%">
 
   <b class="section-title">Gun Games</b><br>
@@ -163,13 +171,10 @@
 <a href="https://sudoku.com/killer/">Killer</a></span><br>
 
 
-
-
-
 <br><br><br>
 
 </td>
-
+<!--第三排-->
 
 <td width="34%">
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html> 
-<html lang="UTF-8">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -181,12 +181,17 @@
             <button class="button" id="submit-btn" onclick="checkAnswers()" disabled>提交</button>
             <button id="next-round-btn" class="button" onclick="nextRound()" style="display:none;">下一輪</button>
             <button id="restart-btn" class="button" onclick="restartGame()" style="display:none;">再玩一次</button>
+            <button id="wordbank-btn" class="button" onclick="openWordBank()" style="display:inline-block;">查看單字庫</button>
+</div>
         </div>
         <div id="result" class="result" style="display:none;"></div>
         <div id="answers" class="answers" style="display:none;"></div>
     </div>
 
-    <script>let words = JSON.parse(localStorage.getItem('words'));
+    <script>
+        let isFirstRound = true; // ⬅️ 加這一行（第二步！）
+
+let words = JSON.parse(localStorage.getItem('words'));
 
 if (!words || words.length === 0) {
   words = [
@@ -211,6 +216,10 @@ if (!words || words.length === 0) {
             wordContainer.innerHTML = "";
             targetContainer.innerHTML = "";
             submitButton.disabled = true;
+
+            if (isFirstRound) {
+            document.getElementById('wordbank-btn').style.display = 'inline-block';
+        }   
 
             const shuffledWords = shuffle([...remainingWords]);
             const shuffledTranslations = shuffle([...remainingWords]);
@@ -400,6 +409,12 @@ if (!words || words.length === 0) {
 
     resultDiv.style.display = 'block';
     answersDiv.style.display = 'block';
+    
+    // 🌟這裡加上隱藏單字庫按鈕🌟
+    if (isFirstRound) {
+        document.getElementById('wordbank-btn').style.display = 'none';
+        isFirstRound = false;
+    }
 
     resultDiv.innerHTML = `<h2>${correctAnswers.length} 答對, ${wrongAnswers.length} 答錯。</h2>`;
     answersDiv.innerHTML = `<p>正確答案：</p><ul>${wrongAnswers
@@ -417,11 +432,12 @@ if (!words || words.length === 0) {
         restartBtn.style.display = 'block';
     }
 }
-        function nextRound() {
-            document.getElementById('result').style.display = 'none';
+    function nextRound() {
+        document.getElementById('result').style.display = 'none';
             document.getElementById('answers').style.display = 'none';
-            document.getElementById('next-round-btn').style.display = 'none';
-            createGame();
+        document.getElementById('next-round-btn').style.display = 'none';
+
+        createGame();
         }
 
         function toggleDarkMode() {
@@ -435,6 +451,9 @@ if (!words || words.length === 0) {
     document.getElementById('answers').style.display = 'none';
     document.getElementById('restart-btn').style.display = 'none';
     createGame();
+}
+function openWordBank() {
+    window.open('單字庫.html', '_blank');
 }
     </script>
 </body>

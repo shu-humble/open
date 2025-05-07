@@ -97,12 +97,98 @@
         }
 
 
-        
+        #launcher-menu small {
+  font-size: 18px;
+  display: block;
+  margin-top: 4px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
     </style>
 </head>
 
 <body background="33.jpg">
     <base target="_blank">
+    <!-- 🔲 九宮格啟動器按鈕 -->
+    <div id="launcher-button" style="position: fixed; top: 10px; right: 10px; z-index: 1000; cursor: pointer;">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="black">
+          <circle cx="6" cy="6" r="2"/>
+          <circle cx="12" cy="6" r="2"/>
+          <circle cx="18" cy="6" r="2"/>
+          <circle cx="6" cy="12" r="2"/>
+          <circle cx="12" cy="12" r="2"/>
+          <circle cx="18" cy="12" r="2"/>
+          <circle cx="6" cy="18" r="2"/>
+          <circle cx="12" cy="18" r="2"/>
+          <circle cx="18" cy="18" r="2"/>
+        </svg>
+ 
+      
+  </div>
+  
+  <!-- 🔲 九宮格啟動器選單 -->
+  <div id="launcher-menu" style="display: none; position: fixed; top: 55px; right: 10px; z-index: 1000; background: white; border: 1px solid #ccc; border-radius: 10px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+    <div style="display: grid; grid-template-columns: repeat(3, 80px); gap: 20px; text-align: center;">
+
+                <a href="https://myaccount.google.com/" target="_blank">
+            <img src="https://www.google.com/s2/favicons?sz=64&domain=google.com" width="40"><br>
+            <small>Account</small>
+          </a>
+          
+          <a href="https://mail.google.com" target="_blank">
+            <img src="https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico" width="40"><br>
+            <small>Gmail</small>
+          </a>
+                    
+          <a href="https://drive.google.com" target="_blank">
+            <img src="https://ssl.gstatic.com/images/branding/product/2x/drive_2020q4_48dp.png" width="40"><br>
+            <small>Drive</small>
+          </a>
+
+          <a href="https://calendar.google.com" target="_blank">
+            <img src="https://ssl.gstatic.com/calendar/images/dynamiclogo_2020q4/calendar_7_2x.png" width="40"><br>
+            <small>Calendar</small>
+          </a>
+
+          <a href="https://docs.google.com" target="_blank">
+            <img src="https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png" width="40"><br>
+            <small>Docs</small>
+          </a>
+          
+          <a href="https://sheets.google.com" target="_blank">
+            <img src="https://www.gstatic.com/images/branding/product/1x/sheets_2020q4_48dp.png" width="40"><br>
+            <small>Sheets</small>
+          </a>
+          
+          <a href="https://meet.google.com" target="_blank">
+            <img src="https://www.google.com/s2/favicons?sz=64&domain=meet.google.com" width="40"><br>
+            <small>Meet</small>
+          </a>
+          
+          <a href="https://classroom.google.com" target="_blank">
+            <img src="https://www.gstatic.com/classroom/logo_square_rounded.svg" width="40"><br>
+            <small>Classroom</small>
+          </a>
+          
+          <a href="https://translate.google.com" target="_blank">
+            <img src="https://www.google.com/s2/favicons?sz=64&domain=translate.google.com" width="40"><br>
+            
+            <small>Translate</small>
+          </a>
+          
+          <a href="https://www.youtube.com" target="_blank">
+            <img src="https://www.google.com/s2/favicons?sz=64&domain=youtube.com" width="40"><br>
+            <small>YouTube</small>
+          </a>
+          <a href="https://gemini.google.com/app" target="_blank">
+            <img src="https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg" width="40"><br>
+            <small>Gemini</small>
+          </a>
+    </div>
+  </div>
+
+  
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const links = document.querySelectorAll(".link-logo");
@@ -203,6 +289,19 @@
                 </a>
           </p>
     </div>
-    
+    <script>
+        const launcherButton = document.getElementById("launcher-button");
+        const launcherMenu = document.getElementById("launcher-menu");
+      
+        launcherButton.addEventListener("click", () => {
+          launcherMenu.style.display = launcherMenu.style.display === "none" ? "block" : "none";
+        });
+      
+        document.addEventListener("click", (event) => {
+          if (!launcherButton.contains(event.target) && !launcherMenu.contains(event.target)) {
+            launcherMenu.style.display = "none";
+          }
+        });
+      </script>
 </body>
 </html>

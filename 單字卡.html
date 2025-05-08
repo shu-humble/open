@@ -168,8 +168,8 @@
 </head>
 <body>
     <div class="game-container">
-        <h1>多輪配對遊戲</h1>
-        <p class="instructions">點擊或拖放英文單詞到對應的中文翻譯區域。</p>
+        <h1 id="title">多輪配對遊戲</h1>
+        <p class="instructions" id="instructions">點擊或拖放英文單詞到對應的中文翻譯區域。</p>
         <div class="words">
             <!-- 英文單詞 -->
         </div>
@@ -177,12 +177,16 @@
             <!-- 中文翻譯目標 -->
         </div>
         <div class="buttons">
-            <button class="button" onclick="toggleDarkMode()">切換深色/淡色模式</button>
-            <button class="button" onclick="undoLastAction()">撤銷</button>
+            <button class="button" onclick="toggleDarkMode()" id="dark-mode-btn">切換深色/淡色模式</button>
+            <button class="button" onclick="undoLastAction()" id="undo-btn">撤銷</button>
             <button class="button" id="submit-btn" onclick="checkAnswers()" disabled>提交</button>
             <button id="next-round-btn" class="button" onclick="nextRound()" style="display:none;">下一輪</button>
             <button id="restart-btn" class="button" onclick="restartGame()" style="display:none;">再玩一次</button>
-            <button id="wordbank-btn" class="button" onclick="openWordBank()" style="display:inline-block;">查看單字庫</button>
+            <button id="wordbank-btn" class="button" onclick="openWordBank()">查看單字庫</button>
+            <button class="button" onclick="switchLanguage('zh')">中文</button>
+<button class="button" onclick="switchLanguage('en')">English</button>
+
+            
 </div>
         </div>
         <div id="result" class="result" style="display:none;"></div>
@@ -190,14 +194,37 @@
     </div>
 
     <script>
+        const translations = {
+          zh: {
+            title: "多輪配對遊戲",
+            instructions: "點擊或拖放英文單詞到對應的中文翻譯區域。",
+            submit: "提交",
+            undo: "撤銷",
+            darkMode: "切換深色/淡色模式",
+            wordBank: "查看單字庫",
+            nextRound: "下一輪",
+            restart: "再玩一次"
+          },
+          en: {
+            title: "Multi-Round Matching Game",
+            instructions: "Click or drag English words to match their Chinese translations.",
+            submit: "Submit",
+            undo: "Undo",
+            darkMode: "Toggle Dark/Light Mode",
+            wordBank: "View Word Bank",
+            nextRound: "Next Round",
+            restart: "Play Again"
+          }
+        };
+        
         let isFirstRound = true; // ⬅️ 加這一行（第二步！）
 
 let words = JSON.parse(localStorage.getItem('words'));
 
 if (!words || words.length === 0) {
   words = [
-    { word: "happy (adj.)", translation: "開心" },
-    { word: "sad(adj.)", translation: "難過" },
+    { word: "點擊按鈕「查看單字庫」設定單字。", translation: "Click the button 【View Word Bank】 to set the word." },
+    
     // 預設單字（以防 LocalStorage 沒有資料時用）
   ];
 }
@@ -221,6 +248,8 @@ if (!words || words.length === 0) {
             if (isFirstRound) {
             document.getElementById('wordbank-btn').style.display = 'inline-block';
         }   
+
+
 
             const shuffledWords = shuffle([...remainingWords]);
             const shuffledTranslations = shuffle([...remainingWords]);
@@ -255,6 +284,26 @@ if (!words || words.length === 0) {
                 targetContainer.appendChild(targetDiv);
             });
         }
+        function switchLanguage(lang) {
+  document.getElementById('title').textContent = translations[lang].title;
+  document.getElementById('instructions').textContent = translations[lang].instructions;
+  document.getElementById('submit-btn').textContent = translations[lang].submit;
+  document.getElementById('undo-btn').textContent = translations[lang].undo;
+  document.getElementById('dark-mode-btn').textContent = translations[lang].darkMode;
+  document.getElementById('wordbank-btn').textContent = translations[lang].wordBank;
+  document.getElementById('next-round-btn').textContent = translations[lang].nextRound;
+  document.getElementById('restart-btn').textContent = translations[lang].restart;
+
+  // 隱藏當前語言的按鈕，顯示另一個語言的按鈕
+  if (lang === 'zh') {
+    document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = 'none';
+    document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = 'inline-block';
+  } else {
+    document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = 'none';
+    document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = 'inline-block';
+  }
+}
+
 
         function allowDrop(e) {
             e.preventDefault();
@@ -446,6 +495,9 @@ if (!words || words.length === 0) {
         }
 
         createGame();
+        const userLang = navigator.language || navigator.userLanguage;
+switchLanguage(userLang.startsWith('zh') ? 'zh' : 'en');
+
         function restartGame() {
     remainingWords = [...words]; // 重設單字
     document.getElementById('result').style.display = 'none';

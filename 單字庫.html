@@ -6,7 +6,8 @@
 </head>
 <body>
   <h1>單字管理後台</h1>
-  <button onclick="toggleLanguage()">🌐 切換語言</button>
+  <button id="langToggleBtn" onclick="toggleLanguage()">🌐 切換語言</button>
+
   <p id="saveReminder"></p>
 
   <div>
@@ -32,6 +33,9 @@
   <button onclick="clearAllWords()" style="background-color:red; color:white;">❌一鍵刪除所有單字</button>
 
   <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentLanguage = urlParams.get('lang') || 'zh';
+  
     let words = JSON.parse(localStorage.getItem('words')) || [];
 
     function renderWords() {
@@ -52,52 +56,56 @@
     }
 
     function addWord() {
-      const word = document.getElementById('wordInput').value.trim();
-      const translation = document.getElementById('translationInput').value.trim();
-      if (word && translation) {
-        words.push({ word, translation });
-        document.getElementById('wordInput').value = '';
-        document.getElementById('translationInput').value = '';
-        renderWords();
-      } else {
-        alert('請輸入英文和中文');
-      }
-    }
+  const word = document.getElementById('wordInput').value.trim();
+  const translation = document.getElementById('translationInput').value.trim();
+  const t = translations[currentLanguage];
+  if (word && translation) {
+    words.push({ word, translation });
+    document.getElementById('wordInput').value = '';
+    document.getElementById('translationInput').value = '';
+    renderWords();
+  } else {
+    alert(t.alertInputRequired);
+  }
+}
 
-    function bulkImport() {
-      const inputText = document.getElementById('bulkInput').value.trim();
-      if (!inputText) {
-        alert('請貼上要匯入的單字');
-        return;
-      }
-      const lines = inputText.split('\n');
-      for (const line of lines) {
-        const [word, translation] = line.split(',').map(s => s.trim());
-        if (word && translation) {
-          words.push({ word, translation });
-        }
-      }
-      document.getElementById('bulkInput').value = '';
-      renderWords();
-      alert('批量匯入完成！');
+function bulkImport() {
+  const t = translations[currentLanguage];
+  const inputText = document.getElementById('bulkInput').value.trim();
+  if (!inputText) {
+    alert(t.alertPasteRequired);
+    return;
+  }
+  const lines = inputText.split('\n');
+  for (const line of lines) {
+    const [word, translation] = line.split(',').map(s => s.trim());
+    if (word && translation) {
+      words.push({ word, translation });
     }
+  }
+  document.getElementById('bulkInput').value = '';
+  renderWords();
+  alert(t.alertImportDone);
+}
 
-    function saveWords() {
-      localStorage.setItem('words', JSON.stringify(words));
-      alert('儲存成功！');
-    }
+function saveWords() {
+  const t = translations[currentLanguage];
+  localStorage.setItem('words', JSON.stringify(words));
+  alert(t.alertSaveDone);
+}
 
-    function clearAllWords() {
-      if (confirm('確定要刪除所有單字嗎？這個動作無法復原！')) {
-        words = [];
-        localStorage.removeItem('words');
-        renderWords();
-        alert('已清空所有單字！');
-      }
-    }
+function clearAllWords() {
+  const t = translations[currentLanguage];
+  if (confirm(t.confirmDeleteAll)) {
+    words = [];
+    localStorage.removeItem('words');
+    renderWords();
+    alert(t.alertDeleteAllDone);
+  }
+}
 
     renderWords();
-    let currentLanguage = 'zh'; // 預設語言：中文
+
 
     const translations = {
   zh: {
@@ -112,7 +120,13 @@
     clear: '❌一鍵刪除所有單字',
     wordListTitle: '現有單字',
     delete: '刪除',
-    reminder: '記得點擊【💾儲存到 LocalStorage】儲存您設定的文字'
+    reminder: '記得點擊【💾儲存到 LocalStorage】儲存您設定的文字',
+    alertInputRequired: '請輸入英文和中文',
+  alertPasteRequired: '請貼上要匯入的單字',
+  alertImportDone: '批量匯入完成！',
+  alertSaveDone: '儲存成功！',
+  confirmDeleteAll: '確定要刪除所有單字嗎？這個動作無法復原！',
+  alertDeleteAllDone: '已清空所有單字！'
   },
   en: {
     title: 'Word Management',
@@ -126,15 +140,25 @@
     clear: '❌ Delete All Words',
     wordListTitle: 'Current Words',
     delete: 'Delete',
-    reminder: 'Remember to click 【💾 Save to LocalStorage】 to save your words'
+    reminder: 'Remember to click 【💾 Save to LocalStorage】 to save your words',
+    alertInputRequired: 'Please enter both English and Chinese.',
+  alertPasteRequired: 'Please paste the words to import.',
+  alertImportDone: 'Bulk import completed!',
+  alertSaveDone: 'Saved successfully!',
+  confirmDeleteAll: 'Are you sure you want to delete all words? This cannot be undone!',
+  alertDeleteAllDone: 'All words have been cleared!'
   }
+  
 };
 
 
 function toggleLanguage() {
   currentLanguage = currentLanguage === 'zh' ? 'en' : 'zh';
   updateLanguage();
+
+
 }
+
 
 function updateLanguage() {
   const t = translations[currentLanguage];
@@ -150,10 +174,16 @@ function updateLanguage() {
   document.querySelector('button[onclick="clearAllWords()"]').textContent = t.clear;
   document.querySelectorAll('h2')[1].textContent = t.wordListTitle;
   document.getElementById('saveReminder').textContent = t.reminder;
+  document.getElementById('langToggleBtn').textContent =   '🌐 ' + (currentLanguage === 'zh' ? '切換語言' : 'Toggle Language');
 
-  // 重新渲染單字清單並更新刪除按鈕語言
   renderWords();
 }
+
+function openWordBank() {
+  window.open(`單字庫.html?lang=${currentLanguage}`, '_blank');
+}
+
+updateLanguage();
 </script>
 </body>
 </html>

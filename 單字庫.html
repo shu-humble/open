@@ -6,9 +6,9 @@
 </head>
 <body>
   <h1>單字管理後台</h1>
-<p>記得點擊【💾儲存到 LocalStorage】儲存您設定的文字<br>
-  Remember to click 【💾儲存到 LocalStorage】 to save your words.
-</p>
+  <button onclick="toggleLanguage()">🌐 切換語言</button>
+  <p id="saveReminder"></p>
+
   <div>
     <input id="wordInput" type="text" placeholder="英文單字">
     <input id="translationInput" type="text" placeholder="中文翻譯">
@@ -41,7 +41,7 @@
         const li = document.createElement('li');
         li.textContent = `${item.word} - ${item.translation}`;
         const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = '刪除';
+        deleteBtn.textContent = translations[currentLanguage].delete;
         deleteBtn.onclick = () => {
           words.splice(index, 1);
           renderWords();
@@ -97,6 +97,63 @@
     }
 
     renderWords();
-  </script>
+    let currentLanguage = 'zh'; // 預設語言：中文
+
+    const translations = {
+  zh: {
+    title: '單字管理後台',
+    addWord: '新增單字',
+    placeholderWord: '英文單字',
+    placeholderTranslation: '中文翻譯',
+    bulkTitle: '批量匯入單字',
+    bulkPlaceholder: '一行一組，英文,中文。例如：Happy (adj.),開心的',
+    bulkImport: '批量匯入',
+    save: '💾儲存到 LocalStorage',
+    clear: '❌一鍵刪除所有單字',
+    wordListTitle: '現有單字',
+    delete: '刪除',
+    reminder: '記得點擊【💾儲存到 LocalStorage】儲存您設定的文字'
+  },
+  en: {
+    title: 'Word Management',
+    addWord: 'Add Word',
+    placeholderWord: 'English Word',
+    placeholderTranslation: 'Chinese Translation',
+    bulkTitle: 'Bulk Import Words',
+    bulkPlaceholder: 'One line per pair, e.g.: Happy (adj.),開心的',
+    bulkImport: 'Bulk Import',
+    save: '💾 Save to LocalStorage',
+    clear: '❌ Delete All Words',
+    wordListTitle: 'Current Words',
+    delete: 'Delete',
+    reminder: 'Remember to click 【💾 Save to LocalStorage】 to save your words'
+  }
+};
+
+
+function toggleLanguage() {
+  currentLanguage = currentLanguage === 'zh' ? 'en' : 'zh';
+  updateLanguage();
+}
+
+function updateLanguage() {
+  const t = translations[currentLanguage];
+  document.title = t.title;
+  document.querySelector('h1').textContent = t.title;
+  document.querySelector('button[onclick="addWord()"]').textContent = t.addWord;
+  document.getElementById('wordInput').placeholder = t.placeholderWord;
+  document.getElementById('translationInput').placeholder = t.placeholderTranslation;
+  document.querySelectorAll('h2')[0].textContent = t.bulkTitle;
+  document.getElementById('bulkInput').placeholder = t.bulkPlaceholder;
+  document.querySelector('button[onclick="bulkImport()"]').textContent = t.bulkImport;
+  document.querySelector('button[onclick="saveWords()"]').textContent = t.save;
+  document.querySelector('button[onclick="clearAllWords()"]').textContent = t.clear;
+  document.querySelectorAll('h2')[1].textContent = t.wordListTitle;
+  document.getElementById('saveReminder').textContent = t.reminder;
+
+  // 重新渲染單字清單並更新刪除按鈕語言
+  renderWords();
+}
+</script>
 </body>
 </html>

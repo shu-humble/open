@@ -181,11 +181,10 @@
             <button class="button" onclick="undoLastAction()" id="undo-btn">撤銷</button>
             <button class="button" id="submit-btn" onclick="checkAnswers()" disabled>提交</button>
             <button id="next-round-btn" class="button" onclick="nextRound()" style="display:none;">下一輪</button>
-            <button id="restart-btn" class="button" onclick="restartGame()" style="display:none;">再玩一次</button>
             <button id="wordbank-btn" class="button" onclick="openWordBank()">查看單字庫</button>
             <button class="button" onclick="switchLanguage('zh')">中文</button>
-<button class="button" onclick="switchLanguage('en')">English</button>
-
+            <button class="button" onclick="switchLanguage('en')">English</button>
+            <button id="restart-btn" class="button" onclick="restartGame()" style="display:none;">再玩一次</button>
             
 </div>
         </div>
@@ -194,6 +193,8 @@
     </div>
 
     <script>
+        let currentLanguage = 'zh'; // 預設語言
+
         const translations = {
           zh: {
             title: "多輪配對遊戲",
@@ -203,8 +204,13 @@
             darkMode: "切換深色/淡色模式",
             wordBank: "查看單字庫",
             nextRound: "下一輪",
-            restart: "再玩一次"
+            restart: "再玩一次",
+            correct: "答對",
+  incorrect: "答錯",
+  correctAnswersTitle: "正確答案："
+
           },
+
           en: {
             title: "Multi-Round Matching Game",
             instructions: "Click or drag English words to match their Chinese translations.",
@@ -213,7 +219,10 @@
             darkMode: "Toggle Dark/Light Mode",
             wordBank: "View Word Bank",
             nextRound: "Next Round",
-            restart: "Play Again"
+            restart: "Play Again",
+            correct: "correct",
+  incorrect: "incorrect",
+  correctAnswersTitle: "Correct Answers:"
           }
         };
         
@@ -293,7 +302,7 @@ if (!words || words.length === 0) {
   document.getElementById('wordbank-btn').textContent = translations[lang].wordBank;
   document.getElementById('next-round-btn').textContent = translations[lang].nextRound;
   document.getElementById('restart-btn').textContent = translations[lang].restart;
-
+  currentLanguage = lang;
   // 隱藏當前語言的按鈕，顯示另一個語言的按鈕
   if (lang === 'zh') {
     document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = 'none';
@@ -466,8 +475,9 @@ if (!words || words.length === 0) {
         isFirstRound = false;
     }
 
-    resultDiv.innerHTML = `<h2>${correctAnswers.length} 答對, ${wrongAnswers.length} 答錯。</h2>`;
-    answersDiv.innerHTML = `<p>正確答案：</p><ul>${wrongAnswers
+    const t = translations[currentLanguage];
+    resultDiv.innerHTML = `<h2>${correctAnswers.length} ${t.correct}, ${wrongAnswers.length} ${t.incorrect}.</h2>`;
+    answersDiv.innerHTML = `<p>${t.correctAnswersTitle}</p><ul>${wrongAnswers
         .map(word => `<li>${word}: ${words.find(w => w.word === word)?.translation}</li>`)
         .join('')}</ul>`;
 
@@ -486,7 +496,7 @@ if (!words || words.length === 0) {
         document.getElementById('result').style.display = 'none';
             document.getElementById('answers').style.display = 'none';
         document.getElementById('next-round-btn').style.display = 'none';
-
+        document.getElementById('wordbank-btn').style.display = 'inline-block';
         createGame();
         }
 
@@ -503,11 +513,13 @@ switchLanguage(userLang.startsWith('zh') ? 'zh' : 'en');
     document.getElementById('result').style.display = 'none';
     document.getElementById('answers').style.display = 'none';
     document.getElementById('restart-btn').style.display = 'none';
+    document.getElementById('wordbank-btn').style.display = 'inline-block';   // ✅ 重新顯示單字庫按鈕
     createGame();
 }
 function openWordBank() {
-    window.open('單字庫.html', '_blank');
+    window.open(`單字庫.html?lang=${currentLanguage}`, '_blank');
 }
+
     </script>
 </body>
 </html>

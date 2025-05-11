@@ -1,0 +1,525 @@
+<!DOCTYPE html> 
+<html lang="UTF-8">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>單字配對</title>
+    <link rel="icon" href="https://www.svgrepo.com/show/335618/quiz-submissions.svg">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.dark-mode {
+            background-color: #333;
+            color: #f4f4f9;
+        }
+        .game-container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.dark-mode .game-container {
+            background: #444;
+            color: #fff;
+        }
+        .instructions {
+            margin-bottom: 20px;
+        }
+        .words, .targets {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .word, .target {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: #e0e0e0;
+            cursor: pointer;
+            user-select: none;
+            text-align: center;
+            width: 120px;
+            transition: background-color 0.3s, color 0.3s;
+            position: relative;
+        }
+        .word.used {
+            background: #d3d3d3;
+            color: #999;
+            cursor: not-allowed;
+        }
+        body.dark-mode .word.used {
+            background: #555;
+            color: #777;
+        }
+        body.dark-mode .word, body.dark-mode .target {
+            background: #555;
+            border-color: #777;
+            color: #fff;
+        }
+        .target {
+            background: #f9f9f9;
+            border: 2px dashed #ccc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .target .moved-word {
+            font-weight: bold;
+        }
+        .target .original-translation {
+            font-size: 0.9em;
+            color: gray;
+        }
+        .delete-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: red;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 14px;
+            display: none;
+            cursor: pointer;
+        }
+        .target.has-word:hover .delete-btn {
+            display: block;
+        }
+        body.dark-mode .target .original-translation {
+            color: lightgray;
+        }
+        .target.correct {
+            border-color: green;
+        }
+        .target.incorrect {
+            border-color: red;
+        }
+        .selected {
+            background: #add8e6;
+        }
+        body.dark-mode .selected {
+            background: #87ceeb;
+            color: #000;
+        }
+        .buttons {
+            margin-top: 10px;
+        }
+        .button {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        body.dark-mode .button {
+            background-color: #555;
+            color: #fff;
+        }
+        body.dark-mode .button:hover {
+            background-color: #777;
+        }
+        .result, .answers {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .result {
+            background: #ffe0e0;
+            border: 1px solid #d8b2b2;
+        }
+        .answers {
+            background: #e0ffe0;
+            border: 1px solid #b2d8b2;
+        }
+        body.dark-mode .result {
+            background: #444;
+            border-color: #777;
+            color: #fff;
+        }
+        body.dark-mode .answers {
+            background: #555;
+            border-color: #777;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 id="title">多輪配對遊戲</h1>
+        <p class="instructions" id="instructions">點擊或拖放英文單詞到對應的中文翻譯區域。</p>
+        <div class="words">
+            <!-- 英文單詞 -->
+        </div>
+        <div class="targets">
+            <!-- 中文翻譯目標 -->
+        </div>
+        <div class="buttons">
+            <button class="button" onclick="toggleDarkMode()" id="dark-mode-btn">切換深色/淡色模式</button>
+            <button class="button" onclick="undoLastAction()" id="undo-btn">撤銷</button>
+            <button class="button" id="submit-btn" onclick="checkAnswers()" disabled>提交</button>
+            <button id="next-round-btn" class="button" onclick="nextRound()" style="display:none;">下一輪</button>
+            <button id="wordbank-btn" class="button" onclick="openWordBank()">查看單字庫</button>
+            <button class="button" onclick="switchLanguage('zh')">中文</button>
+            <button class="button" onclick="switchLanguage('en')">English</button>
+            <button id="restart-btn" class="button" onclick="restartGame()" style="display:none;">再玩一次</button>
+            
+</div>
+        </div>
+        <div id="result" class="result" style="display:none;"></div>
+        <div id="answers" class="answers" style="display:none;"></div>
+    </div>
+
+    <script>
+        let currentLanguage = 'zh'; // 預設語言
+
+        const translations = {
+          zh: {
+            title: "多輪配對遊戲",
+            instructions: "點擊或拖放英文單詞到對應的中文翻譯區域。",
+            submit: "提交",
+            undo: "撤銷",
+            darkMode: "切換深色/淡色模式",
+            wordBank: "查看單字庫",
+            nextRound: "下一輪",
+            restart: "再玩一次",
+            correct: "答對",
+            incorrect: "答錯",
+            correctAnswersTitle: "正確答案："
+
+          },
+
+          en: {
+            title: "Multi-Round Matching Game",
+            instructions: "Click or drag English words to match their Chinese translations.",
+            submit: "Submit",
+            undo: "Undo",
+            darkMode: "Toggle Dark/Light Mode",
+            wordBank: "View Word Bank",
+            nextRound: "Next Round",
+            restart: "Play Again",
+            correct: "correct",
+            incorrect: "incorrect",
+            correctAnswersTitle: "Correct Answers:"
+          }
+        };
+        
+        let isFirstRound = true; // ⬅️ 加這一行（第二步！）
+
+let words = JSON.parse(localStorage.getItem('words'));
+
+if (!words || words.length === 0) {
+  words = [
+    { word: "點擊按鈕「查看單字庫」設定單字。", translation: "Click the button 【View Word Bank】 to set the word." },
+    
+    // 預設單字（以防 LocalStorage 沒有資料時用）
+  ];
+}
+
+        let remainingWords = [...words];
+        let selectedWord = null;
+        const actionHistory = [];
+
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function createGame() {
+            const wordContainer = document.querySelector('.words');
+            const targetContainer = document.querySelector('.targets');
+            const submitButton = document.getElementById('submit-btn');
+            wordContainer.innerHTML = "";
+            targetContainer.innerHTML = "";
+            submitButton.disabled = true;
+
+            if (isFirstRound) {
+            document.getElementById('wordbank-btn').style.display = 'inline-block';
+        }   
+
+
+
+            const shuffledWords = shuffle([...remainingWords]);
+            const shuffledTranslations = shuffle([...remainingWords]);
+
+            shuffledWords.forEach(item => {
+                const wordDiv = document.createElement('div');
+                wordDiv.className = 'word';
+                wordDiv.draggable = true;
+                wordDiv.textContent = item.word;
+                wordDiv.dataset.word = item.word;
+
+                wordDiv.addEventListener('dragstart', dragStart);
+                wordDiv.addEventListener('dragend', dragEnd);
+                wordDiv.addEventListener('click', () => selectWord(wordDiv));
+
+                wordContainer.appendChild(wordDiv);
+            });
+
+            shuffledTranslations.forEach(item => {
+                const targetDiv = document.createElement('div');
+                targetDiv.className = 'target';
+                targetDiv.dataset.translation = item.translation;
+                targetDiv.innerHTML = `
+                    <div class="moved-word"></div>
+                    <div class="original-translation">${item.translation}</div>
+                    <button class="delete-btn" onclick="deleteWord(event, this)">×</button>
+                `;
+                targetDiv.addEventListener('dragover', allowDrop);
+                targetDiv.addEventListener('drop', drop);
+                targetDiv.addEventListener('click', () => matchWord(targetDiv));
+
+                targetContainer.appendChild(targetDiv);
+            });
+        }
+        function switchLanguage(lang) {
+  document.getElementById('title').textContent = translations[lang].title;
+  document.getElementById('instructions').textContent = translations[lang].instructions;
+  document.getElementById('submit-btn').textContent = translations[lang].submit;
+  document.getElementById('undo-btn').textContent = translations[lang].undo;
+  document.getElementById('dark-mode-btn').textContent = translations[lang].darkMode;
+  document.getElementById('wordbank-btn').textContent = translations[lang].wordBank;
+  document.getElementById('next-round-btn').textContent = translations[lang].nextRound;
+  document.getElementById('restart-btn').textContent = translations[lang].restart;
+  currentLanguage = lang;
+  // 隱藏當前語言的按鈕，顯示另一個語言的按鈕
+  if (lang === 'zh') {
+    document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = 'none';
+    document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = 'inline-block';
+  } else {
+    document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = 'none';
+    document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = 'inline-block';
+  }
+}
+
+
+        function allowDrop(e) {
+            e.preventDefault();
+        }
+
+        function dragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.dataset.word);
+        }
+
+        function dragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            const word = e.dataTransfer.getData('text/plain');
+            handleAction(e.target, word);
+            checkIfAllFilled();
+        }
+
+        function selectWord(wordElement) {
+            if (selectedWord) {
+                selectedWord.classList.remove('selected');
+            }
+            selectedWord = wordElement;
+            selectedWord.classList.add('selected');
+        }
+
+        function matchWord(targetElement) {
+            if (selectedWord) {
+                handleAction(targetElement, selectedWord.dataset.word);
+                selectedWord.classList.remove('selected');
+                selectedWord = null;
+                checkIfAllFilled();
+            }
+        }
+
+        function handleAction(targetElement, word) {
+            const movedWordDiv = targetElement.querySelector('.moved-word');
+            const oldWord = targetElement.dataset.droppedWord || null;
+            if (oldWord) {
+                enableWord(oldWord);
+            }
+            actionHistory.push({ target: targetElement, word: oldWord });
+
+            movedWordDiv.textContent = word;
+            disableWord(word);
+
+            targetElement.dataset.droppedWord = word;
+            toggleDeleteButton(targetElement);
+        }
+
+        function toggleDeleteButton(targetElement) {
+            const deleteButton = targetElement.querySelector('.delete-btn');
+            if (targetElement.dataset.droppedWord) {
+                targetElement.classList.add('has-word');
+            } else {
+                targetElement.classList.remove('has-word');
+            }
+        }
+
+        function undoLastAction() {
+            if (actionHistory.length === 0) return;
+            const { target, word } = actionHistory.pop();
+            const movedWordDiv = target.querySelector('.moved-word');
+            const currentWord = target.dataset.droppedWord;
+            if (currentWord) {
+                enableWord(currentWord);
+            }
+            if (word) {
+                disableWord(word);
+                target.dataset.droppedWord = word;
+                movedWordDiv.textContent = word;
+            } else {
+                delete target.dataset.droppedWord;
+                movedWordDiv.textContent = "";
+            }
+            toggleDeleteButton(target);
+            checkIfAllFilled();
+        }
+
+        function enableWord(word) {
+            const wordDiv = document.querySelector(`.word[data-word="${word}"]`);
+            if (wordDiv) {
+                wordDiv.classList.remove('used');
+                wordDiv.addEventListener('click', () => selectWord(wordDiv));
+            }
+        }
+
+        function disableWord(word) {
+            const wordDiv = document.querySelector(`.word[data-word="${word}"]`);
+            if (wordDiv) {
+                wordDiv.classList.add('used');
+                wordDiv.removeEventListener('click', selectWord);
+            }
+        }
+
+        function deleteWord(event, button) {
+            event.stopPropagation();
+            const target = button.closest('.target');
+            const currentWord = target.dataset.droppedWord;
+            if (currentWord) {
+                enableWord(currentWord);
+            }
+            delete target.dataset.droppedWord;
+            target.querySelector('.moved-word').textContent = "";
+            toggleDeleteButton(target);
+            checkIfAllFilled();
+        }
+
+        function resetGame() {
+            document.querySelectorAll('.target').forEach(target => {
+                target.querySelector('.moved-word').textContent = "";
+                delete target.dataset.droppedWord;
+                toggleDeleteButton(target);
+            });
+            document.querySelectorAll('.word').forEach(word => {
+                word.classList.remove('used');
+                word.addEventListener('click', () => selectWord(word));
+            });
+            document.getElementById('submit-btn').disabled = true;
+        }
+
+        function checkIfAllFilled() {
+            const targetElements = document.querySelectorAll('.target');
+            const allFilled = Array.from(targetElements).every(target => target.dataset.droppedWord);
+            document.getElementById('submit-btn').disabled = !allFilled;
+        }
+
+        function checkAnswers() {
+    const targetElements = document.querySelectorAll('.target');
+    const correctAnswers = [];
+    const wrongAnswers = [];
+
+    targetElements.forEach(target => {
+        const droppedWord = target.dataset.droppedWord;
+        if (droppedWord && words.find(w => w.word === droppedWord)?.translation === target.dataset.translation) {
+            target.classList.add('correct');
+            correctAnswers.push(droppedWord);
+        } else if (droppedWord) {
+            target.classList.add('incorrect');
+            wrongAnswers.push(droppedWord);
+        }
+    });
+
+    // 把配對正確的字移除
+    remainingWords = remainingWords.filter(word => !correctAnswers.includes(word.word));
+
+    const resultDiv = document.getElementById('result');
+    const answersDiv = document.getElementById('answers');
+    const nextRoundBtn = document.getElementById('next-round-btn');
+    const restartBtn = document.getElementById('restart-btn');
+
+    resultDiv.style.display = 'block';
+    answersDiv.style.display = 'block';
+    
+    // 🌟這裡加上隱藏單字庫按鈕🌟
+    if (isFirstRound) {
+        document.getElementById('wordbank-btn').style.display = 'none';
+        isFirstRound = false;
+    }
+
+    const t = translations[currentLanguage];
+    resultDiv.innerHTML = `<h2>${correctAnswers.length} ${t.correct}, ${wrongAnswers.length} ${t.incorrect}.</h2>`;
+    answersDiv.innerHTML = `<p>${t.correctAnswersTitle}</p><ul>${wrongAnswers
+        .map(word => `<li>${word}: ${words.find(w => w.word === word)?.translation}</li>`)
+        .join('')}</ul>`;
+
+    // 🌟這裡做判斷🌟
+    if (remainingWords.length > 0) {
+        // 還有剩下單字，出現「下一輪」
+        nextRoundBtn.style.display = 'block';
+        restartBtn.style.display = 'none';
+    } else {
+        // 全部配對完成，出現「再玩一次」
+        nextRoundBtn.style.display = 'none';
+        restartBtn.style.display = 'block';
+    }
+}
+    function nextRound() {
+        document.getElementById('result').style.display = 'none';
+            document.getElementById('answers').style.display = 'none';
+        document.getElementById('next-round-btn').style.display = 'none';
+        document.getElementById('wordbank-btn').style.display = 'inline-block';
+        createGame();
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        createGame();
+        const userLang = navigator.language || navigator.userLanguage;
+switchLanguage(userLang.startsWith('zh') ? 'zh' : 'en');
+
+        function restartGame() {
+    remainingWords = [...words]; // 重設單字
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('answers').style.display = 'none';
+    document.getElementById('restart-btn').style.display = 'none';
+    document.getElementById('wordbank-btn').style.display = 'inline-block';   // ✅ 重新顯示單字庫按鈕
+    createGame();
+}
+function openWordBank() {
+    window.open(`單字庫.html?lang=${currentLanguage}`, '_blank');
+}
+
+    </script>
+</body>
+</html>

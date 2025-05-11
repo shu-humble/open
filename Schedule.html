@@ -1,0 +1,308 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule</title>
+    <meta charset="UTF-8">
+    <link rel="icon" href="https://png.pngtree.com/png-vector/20230704/ourmid/pngtree-cartoon-illustration-of-a-stack-of-books-png-image_7410495.png">
+    <style>
+        body {
+            background-color: transparent;
+            color: black;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center center;
+        }
+
+        /* 合併重複的 table 樣式 */
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin: auto;
+            position: relative;
+        }
+
+        td {
+            width: 50%;
+            border: 1px solid black;
+            vertical-align: top;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.8);
+            position: relative;
+        }
+
+        .green-day {
+            background-color: rgba(65, 190, 35, 0.7);
+            color: black;
+        }
+
+        .gold-day {
+            background-color: rgba(255, 255, 0, 0.7);
+            color: black;
+        }
+
+        /* 統一的標題樣式 */
+        .section-title {
+            font-size: clamp(24px, 6vw, 48px);
+            font-weight: bold;
+        }
+
+        /* 統一的圖片樣式 */
+        .icon-img {
+            width: 1em;
+            height: auto;
+            vertical-align: middle;
+            margin: 0 0.2em;
+        }
+
+        /* 邊框樣式類 */
+        .no-right-border {
+            border-right: none;
+        }
+
+        .no-left-border {
+            border-left: none;
+        }
+
+        a {
+            color: black;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        @media (max-width: 600px) {
+            td, a, span {
+                font-size: 18px;
+            }
+        }
+
+        td, a, span {
+            font-size: clamp(16px, 3vw, 32px);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 新增底部導航圖片樣式 */
+        .nav-icon {
+            width: 2em;
+            height: auto;
+            vertical-align: middle;
+        }
+
+
+        #launcher-menu small {
+  font-size: 18px;
+  display: block;
+  margin-top: 4px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+    </style>
+</head>
+
+<body background="33.jpg">
+    <base target="_blank">
+    <!-- 🔲 九宮格啟動器按鈕 -->
+    <div id="launcher-button" style="position: fixed; top: 10px; right: 10px; z-index: 1000; cursor: pointer;">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="black">
+          <circle cx="6" cy="6" r="2"/>
+          <circle cx="12" cy="6" r="2"/>
+          <circle cx="18" cy="6" r="2"/>
+          <circle cx="6" cy="12" r="2"/>
+          <circle cx="12" cy="12" r="2"/>
+          <circle cx="18" cy="12" r="2"/>
+          <circle cx="6" cy="18" r="2"/>
+          <circle cx="12" cy="18" r="2"/>
+          <circle cx="18" cy="18" r="2"/>
+        </svg>
+ 
+      
+  </div>
+  
+  <!-- 🔲 九宮格啟動器選單 -->
+  <div id="launcher-menu" style="display: none; position: fixed; top: 55px; right: 10px; z-index: 1000; background: white; border: 1px solid #ccc; border-radius: 10px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+    <div style="display: grid; grid-template-columns: repeat(3, 80px); gap: 20px; text-align: center;">
+
+                <a href="https://myaccount.google.com/" target="_blank">
+            <img src="https://www.google.com/s2/favicons?sz=64&domain=google.com" width="40"><br>
+            <small>Account</small>
+          </a>
+          
+          <a href="https://mail.google.com" target="_blank">
+            <img src="https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico" width="40"><br>
+            <small>Gmail</small>
+          </a>
+                    
+          <a href="https://drive.google.com" target="_blank">
+            <img src="https://ssl.gstatic.com/images/branding/product/2x/drive_2020q4_48dp.png" width="40"><br>
+            <small>Drive</small>
+          </a>
+
+          <a href="https://calendar.google.com" target="_blank">
+            <img src="https://ssl.gstatic.com/calendar/images/dynamiclogo_2020q4/calendar_7_2x.png" width="40"><br>
+            <small>Calendar</small>
+          </a>
+
+          <a href="https://docs.google.com" target="_blank">
+            <img src="https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png" width="40"><br>
+            <small>Docs</small>
+          </a>
+          
+          <a href="https://sheets.google.com" target="_blank">
+            <img src="https://www.gstatic.com/images/branding/product/1x/sheets_2020q4_48dp.png" width="40"><br>
+            <small>Sheets</small>
+          </a>
+          
+          <a href="https://meet.google.com" target="_blank">
+            <img src="https://www.google.com/s2/favicons?sz=64&domain=meet.google.com" width="40"><br>
+            <small>Meet</small>
+          </a>
+          
+          <a href="https://classroom.google.com" target="_blank">
+            <img src="https://www.gstatic.com/classroom/logo_square_rounded.svg" width="40"><br>
+            <small>Classroom</small>
+          </a>
+          
+          <a href="https://translate.google.com" target="_blank">
+            <img src="https://www.google.com/s2/favicons?sz=64&domain=translate.google.com" width="40"><br>
+            
+            <small>Translate</small>
+          </a>
+          
+          <a href="https://www.youtube.com" target="_blank">
+            <img src="https://www.google.com/s2/favicons?sz=64&domain=youtube.com" width="40"><br>
+            <small>YouTube</small>
+          </a>
+          <a href="https://gemini.google.com/app" target="_blank">
+            <img src="https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg" width="40"><br>
+            <small>Gemini</small>
+          </a>
+    </div>
+  </div>
+
+  
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const links = document.querySelectorAll(".link-logo");
+
+            links.forEach(async (link) => {
+                const url = new URL(link.href);
+                const clearFaviconUrl = `https://www.google.com/s2/favicons?sz=36&domain=${url.hostname}`;
+                const fallbackFaviconUrl = `https://icons.duckduckgo.com/ip3/${url.hostname}.ico`;
+
+                const img = document.createElement("img");
+                img.alt = `${url.hostname} logo`;
+                img.className = 'icon-img';
+
+                try {
+                    const response = await fetch(clearFaviconUrl);
+                    if (response.ok) {
+                        img.src = clearFaviconUrl;
+                    } else {
+                        throw new Error("Clear favicon not available");
+                    }
+                } catch (error) {
+                    img.src = fallbackFaviconUrl;
+                }
+
+                img.onerror = () => {
+                    if (!img.classList.contains("error")) {
+                        img.classList.add("error");
+                        img.src = "path/to/default-image.png";
+                        img.alt = "Default logo";
+                    }
+                };
+
+                link.prepend(img);
+            });
+        });
+    </script>
+
+    <div class="table-wrapper">
+        <table class="scale-table">
+            <tr>
+                <td class="no-right-border">
+                    <span class="section-title">🏫School</span><br>
+                    <a href="https://gbn.glenbrook225.org/" class="link-logo">GBN</a><br>
+                    <a href="https://drive.google.com/"><img src="https://static-00.iconduck.com/assets.00/google-drive-icon-2048x2048-j5sa1hcp.png" class="icon-img">Drive</a><br>
+                    <a href="https://mail.google.com/" class="link-logo">Gmail</a><br>
+                        <a href="https://glenbrook225.powerschool.com" class="link-logo">PowerSchool</a><br>
+                        <a href="https://glenbrook.mywconline.com/" class="link-logo">ARC</a><br>
+                    </span>
+                </td>
+                <td class="no-left-border">
+                    <span class="section-title">🛠️Tool</span><br>
+
+                        <a href="https://chatgpt.com/"><img src="https://cdn.oaistatic.com/assets/favicon-180x180-od45eci6.webp" class="icon-img">ChatGPT</a><br>
+                        <a href="https://translate.google.com" class="link-logo">Translate</a><br>
+                        <a href="https://open.spotify.com/" class="link-logo">Spotify</a><br>
+                        <a href="單字卡.html" ><img src="https://www.svgrepo.com/show/335618/quiz-submissions.svg" class="icon-img">Flashcard</a><br>
+                        <a style="color: rgb(0, 145, 255); font-weight: normal; text-decoration: none; vertical-align: sub;">Games：</a>
+                        <a href="https://app.classkick.com/" class="link-logo"></a>
+                        <a href="https://quizizz.com/join"><img src="https://cf.quizizz.com/img/favicon/apple-touch-icon.png" class="icon-img"></a>
+                        <a href="https://quizlet.com/live" class="link-logo"></a>
+                        <a href="https://kahoot.it/" class="link-logo"></a>
+                        <a href="https://gimkit.com/join" class="link-logo"></a><br>
+                    
+                    </span>
+                
+                </td>
+            </tr>
+            <tr>
+                <td class="green-day">
+                    <span class="section-title">GREEN DAY</span><br>
+                    <a href="https://classroom.google.com">--</a><br>
+                    <a href="https://classroom.google.com">--</a><br>
+                    <a href="https://classroom.google.com/c/NjkxODA3NTE3NzE0">ALGEBRA 2 -classroom</a>
+                    <a href="https://www.geogebra.org/calculator"><img src="https://www.geogebra.org/sp-assets/assets/images/ogImage.c3863704.png" class="icon-img"></a>
+                    <a href="https://www.ixl.com/dashboard" class="link-logo"></a><br>
+                    <a href="https://classroom.google.com/c/NzAzMTYyMzk1Mzc4">ESL163-classroom</a>
+                    <a href="https://soraapp.com/home" class="link-logo"></a>
+                </td>
+                <td class="gold-day">
+                    <span class="section-title">GOLD DAY</span><br>
+                    <a href="https://docs.google.com/document/d/1w9gzjoaLieXM7JvO1iAbnzfTXVGrPGwSoUblVi5r6lc/">Reading & Writing</a>
+                    <a href="https://classroom.google.com/c/NzA0MTg1NjkzNTc1">|classroom</a><br>
+                    <a href="https://docs.google.com/document/d/14DuYmalnerRcQ55mmkLcNA0KO1oYTQojIiOvv-6QaJY/">Earth Science</a>
+                    <a href="https://classroom.google.com/c/NzA3ODQ4NTY0MTI1">|classroom</a><br>
+                    <a href="https://docs.google.com/document/d/1sseNHA_HuV1G_5SnsjKjYcg257Yq17ezFIo-UVgowP8">World History</a>
+                    <a href="https://classroom.google.com/c/NzA3NDQwMzY3OTEz">|classroom</a>
+                    <a href="https://www.ilovepdf.com" class="link-logo"></a><br>
+                    <a href="https://classroom.google.com">--</a><br>
+
+                    <br><br><br><br><br>
+                
+                </td>
+            </tr>
+        </table>
+        <p align="right">
+                <a href="Games.html" style="position: fixed; bottom: 20px; right: 20px;">
+                    <img src="https://static.vecteezy.com/system/resources/thumbnails/017/744/677/small_2x/video-game-icon-png.png" style="width: 200px; height: auto;">
+                </a>
+          </p>
+    </div>
+    <script>
+        const launcherButton = document.getElementById("launcher-button");
+        const launcherMenu = document.getElementById("launcher-menu");
+      
+        launcherButton.addEventListener("click", () => {
+          launcherMenu.style.display = launcherMenu.style.display === "none" ? "block" : "none";
+        });
+      
+        document.addEventListener("click", (event) => {
+          if (!launcherButton.contains(event.target) && !launcherMenu.contains(event.target)) {
+            launcherMenu.style.display = "none";
+          }
+        });
+      </script>
+</body>
+</html>

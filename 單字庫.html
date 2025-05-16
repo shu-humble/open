@@ -112,7 +112,7 @@ function clearAllWords() {
     title: '單字管理後台',
     addWord: '新增單字',
     placeholderWord: '英文單字',
-    placeholderTranslation: '中文翻譯',
+    placeholderTranslation: '意思或翻譯',
     bulkTitle: '批量匯入單字',
     bulkPlaceholder: '一行一組，英文,中文。例如：Happy (adj.),開心的',
     bulkImport: '批量匯入',
@@ -132,9 +132,9 @@ function clearAllWords() {
     title: 'Word Management',
     addWord: 'Add Word',
     placeholderWord: 'English Word',
-    placeholderTranslation: 'Chinese Translation',
+    placeholderTranslation: 'Meaning or translation',
     bulkTitle: 'Bulk Import Words',
-    bulkPlaceholder: 'One line per pair, e.g.: Happy (adj.),開心的',
+    bulkPlaceholder: 'One line per pair, e.g.: Happy (adj.),Feeling good',
     bulkImport: 'Bulk Import',
     save: '💾 Save to LocalStorage',
     clear: '❌ Delete All Words',
@@ -174,7 +174,7 @@ function updateLanguage() {
   document.querySelector('button[onclick="clearAllWords()"]').textContent = t.clear;
   document.querySelectorAll('h2')[1].textContent = t.wordListTitle;
   document.getElementById('saveReminder').textContent = t.reminder;
-  document.getElementById('langToggleBtn').textContent =   '🌐 ' + (currentLanguage === 'zh' ? '切換語言' : 'Toggle Language');
+  document.getElementById('langToggleBtn').textContent =   '🌐 ' + (currentLanguage === 'zh' ? 'English' : '中文');
 
   renderWords();
 }

@@ -220,12 +220,27 @@
           <small>Forms</small>
         </a>
       </div>
+      
       <div class="grid-item" data-id="earth">
         <a href="https://earth.google.com" target="_blank">
           <img src="https://www.gstatic.com/earth/00-favicon.ico" width="40"><br>
           <small>Earth</small>
+          </a>
+        </div>
+
+          <div class="grid-item" data-id="sites">
+            <a href="https://sites.google.com/" target="_blank">
+              <img src="https://www.gstatic.com/images/branding/product/2x/sites_2020q4_48dp.png" width="40"><br>
+              <small>Sites</small>
         </a>
-      </div>
+       </div>
+
+       <div class="grid-item" data-id="voice">
+        <a href="https://voice.google.com" target="_blank">
+          <img src="https://fonts.gstatic.com/s/i/productlogos/voice_2020q4/v1/web-32dp/logo_voice_2020q4_color_2x_web_32dp.png" width="40"><br>
+          <small>Voice</small>
+          </a>
+        </div>
     </div>
   </div>
 
@@ -244,11 +259,30 @@
   </style>
 
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const launcherButton = document.getElementById("launcher-button");
-      const launcherMenu = document.getElementById("launcher-menu");
-      const grid = document.getElementById("launcher-grid");
+document.addEventListener("DOMContentLoaded", () => {
+  const launcherButton = document.getElementById("launcher-button");
+  const launcherMenu   = document.getElementById("launcher-menu");
+  const grid           = document.getElementById("launcher-grid");
 
+  function showMenu() {
+    launcherMenu.style.display = "block";
+  }
+  function hideMenu() {
+    launcherMenu.style.display = "none";
+  }
+    // 鼠标移入按钮或菜单时打开
+    launcherButton.addEventListener("mouseenter", showMenu);
+  launcherMenu.addEventListener("mouseenter", showMenu);
+
+  // 鼠标移出菜单时关闭
+  launcherMenu.addEventListener("mouseleave", hideMenu);
+
+  // 鼠标从按钮移出，如果移到的不是菜单，也关闭
+  launcherButton.addEventListener("mouseleave", (e) => {
+    if (!launcherMenu.contains(e.relatedTarget)) {
+      hideMenu();
+    }
+  });
       // 初始化拖拽排序
       const sortable = Sortable.create(grid, {
         animation: 150,

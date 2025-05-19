@@ -120,6 +120,7 @@
     background-color: white;       /* 加这一行 */
   border-radius: clamp(4px,1vw,8px);  /* 可选，保持圆角 */
   box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* 可选，保持阴影 */
+  z-index: 9999;  /*最上層*/
 }
 #launcher-button svg {
   width: 100%;
@@ -145,6 +146,32 @@
   font-size: clamp(12px, 1.5vw, 18px);
   line-height: 1.2;
 }
+/* 右邊測攔 */
+.social-sidebar {
+  position: fixed;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  background-color: rgba(255, 255, 255, 0.8); /* 白色半透明底 */
+  padding: clamp(8px, 1.5vw, 16px);
+  border-radius: clamp(8px, 1vw, 16px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.5vw, 20px);
+  z-index: 1000;
+}
+
+.social-sidebar a img {
+  width: clamp(24px, 3vw, 40px);
+  height: clamp(24px, 3vw, 40px);
+  transition: transform 0.2s;
+}
+
+.social-sidebar a:hover img {
+  transform: scale(1.2);
+}
+
     </style>
 </head>
 
@@ -152,19 +179,21 @@
     <base target="_blank">
     <!-- 🔲 九宮格啟動器按鈕 -->
     <div id="launcher-button">
-      <svg viewBox="0 0 24 24" fill="black">
-          <circle cx="6" cy="6" r="2"/>
-          <circle cx="12" cy="6" r="2"/>
-          <circle cx="18" cy="6" r="2"/>
-          <circle cx="6" cy="12" r="2"/>
-          <circle cx="12" cy="12" r="2"/>
-          <circle cx="18" cy="12" r="2"/>
-          <circle cx="6" cy="18" r="2"/>
-          <circle cx="12" cy="18" r="2"/>
-          <circle cx="18" cy="18" r="2"/>
-        </svg>
+      <svg viewBox="0 0 36 36" fill="black" width="100%" height="auto">
+        <!-- 第一排 -->
+        <circle cx="6"  cy="6"  r="4"/>
+        <circle cx="18" cy="6"  r="4"/>
+        <circle cx="30" cy="6"  r="4"/>
+        <!-- 第二排 -->
+        <circle cx="6"  cy="18" r="4"/>
+        <circle cx="18" cy="18" r="4"/>
+        <circle cx="30" cy="18" r="4"/>
+        <!-- 第三排 -->
+        <circle cx="6"  cy="30" r="4"/>
+        <circle cx="18" cy="30" r="4"/>
+        <circle cx="30" cy="30" r="4"/>
+      </svg>
     </div>
-  
   <!-- 🔲 九宮格啟動器選單 -->
   <div id="launcher-menu"
   style="
@@ -182,6 +211,7 @@
     max-height: min(80vh, 500px);
     overflow-y: auto;
     overflow-x: hidden;
+    z-index: 9999; 
   ">
     <div id="launcher-grid" style="display: grid; grid-template-columns: repeat(3, 80px); gap: 20px; text-align: center;">
       <div class="grid-item" data-id="account">
@@ -420,25 +450,35 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
     </script>
+<div class="social-sidebar">
+  <a href="https://www.youtube.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube"></a>
+  <a href="https://www.facebook.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook"></a>
+  <a href="https://www.instagram.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
+  <a href="https://twitter.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/5968/5968830.png" alt="X"></a>
+  <a href="https://www.reddit.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111589.png" alt="Reddit"></a>
+  <a href="https://discord.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png" alt="Discord"></a>
+ <a href="https://web.whatsapp.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp"></a> 
+</div>
 
     <div class="table-wrapper">
         <table class="scale-table">
             <tr>
                 <td class="no-right-border">
-                    <span class="section-title">🏫School</span><br>
-                    <a href="https://gbn.glenbrook225.org/" class="link-logo">GBN</a><br>
-                    <a href="https://drive.google.com/"><img src="https://static-00.iconduck.com/assets.00/google-drive-icon-2048x2048-j5sa1hcp.png" class="icon-img">Drive</a><br>
+                    <span class="section-title">APP</span><br>
                     <a href="https://mail.google.com/" class="link-logo">Gmail</a><br>
-                        <a href="https://glenbrook225.powerschool.com" class="link-logo">PowerSchool</a><br>
-                        <a href="https://glenbrook.mywconline.com/" class="link-logo">ARC</a><br>
+                    <!--<a href="https://discord.com/channels/@me" class="link-logo">Discord</a><br>-->
+                    <a href="https://chatgpt.com/"><img src="https://cdn.oaistatic.com/assets/favicon-180x180-od45eci6.webp" class="icon-img">ChatGPT</a><br>
+                    <a href="https://translate.google.com" class="link-logo">Translate</a><br>
+                    <a href="https://open.spotify.com/" class="link-logo">Spotify</a><br>
                     </span>
                 </td>
                 <td class="no-left-border">
-                    <span class="section-title">🛠️Tool</span><br>
+                    <span class="section-title">🏫School</span><br>
 
-                        <a href="https://chatgpt.com/"><img src="https://cdn.oaistatic.com/assets/favicon-180x180-od45eci6.webp" class="icon-img">ChatGPT</a><br>
-                        <a href="https://translate.google.com" class="link-logo">Translate</a><br>
-                        <a href="https://open.spotify.com/" class="link-logo">Spotify</a><br>
+
+                        <a href="https://gbn.glenbrook225.org/" class="link-logo">GBN</a><br>
+                        <a href="https://glenbrook225.powerschool.com" class="link-logo">PowerSchool</a><br>
+                        <a href="https://glenbrook.mywconline.com/" class="link-logo">ARC</a><br>
                         <a href="單字卡.html" ><img src="https://www.svgrepo.com/show/335618/quiz-submissions.svg" class="icon-img">Flashcard</a><br>
                         <a style="color: rgb(0, 145, 255); font-weight: normal; text-decoration: none; vertical-align: sub;">Games：</a>
                         <a href="https://app.classkick.com/" class="link-logo"></a>

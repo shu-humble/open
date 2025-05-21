@@ -7,61 +7,61 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         body {
-            background-color: transparent;
-            color: black;
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-position: center center;
+            background-color: transparent;/*背景透明*/
+            color: black;/*黑色字體*/
+            background-size: cover;/*背景圖片大小*/
+            background-repeat: no-repeat;/*背景圖片不重複*/
+            background-position: center center;/*背景圖片位置*/
         }
 
         /* 合併重複的 table 樣式 */
         table {
-            width: 80%;
-            border-collapse: collapse;
-            margin: auto;
-            position: relative;
+            width: 80%;/*表格寬度*/
+            border-collapse: collapse;/*表格邊框合併*/
+            margin: auto;/*表格居中*/
+            position: relative;/*表格相對位置*/
         }
 
         td {
-            width: 50%;
-            border: 1px solid black;
-            vertical-align: top;
-            text-align: center;
-            background-color: rgba(255, 255, 255, 0.8);
-            position: relative;
+            width: 50%;/*表格寬度*/
+            border: 1px solid black;/*表格邊框*/
+            vertical-align: top;/*表格垂直對齊*/
+            text-align: center;/*表格文字對齊*/
+            background-color: rgba(255, 255, 255, 0.8);/*表格背景顏色*/
+            position: relative;/*表格相對位置*/
         }
 
         .green-day {
-            background-color: rgba(65, 190, 35, 0.7);
-            color: black;
+            background-color: rgba(65, 190, 35, 0.7);/*綠色背景*/
+            color: black;/*黑色字體*/
         }
 
         .gold-day {
-            background-color: rgba(255, 255, 0, 0.7);
-            color: black;
+            background-color: rgba(255, 255, 0, 0.7);/*金色背景*/
+            color: black;/*黑色字體*/
         }
 
         /* 統一的標題樣式 */
         .section-title {
-            font-size: clamp(24px, 6vw, 48px);
-            font-weight: bold;
+            font-size: clamp(24px, 6vw, 48px);/*標題大小*/
+            font-weight: bold;/*粗體*/
         }
 
         /* 統一的圖片樣式 */
         .icon-img {
-            width: 1em;
-            height: auto;
-            vertical-align: middle;
-            margin: 0 0.2em;
+            width: 1em;/*圖片寬度*/ 
+            height: auto;/*圖片高度*/
+            vertical-align: middle;/*垂直對齊*/
+            margin: 0 0.2em;/*圖片間距*/
         }
 
         /* 邊框樣式類 */
         .no-right-border {
-            border-right: none;
+            border-right: none;/*右邊框*/
         }
 
         .no-left-border {
-            border-left: none;
+            border-left: none;/*左邊框*/
         }
 
         a {
@@ -70,48 +70,48 @@
         }
 
         a:hover {
-            text-decoration: underline;
+            text-decoration: underline;/*超連結文字下劃線*/
         }
 
         .table-wrapper {
-            width: 100%;
-            overflow-x: auto;
+            width: 100%;/*表格寬度*/
+            overflow-x: auto;/*水平滾動*/
         }
 
         @media (max-width: 600px) {
             td, a, span {
-                font-size: 18px;
+                font-size: 18px;/*字體大小*/
             }
         }
 
         td, a, span {
-            font-size: clamp(16px, 3vw, 32px);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-size: clamp(16px, 3vw, 32px);/*字體大小*/
+            white-space: nowrap;/*不換行*/
+            overflow: hidden;/*溢出隱藏*/
+            text-overflow: ellipsis;/*文字溢出省略*/
         }
 
         /* 新增底部導航圖片樣式 */
         .nav-icon {
-            width: 2em;
-            height: auto;
-            vertical-align: middle;
+            width: 2em;/*圖片寬度*/ 
+            height: auto;/*圖片高度*/
+            vertical-align: middle;/*垂直對齊*/
         }
 
 
         #launcher-menu small {
-  font-size: 18px;
-  display: block;
-  margin-top: 4px;
-  line-height: 1.2;
-  white-space: nowrap;
+            font-size: 18px;/*字體大小*/
+            display: block;/*塊級元素*/
+            margin-top: 4px;/*上邊距*/
+            line-height: 1.2;/*行高*/
+            white-space: nowrap;/*不換行*/
 }
 /* —— 启动器按钮 自适应 —— */
 #launcher-button {
   /* 最小 36px、最大 60px，中间跟视窗宽度 5% 挂钩 */
-  width: clamp(10px, 5vw, 30px);
-  height: clamp(10px, 5vw, 30px);
-  padding: clamp(6px, 1vw, 12px);
+        width: clamp(10px, 5vw, 30px);
+        height: clamp(10px, 5vw, 30px);
+        padding: clamp(6px, 1vw, 12px);
   /* 保留原有定位与样式 */
   position: fixed;
   top: clamp(8px, 1vw, 16px);
@@ -148,30 +148,47 @@
 }
 /* 右邊測攔 */
 .social-sidebar {
-  position: fixed;
-  top: 50%;
-  left: 10px;
-  transform: translateY(-50%);
+  position: fixed;/*固定位置*/
+  top: 50%;/*上邊距*/
+  left: 10px;/*左邊距*/
+  transform: translateY(-50%);/*垂直居中*/
   background-color: rgba(255, 255, 255, 0.8); /* 白色半透明底 */
-  padding: clamp(8px, 1.5vw, 16px);
-  border-radius: clamp(8px, 1vw, 16px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
-  gap: clamp(10px, 1.5vw, 20px);
-  z-index: 1000;
+  padding: clamp(8px, 1.5vw, 16px);/*內邊距*/
+  border-radius: clamp(8px, 1vw, 16px);/*圓角*/
+  box-shadow: 0 4px 8px rgba(0,0,0,1.0);/*陰影*/
+  display: flex;/*彈性盒*/
+  flex-direction: column;/*垂直排列*/
+  gap: clamp(10px, 1.5vw, 20px);/*間距*/
+  z-index: 1000;/*層級*/
 }
 
 .social-sidebar a img {
-  width: clamp(24px, 3vw, 40px);
-  height: clamp(24px, 3vw, 40px);
-  transition: transform 0.2s;
+  width: clamp(24px, 3vw, 40px);/*圖片寬度*/
+  height: clamp(24px, 3vw, 40px);/*圖片高度*/
+  transition: transform 0.2s;/*過渡*/
 }
 
 .social-sidebar a:hover img {
-  transform: scale(1.2);
+  transform: scale(1.2);/*放大*/
+}
+.music-button {
+  background: none;/*背景*/
+  border: none;/*邊框*/
+  cursor: pointer;/*游標*/
+  display: inline-flex;/*行內元素*/
+  align-items: center;/*垂直居中*/
+  font-size: clamp(16px, 3vw, 32px);/*字體大小*/
+  color: black;/*顏色*/
+  transition: color 0.2s ease, background-color 0.2s ease;/*過渡*/
+  padding: 0.3em 0.6em;/*內邊距*/
+  border-radius: 8px; /* 加一點圓角更自然 */
 }
 
+/* 滑鼠滑過時變色 */
+.music-button:hover {
+  background-color: rgba(200, 200, 200, 0.5);  /* 半透明灰底 */
+ /* color: rgb(0, 77, 100); /* 你也可以改成別的顏色 */
+}
     </style>
 </head>
 
@@ -455,8 +472,8 @@ document.addEventListener("DOMContentLoaded", () => {
   <a href="https://www.facebook.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook"></a>
   <a href="https://www.instagram.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
   <a href="https://twitter.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/5968/5968830.png" alt="X"></a>
-  <a href="https://www.reddit.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111589.png" alt="Reddit"></a>
-  <a href="https://discord.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png" alt="Discord"></a>
+  <a href="https://www.reddit.com" target="_blank"><img src="https://static-00.iconduck.com/assets.00/reddit-icon-1024x1024-6c2aoary.png" alt="Reddit"></a>
+  <a href="https://discord.com" target="_blank"><img src="https://static-00.iconduck.com/assets.00/discord-icon-2048x2048-nnt62s2u.png" alt="Discord"></a>
  <a href="https://web.whatsapp.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp"></a> 
 </div>
 
@@ -470,6 +487,67 @@ document.addEventListener("DOMContentLoaded", () => {
                     <a href="https://chatgpt.com/"><img src="https://cdn.oaistatic.com/assets/favicon-180x180-od45eci6.webp" class="icon-img">ChatGPT</a><br>
                     <a href="https://translate.google.com" class="link-logo">Translate</a><br>
                     <a href="https://open.spotify.com/" class="link-logo">Spotify</a><br>
+
+                    <button class="music-button" onclick="togglePlay()">
+                      <img id="playPauseImage" 
+                           src="https://cdn-icons-png.flaticon.com/512/120/120625.png" 
+                           class="icon-img">
+                      <span>Music</span>
+                    </button>
+                    
+                      
+
+                   
+                   <div id="playerContainer"></div>
+                   
+                   <script>
+                     let player;
+                     let isPlaying = false;
+                     let iframeLoaded = false;
+                   
+                     function togglePlay() {
+                       if (!iframeLoaded) {
+                         const confirmPlay = confirm("Do you want to play music?");
+                         if (!confirmPlay) return;  // 使用者按「取消」
+                   
+                         const tag = document.createElement('script');
+                         tag.src = "https://www.youtube.com/iframe_api";
+                         document.head.appendChild(tag);
+                   
+                         window.onYouTubeIframeAPIReady = function() {
+                           player = new YT.Player('playerContainer', {
+                             height: '0',
+                             width: '0',
+                             videoId: 'YTf9awkaerk',
+                             events: {
+                               'onReady': (event) => {
+                                 event.target.setPlaybackQuality('tiny'); // 設定為 144p
+                                 event.target.setVolume(100);
+                                 event.target.playVideo();
+                                 event.target.unMute();
+                                 document.getElementById("playPauseImage").src =
+                                   "https://cdn2.iconfinder.com/data/icons/simple-circular-icons-filled/78/Vertical_Bars_Filled-512.png";
+                                 isPlaying = true;
+                               }
+                             }
+                           });
+                         };
+                   
+                         iframeLoaded = true;
+                       } else if (isPlaying) {
+                         player.pauseVideo();
+                         document.getElementById("playPauseImage").src =
+                           "https://cdn-icons-png.flaticon.com/512/120/120625.png";
+                         isPlaying = false;
+                       } else {
+                         player.playVideo();
+                         player.unMute();
+                         document.getElementById("playPauseImage").src =
+                           "https://cdn2.iconfinder.com/data/icons/simple-circular-icons-filled/78/Vertical_Bars_Filled-512.png";
+                         isPlaying = true;
+                       }
+                     }
+                   </script>
                     </span>
                 </td>
                 <td class="no-left-border">

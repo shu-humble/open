@@ -226,17 +226,15 @@
           }
         };
         
-        let isFirstRound = true; // ⬅️ 加這一行（第二步！）
+        let isFirstRound = true;
+        let words = JSON.parse(localStorage.getItem('words'));
+        let settings = JSON.parse(localStorage.getItem('wordGameSettings')) || { wordsPerRound: 10 };
 
-let words = JSON.parse(localStorage.getItem('words'));
-
-if (!words || words.length === 0) {
-  words = [
-    { word: "點擊按鈕「查看單字庫」設定單字。", translation: "Click the button 【View Word Bank】 to set the word." },
-    
-    // 預設單字（以防 LocalStorage 沒有資料時用）
-  ];
-}
+        if (!words || words.length === 0) {
+            words = [
+                { word: "點擊按鈕「查看單字庫」設定單字。", translation: "Click the button 【View Word Bank】 to set the word." }
+            ];
+        }
 
         let remainingWords = [...words];
         let selectedWord = null;
@@ -247,21 +245,21 @@ if (!words || words.length === 0) {
         }
 
         function createGame() {
-            const wordContainer = document.querySelector('.words'); // 找到words元素
-            const targetContainer = document.querySelector('.targets'); // 找到targets元素
-            const submitButton = document.getElementById('submit-btn'); // 找到submit-btn元素
-            wordContainer.innerHTML = ""; // 清空wordContainer的內容
-            targetContainer.innerHTML = ""; // 清空targetContainer的內容
-            submitButton.disabled = true; // 禁用submitButton
+            const wordContainer = document.querySelector('.words');
+            const targetContainer = document.querySelector('.targets');
+            const submitButton = document.getElementById('submit-btn');
+            wordContainer.innerHTML = "";
+            targetContainer.innerHTML = "";
+            submitButton.disabled = true;
 
             if (isFirstRound) {
-            document.getElementById('wordbank-btn').style.display = 'inline-block';
-        }   
+                document.getElementById('wordbank-btn').style.display = 'inline-block';
+            }
 
-
-
-            const shuffledWords = shuffle([...remainingWords]);
-            const shuffledTranslations = shuffle([...remainingWords]);
+            // 根据设置选择单词数量
+            const wordsToUse = shuffle([...words]).slice(0, Math.min(settings.wordsPerRound, words.length));
+            const shuffledWords = shuffle([...wordsToUse]);
+            const shuffledTranslations = shuffle([...wordsToUse]);
 
             shuffledWords.forEach(item => {
                 const wordDiv = document.createElement('div');

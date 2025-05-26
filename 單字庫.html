@@ -3,55 +3,143 @@
 <head>
   <meta charset="UTF-8">
   <title>單字管理後台</title>
+  <style>
+  body {
+   font-family: Arial, sans-serif; /* 設定預設字型為 Arial，找不到時再用系統內的 sans-serif 類字型 */
+   /*  max-width: 1200px;             設定內容最大寬度為 1200px，避免太大螢幕時內容過度延展 */
+    margin: 0px 10px 10px 10px;              /* 頂部 右邊 底部 左邊;（順時針順序） */
+  }
+
+
+    .container {
+      display: flex;
+      gap: 10px; /*間距*/
+    }
+    .left-panel {/*左邊的設定*/
+      flex: 1;
+    }
+    .right-panel {/*右邊的單字庫*/
+      flex: 1; /*佔據1份*/
+      position: sticky; /*固定*/
+      margin-top: -5.0em; /* 將標題往上移動 1.5em，視情況調整 */
+      align-self: flex-start; /*靠上*/
+    }
+    .word-list {
+      max-height: 70vh;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .word-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px;/*單字的padding*/
+      border-bottom: 1px solid #eee;/*單字下方的邊框*/  
+    }
+    .word-item:last-child {
+      border-bottom: none;
+    }
+    .save-buttons {
+      margin: 20px 0;
+      padding: 10px;
+      background: #f5f5f5;
+      border-radius: 5px;
+    }
+    .save-buttons button {
+      margin-right: 10px;
+    }
+    input[type="text"], input[type="number"] {
+      padding: 5px;
+      margin: 5px 0;
+      width: 200px;
+    }
+    textarea {
+      width: 100%;
+      margin: 5px 0;
+    }
+    button {
+      padding: 5px 10px;/*按鈕的padding*/
+      cursor: pointer;/*滑鼠移動到按鈕上時，變成手型*/
+    }
+    .danger-button {
+      background-color: red;/*紅色*/
+      color: white;/*白色*/
+      border: none; /*沒有邊框*/
+      padding: 5px 10px; /*按鈕的padding*/
+      border-radius: 3px;/*圓角*/
+    }
+  </style>
 </head>
 <body>
   <h1>單字管理後台</h1>
-  <button id="langToggleBtn" onclick="toggleLanguage()">🌐 切換語言</button>
+  <p id="saveReminder"></p>  <button id="langToggleBtn" onclick="toggleLanguage()">🌐 切換語言</button>
+  <div class="container">
 
-  <p id="saveReminder"></p>
 
-  <div>
-    <input id="wordInput" type="text" placeholder="英文單字">
-    <input id="translationInput" type="text" placeholder="中文翻譯">
-    <button onclick="addWord()">新增單字</button>
+
+    <div class="left-panel">
+      <div>
+        <input id="wordInput" type="text" placeholder="英文單字">
+        <input id="translationInput" type="text" placeholder="中文翻譯">
+        <button onclick="addWord()">新增單字</button>
+      </div>
+
+      <hr>
+
+      <div>
+        <h2>批量匯入單字</h2>
+        <textarea id="bulkInput" rows="10" cols="50" placeholder="一行一組，英文,中文。例如：Happy (adj.),開心的"></textarea><br>
+        <button onclick="bulkImport()">批量匯入</button>
+      </div>
+
+      <hr>
+
+      <div>
+        <h2>遊戲設定</h2>
+        <label for="wordsPerRound">每局單字數量：</label>
+        <input type="number" id="wordsPerRound" min="1" value="10">
+      </div>
+
+      <div class="save-buttons">
+        <button onclick="saveAll()">💾儲存所有設定</button>
+        <button class="danger-button" onclick="clearAllWords()">❌一鍵刪除所有單字</button>
+      </div>
+
+    </div>
+
+    <div class="right-panel">
+      <h2>現有單字</h2>
+      <div class="word-list" id="wordList"></div>
+    </div>
   </div>
-
-  <hr>
-
-  <div>
-    <h2>批量匯入單字</h2>
-    <textarea id="bulkInput" rows="10" cols="50" placeholder="一行一組，英文,中文。例如：Happy (adj.),開心的"></textarea><br>
-    <button onclick="bulkImport()">批量匯入</button>
-  </div>
-
-  <hr>
-
-  <h2>現有單字</h2>
-  <ul id="wordList"></ul>
-
-  <button onclick="saveWords()">💾儲存到 LocalStorage</button>
-  <button onclick="clearAllWords()" style="background-color:red; color:white;">❌一鍵刪除所有單字</button>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     let currentLanguage = urlParams.get('lang') || 'zh';
   
     let words = JSON.parse(localStorage.getItem('words')) || [];
+    let settings = JSON.parse(localStorage.getItem('wordGameSettings')) || { wordsPerRound: 10 };
+
+    // 初始化设置输入框
+    document.getElementById('wordsPerRound').value = settings.wordsPerRound;
 
     function renderWords() {
       const wordList = document.getElementById('wordList');
       wordList.innerHTML = '';
       words.forEach((item, index) => {
-        const li = document.createElement('li');
-        li.textContent = `${item.word} - ${item.translation}`;
+        const div = document.createElement('div');
+        div.className = 'word-item';
+        div.textContent = `${item.word} - ${item.translation}`;
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = translations[currentLanguage].delete;
         deleteBtn.onclick = () => {
           words.splice(index, 1);
           renderWords();
         };
-        li.appendChild(deleteBtn);
-        wordList.appendChild(li);
+        div.appendChild(deleteBtn);
+        wordList.appendChild(div);
       });
     }
 
@@ -89,9 +177,17 @@ function bulkImport() {
 }
 
 function saveWords() {
+
+  const wordsPerRound = parseInt(document.getElementById('wordsPerRound').value);
+    if (wordsPerRound < 1) {//如果每局單字數<1會提跳出失敗
+        alert(translations[currentLanguage].alertInvalidNumber);
+        return;
+    }
+
   const t = translations[currentLanguage];
   localStorage.setItem('words', JSON.stringify(words));
   alert(t.alertSaveDone);
+
 }
 
 function clearAllWords() {
@@ -104,8 +200,12 @@ function clearAllWords() {
   }
 }
 
-   // renderWords();
 
+
+function saveAll() {
+  saveWords();
+  saveSettings();
+}
 
     const translations = {
   zh: {
@@ -122,11 +222,16 @@ function clearAllWords() {
     delete: '刪除',
     reminder: '記得點擊【💾儲存到 LocalStorage】儲存您設定的文字',
     alertInputRequired: '請輸入英文和中文',
-  alertPasteRequired: '請貼上要匯入的單字',
-  alertImportDone: '批量匯入完成！',
-  alertSaveDone: '儲存成功！',
-  confirmDeleteAll: '確定要刪除所有單字嗎？這個動作無法復原！',
-  alertDeleteAllDone: '已清空所有單字！'
+    alertPasteRequired: '請貼上要匯入的單字',
+    alertImportDone: '批量匯入完成！',
+    alertSaveDone: '儲存成功！',
+    confirmDeleteAll: '確定要刪除所有單字嗎？這個動作無法復原！',
+    alertDeleteAllDone: '已清空所有單字！',
+    settingsTitle: '遊戲設定',
+    wordsPerRound: '每局單字數量：',
+    alertInvalidNumber: '請輸入有效的數字！',
+
+
   },
   en: {
     title: 'Word Management',
@@ -142,11 +247,16 @@ function clearAllWords() {
     delete: 'Delete',
     reminder: 'Remember to click 【💾 Save to LocalStorage】 to save your words',
     alertInputRequired: 'Please enter both English and Chinese.',
-  alertPasteRequired: 'Please paste the words to import.',
-  alertImportDone: 'Bulk import completed!',
-  alertSaveDone: 'Saved successfully!',
-  confirmDeleteAll: 'Are you sure you want to delete all words? This cannot be undone!',
-  alertDeleteAllDone: 'All words have been cleared!'
+    alertPasteRequired: 'Please paste the words to import.',
+    alertImportDone: 'Bulk import completed!',
+    alertSaveDone: 'Saved successfully!',
+    confirmDeleteAll: 'Are you sure you want to delete all words? This cannot be undone!',
+    alertDeleteAllDone: 'All words have been cleared!',
+    settingsTitle: 'Game Settings',
+    wordsPerRound: 'Words per round:',
+    alertInvalidNumber: 'Please enter a valid number!',
+
+
   }
   
 };
@@ -170,11 +280,14 @@ function updateLanguage() {
   document.querySelectorAll('h2')[0].textContent = t.bulkTitle;
   document.getElementById('bulkInput').placeholder = t.bulkPlaceholder;
   document.querySelector('button[onclick="bulkImport()"]').textContent = t.bulkImport;
-  document.querySelector('button[onclick="saveWords()"]').textContent = t.save;
+  document.querySelector('button[onclick="saveAll()"]').textContent = t.save;
   document.querySelector('button[onclick="clearAllWords()"]').textContent = t.clear;
-  document.querySelectorAll('h2')[1].textContent = t.wordListTitle;
+  document.querySelectorAll('h2')[1].textContent = t.settingsTitle;
+  document.querySelectorAll('h2')[2].textContent = t.wordListTitle;
   document.getElementById('saveReminder').textContent = t.reminder;
-  document.getElementById('langToggleBtn').textContent =   '🌐 ' + (currentLanguage === 'zh' ? 'English' : '中文');
+  document.getElementById('langToggleBtn').textContent = '🌐 ' + (currentLanguage === 'zh' ? 'English' : '中文');
+  document.querySelector('label[for="wordsPerRound"]').textContent = t.wordsPerRound;
+
 
   renderWords();
 }

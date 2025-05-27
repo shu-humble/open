@@ -9,8 +9,6 @@
    /*  max-width: 1200px;             設定內容最大寬度為 1200px，避免太大螢幕時內容過度延展 */
     margin: 0px 10px 10px 10px;              /* 頂部 右邊 底部 左邊;（順時針順序） */
   }
-
-
     .container {
       display: flex;
       gap: 10px; /*間距*/
@@ -50,6 +48,37 @@
     .save-buttons button {
       margin-right: 10px;
     }
+    button {
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, opacity 0.3s ease, color 0.3s ease, border-color 0.3s ease; /* 確保所有相關屬性都有過渡效果 */
+    border-radius: 3px; /* 給按鈕一個圓角 */
+    /* 這裡不再設定具體顏色，因為會被 .save-button-clean 或 .save-button-dirty 覆蓋 */
+  }
+
+  .save-button-dirty {
+    /* 需要儲存時的深色樣式 */
+    background-color: #007bff;
+    color: white;
+    border: 1px solid #0056b3;
+    opacity: 1; /* 完全不透明 */
+  }
+
+  .save-button-clean {
+    /* 已儲存或無需儲存時的淺色樣式 */
+    background-color: #e0e0e0; /* 淺灰色 */
+    color: #333; /* 深色文字 */
+    border: 1px solid #b0b0b0;
+    opacity: 0.7; /* 變淡 */
+  }
+
+  .danger-button {
+      background-color: red;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 3px;
+  }
     input[type="text"], input[type="number"] {
       padding: 5px;
       margin: 5px 0;
@@ -59,17 +88,7 @@
       width: 100%;
       margin: 5px 0;
     }
-    button {
-      padding: 5px 10px;/*按鈕的padding*/
-      cursor: pointer;/*滑鼠移動到按鈕上時，變成手型*/
-    }
-    .danger-button {
-      background-color: red;/*紅色*/
-      color: white;/*白色*/
-      border: none; /*沒有邊框*/
-      padding: 5px 10px; /*按鈕的padding*/
-      border-radius: 3px;/*圓角*/
-    }
+
   </style>
 </head>
 <body>
@@ -103,7 +122,7 @@
       </div>
 
       <div class="save-buttons">
-        <button onclick="saveAll()">💾儲存所有設定</button>
+        <button id="saveAllButton" onclick="saveAll()">💾儲存所有設定</button>
         <button class="danger-button" onclick="clearAllWords()">❌一鍵刪除所有單字</button>
       </div>
 
@@ -122,181 +141,283 @@
     let words = JSON.parse(localStorage.getItem('words')) || [];
     let settings = JSON.parse(localStorage.getItem('wordGameSettings')) || { wordsPerRound: 10 };
 
-    // 初始化设置输入框
-    document.getElementById('wordsPerRound').value = settings.wordsPerRound;
+    // **重要修正：originalWords 和 originalSettings 的初始化放在 DOMContentLoaded 之後**
+    // 因為它們需要基於已經從 localStorage 載入的 words 和 settings 來做快照。
+    // 在這裡先宣告，但在 DOMContentLoaded 裡賦值。
+    let originalWords;
+    let originalSettings;
+
+    // **新增狀態變數和按鈕引用**
+    let needsSave = false; // 追蹤是否有未儲存的變更
+    const saveAllButton = document.getElementById('saveAllButton'); // 獲取儲存按鈕元素
+    const saveReminderElement = document.getElementById('saveReminder'); // 獲取提示文字元素
+
+    // **根據 needsSave 狀態更新按鈕樣式和提示文字**
+    function updateSaveButtonState() {
+      const t = translations[currentLanguage];
+      if (needsSave) {
+        saveAllButton.classList.remove('save-button-clean');
+        saveAllButton.classList.add('save-button-dirty');
+        saveReminderElement.textContent = t.reminder; // 顯示提示文字
+      } else {
+        saveAllButton.classList.remove('save-button-dirty');
+        saveAllButton.classList.add('save-button-clean');
+        saveReminderElement.textContent = ''; // 清空提示文字
+      }
+    }
+
+    // **標記為需要儲存的函式 - 增加數據比較邏輯**
+    function markAsNeedsSave() {
+      // 在這裡重新確保 currentSettings.wordsPerRound 取得的是輸入框的當前值
+      // 而不是 settings 物件中可能舊的值
+      const currentWordsString = JSON.stringify(words);
+      const currentWordsPerRound = parseInt(document.getElementById('wordsPerRound').value);
+      
+      // 構建一個臨時的 settings 物件來進行比較
+      const currentSettings = { ...settings, wordsPerRound: currentWordsPerRound };
+      const currentSettingsString = JSON.stringify(currentSettings);
+
+
+      const originalWordsString = JSON.stringify(originalWords);
+      const originalSettingsString = JSON.stringify(originalSettings); // 這是整個 settings 物件的字符串
+
+      const hasChanges = (currentWordsString !== originalWordsString) || (currentSettingsString !== originalSettingsString);
+
+      if (hasChanges && !needsSave) {
+        needsSave = true;
+        updateSaveButtonState();
+      } else if (!hasChanges && needsSave) {
+        // 如果現在沒有變化，但之前標記為需要儲存，則更新狀態為不需要儲存
+        needsSave = false;
+        updateSaveButtonState();
+      }
+      // 如果沒有變化，並且已經是 'clean' 狀態，則不觸發任何操作
+      // 如果有變化，並且已經是 'dirty' 狀態，則不觸發任何操作
+    }
 
     function renderWords() {
-      const wordList = document.getElementById('wordList');
-      wordList.innerHTML = '';
-      words.forEach((item, index) => {
-        const div = document.createElement('div');
-        div.className = 'word-item';
-        div.textContent = `${item.word} - ${item.translation}`;
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = translations[currentLanguage].delete;
-        deleteBtn.onclick = () => {
-          words.splice(index, 1);
-          renderWords();
-        };
-        div.appendChild(deleteBtn);
-        wordList.appendChild(div);
-      });
+        const wordList = document.getElementById('wordList');
+        wordList.innerHTML = '';
+        words.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'word-item';
+            div.textContent = `${item.word} - ${item.translation}`;
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = translations[currentLanguage].delete;
+            deleteBtn.onclick = () => {
+                words.splice(index, 1);
+                renderWords(); // 刪除後重新渲染
+                markAsNeedsSave(); // 刪除單字後標記為需要儲存
+            };
+            div.appendChild(deleteBtn);
+            wordList.appendChild(div);
+        });
     }
 
     function addWord() {
-  const word = document.getElementById('wordInput').value.trim();
-  const translation = document.getElementById('translationInput').value.trim();
-  const t = translations[currentLanguage];
-  if (word && translation) {
-    words.push({ word, translation });
-    document.getElementById('wordInput').value = '';
-    document.getElementById('translationInput').value = '';
-    renderWords();
-  } else {
-    alert(t.alertInputRequired);
-  }
-}
-
-function bulkImport() {
-  const t = translations[currentLanguage];
-  const inputText = document.getElementById('bulkInput').value.trim();
-  if (!inputText) {
-    alert(t.alertPasteRequired);
-    return;
-  }
-  const lines = inputText.split('\n');
-  for (const line of lines) {
-    const [word, translation] = line.split(',').map(s => s.trim());
-    if (word && translation) {
-      words.push({ word, translation });
+        const word = document.getElementById('wordInput').value.trim();
+        const translation = document.getElementById('translationInput').value.trim();
+        const t = translations[currentLanguage];
+        if (word && translation) {
+            words.push({ word, translation });
+            document.getElementById('wordInput').value = '';
+            document.getElementById('translationInput').value = '';
+            renderWords();
+            markAsNeedsSave(); // 新增單字後標記為需要儲存
+        } else {
+            console.log(t.alertInputRequired); // 移除 alert，改為 console.log 或其他視覺提示
+        }
     }
-  }
-  document.getElementById('bulkInput').value = '';
-  renderWords();
-  alert(t.alertImportDone);
-}
 
-function saveWords() {
+    function bulkImport() {
+        const t = translations[currentLanguage];
+        const inputText = document.getElementById('bulkInput').value.trim();
+        if (!inputText) {
+            console.log(t.alertPasteRequired); // 移除 alert，改為 console.log 或其他視覺提示
+            return;
+        }
+        const initialWordsCount = words.length; // 記錄匯入前的單字數量
 
-  const wordsPerRound = parseInt(document.getElementById('wordsPerRound').value);
-    if (wordsPerRound < 1) {//如果每局單字數<1會提跳出失敗
-        alert(translations[currentLanguage].alertInvalidNumber);
+        const lines = inputText.split('\n');
+        for (const line of lines) {
+            const [word, translation] = line.split(',').map(s => s.trim());
+            if (word && translation) {
+                words.push({ word, translation });
+            }
+        }
+        document.getElementById('bulkInput').value = '';
+        renderWords();
+        if (words.length > initialWordsCount) { // 如果實際匯入了新的單字
+            markAsNeedsSave(); // 批量匯入後標記為需要儲存
+            console.log(t.alertImportDone); // 移除 alert，改為 console.log
+        }
+    }
+
+    function saveWords() {
+        localStorage.setItem('words', JSON.stringify(words));
+    }
+
+    function saveSettings() {
+        const wordsPerRoundInput = document.getElementById('wordsPerRound');
+        const newWordsPerRound = parseInt(wordsPerRoundInput.value); 
+        const t = translations[currentLanguage];
+
+        // 檢查是否是有效的數字，且大於等於1
+        if (isNaN(newWordsPerRound) || newWordsPerRound < 1) {
+            console.log(t.alertInvalidNumber); 
+            wordsPerRoundInput.value = settings.wordsPerRound; // 重置輸入框的值為之前有效值
+            // 不呼叫 markAsNeedsSave，因為此時沒有實際的數據改變
+            return; 
+        }
+
+        // **重要修正：只有當 settings.wordsPerRound 與 newWordsPerRound 確實不同時才更新並儲存**
+        if (settings.wordsPerRound !== newWordsPerRound) {
+            settings.wordsPerRound = newWordsPerRound; // 更新 settings 物件
+            localStorage.setItem('wordGameSettings', JSON.stringify(settings)); // 儲存到 localStorage
+            markAsNeedsSave(); // 設定改變後標記為需要儲存
+        }
+        // 如果值沒有改變，則不執行任何操作，也不呼叫 markAsNeedsSave
+    }
+
+    function clearAllWords() {
+        const t = translations[currentLanguage];
+        if (confirm(t.confirmDeleteAll)) {
+            words = [];
+            localStorage.removeItem('words');
+            renderWords();
+            markAsNeedsSave(); // 清空單字後標記為需要儲存
+            console.log(t.alertDeleteAllDone); 
+        }
+    }
+
+    function saveAll() {
+      // 只有當 needsSave 為 true 時才執行儲存邏輯
+      if (!needsSave) {
+        console.log(translations[currentLanguage].alertNoChangesToSave || "沒有變更需要儲存。");
         return;
+      }
+
+      saveWords();    // 儲存單字列表
+      saveSettings(); // 儲存遊戲設定
+
+      // **重要修正：儲存成功後，更新原始數據快照**
+      originalWords = JSON.parse(JSON.stringify(words));
+      originalSettings = JSON.parse(JSON.stringify(settings));
+
+      // 儲存成功後，將狀態設為已儲存，並更新按鈕樣式
+      needsSave = false; 
+      updateSaveButtonState(); 
+      console.log(translations[currentLanguage].alertSaveDone);
     }
-
-  const t = translations[currentLanguage];
-  localStorage.setItem('words', JSON.stringify(words));
-  alert(t.alertSaveDone);
-
-}
-
-function clearAllWords() {
-  const t = translations[currentLanguage];
-  if (confirm(t.confirmDeleteAll)) {
-    words = [];
-    localStorage.removeItem('words');
-    renderWords();
-    alert(t.alertDeleteAllDone);
-  }
-}
-
-
-
-function saveAll() {
-  saveWords();
-  saveSettings();
-}
 
     const translations = {
-  zh: {
-    title: '單字管理後台',
-    addWord: '新增單字',
-    placeholderWord: '英文單字',
-    placeholderTranslation: '意思或翻譯',
-    bulkTitle: '批量匯入單字',
-    bulkPlaceholder: '一行一組，英文,中文。例如：Happy (adj.),開心的',
-    bulkImport: '批量匯入',
-    save: '💾儲存到 LocalStorage',
-    clear: '❌一鍵刪除所有單字',
-    wordListTitle: '現有單字',
-    delete: '刪除',
-    reminder: '記得點擊【💾儲存到 LocalStorage】儲存您設定的文字',
-    alertInputRequired: '請輸入英文和中文',
-    alertPasteRequired: '請貼上要匯入的單字',
-    alertImportDone: '批量匯入完成！',
-    alertSaveDone: '儲存成功！',
-    confirmDeleteAll: '確定要刪除所有單字嗎？這個動作無法復原！',
-    alertDeleteAllDone: '已清空所有單字！',
-    settingsTitle: '遊戲設定',
-    wordsPerRound: '每局單字數量：',
-    alertInvalidNumber: '請輸入有效的數字！',
+        zh: {
+            title: '單字管理後台',
+            addWord: '新增單字',
+            placeholderWord: '英文單字',
+            placeholderTranslation: '意思或翻譯',
+            bulkTitle: '批量匯入單字',
+            bulkPlaceholder: '一行一組，英文,中文。例如：Happy (adj.),開心的',
+            bulkImport: '批量匯入',
+            save: '💾儲存所有設定', 
+            clear: '❌一鍵刪除所有單字',
+            wordListTitle: '現有單字',
+            delete: '刪除',
+            reminder: '🔔 您有未儲存的變更！請點擊【💾儲存所有設定】', 
+            alertInputRequired: '請輸入英文和中文',
+            alertPasteRequired: '請貼上要匯入的單字',
+            alertImportDone: '批量匯入完成！',
+            alertSaveDone: '儲存成功！',
+            confirmDeleteAll: '確定要刪除所有單字嗎？這個動作無法復原！',
+            alertDeleteAllDone: '已清空所有單字！',
+            settingsTitle: '遊戲設定',
+            wordsPerRound: '每局單字數量：',
+            alertInvalidNumber: '請輸入有效的數字！',
+            alertNoChangesToSave: '沒有變更需要儲存。',
+        },
+        en: {
+            title: 'Word Management',
+            addWord: 'Add Word',
+            placeholderWord: 'English Word',
+            placeholderTranslation: 'Meaning or translation',
+            bulkTitle: 'Bulk Import Words',
+            bulkPlaceholder: 'One line per pair, e.g.: Happy (adj.),Feeling good',
+            bulkImport: 'Bulk Import',
+            save: '💾 Save All Settings', 
+            clear: '❌ Delete All Words',
+            wordListTitle: 'Current Words',
+            delete: 'Delete',
+            reminder: '🔔 You have unsaved changes! Click 【💾 Save All Settings】', 
+            alertInputRequired: 'Please enter both English and Chinese.',
+            alertPasteRequired: 'Please paste the words to import.',
+            alertImportDone: 'Bulk import completed!',
+            alertSaveDone: 'Saved successfully!',
+            confirmDeleteAll: 'Are you sure you want to delete all words? This cannot be undone!',
+            alertDeleteAllDone: 'All words have been cleared!',
+            settingsTitle: 'Game Settings',
+            wordsPerRound: 'Words per round:',
+            alertInvalidNumber: 'Please enter a valid number!',
+            alertNoChangesToSave: 'No changes to save.',
+        }
+    };
+
+    function toggleLanguage() {
+        currentLanguage = currentLanguage === 'zh' ? 'en' : 'zh';
+        updateLanguage();
+    }
+
+    function updateLanguage() {
+        const t = translations[currentLanguage];
+        document.title = t.title;
+        document.querySelector('h1').textContent = t.title;
+        document.querySelector('button[onclick="addWord()"]').textContent = t.addWord;
+        document.getElementById('wordInput').placeholder = t.placeholderWord;
+        document.getElementById('translationInput').placeholder = t.placeholderTranslation;
+        document.querySelectorAll('h2')[0].textContent = t.bulkTitle;
+        document.getElementById('bulkInput').placeholder = t.bulkPlaceholder;
+        document.querySelector('button[onclick="bulkImport()"]').textContent = t.bulkImport;
+        saveAllButton.textContent = t.save; 
+        document.querySelector('button[onclick="clearAllWords()"]').textContent = t.clear;
+        document.querySelectorAll('h2')[1].textContent = t.settingsTitle;
+        document.querySelectorAll('h2')[2].textContent = t.wordListTitle;
+        document.getElementById('langToggleBtn').textContent = '🌐 ' + (currentLanguage === 'zh' ? 'English' : '中文');
+        document.querySelector('label[for="wordsPerRound"]').textContent = t.wordsPerRound;
+
+        renderWords();
+        updateSaveButtonState(); // 確保更新語言後，按鈕狀態也正確更新
+    }
+
+    function openWordBank() {
+        window.open(`單字庫.html?lang=${currentLanguage}`, '_blank');
+    }
+
+    // 頁面完全載入後執行初始化
+    document.addEventListener('DOMContentLoaded', () => {
+        // **重要修正：在設定輸入框的值和設定快照之前，確保 settings 物件已經從 localStorage 載入**
+        // words 和 settings 已經在 script 頂部載入，這裡只是確保它們被正確使用
+        document.getElementById('wordsPerRound').value = settings.wordsPerRound;
+
+        // **初始化原始數據的快照**
+        originalWords = JSON.parse(JSON.stringify(words));
+        originalSettings = JSON.parse(JSON.stringify(settings));
+
+        // 監聽單字輸入框的變化
+        document.getElementById('wordInput').addEventListener('input', markAsNeedsSave);
+        document.getElementById('translationInput').addEventListener('input', markAsNeedsSave);
+        document.getElementById('bulkInput').addEventListener('input', markAsNeedsSave);
+
+        // 監聽每局單字數量輸入框的變化
+        // 這裡不需要呼叫 markAsNeedsSave，因為 saveSettings 已經處理了
+        document.getElementById('wordsPerRound').addEventListener('input', markAsNeedsSave);
 
 
-  },
-  en: {
-    title: 'Word Management',
-    addWord: 'Add Word',
-    placeholderWord: 'English Word',
-    placeholderTranslation: 'Meaning or translation',
-    bulkTitle: 'Bulk Import Words',
-    bulkPlaceholder: 'One line per pair, e.g.: Happy (adj.),Feeling good',
-    bulkImport: 'Bulk Import',
-    save: '💾 Save to LocalStorage',
-    clear: '❌ Delete All Words',
-    wordListTitle: 'Current Words',
-    delete: 'Delete',
-    reminder: 'Remember to click 【💾 Save to LocalStorage】 to save your words',
-    alertInputRequired: 'Please enter both English and Chinese.',
-    alertPasteRequired: 'Please paste the words to import.',
-    alertImportDone: 'Bulk import completed!',
-    alertSaveDone: 'Saved successfully!',
-    confirmDeleteAll: 'Are you sure you want to delete all words? This cannot be undone!',
-    alertDeleteAllDone: 'All words have been cleared!',
-    settingsTitle: 'Game Settings',
-    wordsPerRound: 'Words per round:',
-    alertInvalidNumber: 'Please enter a valid number!',
+        // 初始化頁面語言和單字列表，同時設定初始按鈕狀態
+        // 這裡會觸發 renderWords() 和 updateSaveButtonState()
+        // 確保初始狀態為 clean
+        needsSave = false; // 強制設定為 false，因為剛載入的數據是已儲存的
+        updateLanguage(); // 這會呼叫 renderWords() 並再次觸發 updateSaveButtonState()
+    });
 
-
-  }
-  
-};
-
-
-function toggleLanguage() {
-  currentLanguage = currentLanguage === 'zh' ? 'en' : 'zh';
-  updateLanguage();
-
-
-}
-
-
-function updateLanguage() {
-  const t = translations[currentLanguage];
-  document.title = t.title;
-  document.querySelector('h1').textContent = t.title;
-  document.querySelector('button[onclick="addWord()"]').textContent = t.addWord;
-  document.getElementById('wordInput').placeholder = t.placeholderWord;
-  document.getElementById('translationInput').placeholder = t.placeholderTranslation;
-  document.querySelectorAll('h2')[0].textContent = t.bulkTitle;
-  document.getElementById('bulkInput').placeholder = t.bulkPlaceholder;
-  document.querySelector('button[onclick="bulkImport()"]').textContent = t.bulkImport;
-  document.querySelector('button[onclick="saveAll()"]').textContent = t.save;
-  document.querySelector('button[onclick="clearAllWords()"]').textContent = t.clear;
-  document.querySelectorAll('h2')[1].textContent = t.settingsTitle;
-  document.querySelectorAll('h2')[2].textContent = t.wordListTitle;
-  document.getElementById('saveReminder').textContent = t.reminder;
-  document.getElementById('langToggleBtn').textContent = '🌐 ' + (currentLanguage === 'zh' ? 'English' : '中文');
-  document.querySelector('label[for="wordsPerRound"]').textContent = t.wordsPerRound;
-
-
-  renderWords();
-}
-
-function openWordBank() {
-  window.open(`單字庫.html?lang=${currentLanguage}`, '_blank');
-}
-
-updateLanguage();
 </script>
 </body>
 </html>

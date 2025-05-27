@@ -229,6 +229,8 @@
         let isFirstRound = true;
         let words = JSON.parse(localStorage.getItem('words'));
         let settings = JSON.parse(localStorage.getItem('wordGameSettings')) || { wordsPerRound: 10 };
+        let currentRoundWords = []; // 新增：当前轮次的单词
+        let remainingWords = [...words]; // 修改：用于存储所有单词
 
         if (!words || words.length === 0) {
             words = [
@@ -236,7 +238,6 @@
             ];
         }
 
-        let remainingWords = [...words];
         let selectedWord = null;
         const actionHistory = [];
 
@@ -254,12 +255,21 @@
 
             if (isFirstRound) {
                 document.getElementById('wordbank-btn').style.display = 'inline-block';
+                // 第一轮：随机选择指定数量的单词
+                currentRoundWords = shuffle([...words]).slice(0, Math.min(settings.wordsPerRound, words.length));
+            } else {
+                // 后续轮次：使用上一轮错误的单词
+                currentRoundWords = [...remainingWords];
             }
 
-            // 根据设置选择单词数量
-            const wordsToUse = shuffle([...words]).slice(0, Math.min(settings.wordsPerRound, words.length));
-            const shuffledWords = shuffle([...wordsToUse]);
-            const shuffledTranslations = shuffle([...wordsToUse]);
+            // 如果没有剩余单词，开始新的一局
+            if (currentRoundWords.length === 0) {
+                remainingWords = [...words];
+                currentRoundWords = shuffle([...words]).slice(0, Math.min(settings.wordsPerRound, words.length));
+            }
+
+            const shuffledWords = shuffle([...currentRoundWords]);
+            const shuffledTranslations = shuffle([...currentRoundWords]);
 
             shuffledWords.forEach(item => {
                 const wordDiv = document.createElement('div');
@@ -444,40 +454,37 @@
             const targetElements = document.querySelectorAll('.target');
             const unfilledTargets = Array.from(targetElements).filter(target => !target.dataset.droppedWord);
             
-            // 如果有未填写的空格，显示确认对话框
             if (unfilledTargets.length > 0) {
                 const confirmMessage = currentLanguage === 'zh' 
                     ? `還有 ${unfilledTargets.length} 個空格未填寫，確定要提交嗎？`
                     : `There are ${unfilledTargets.length} empty spaces. Are you sure you want to submit?`;
                 
                 if (!confirm(confirmMessage)) {
-                    return; // 如果用户取消，则不继续执行
+                    return;
                 }
             }
 
             const correctAnswers = [];
             const wrongAnswers = [];
-            const unusedWords = [];  // 新增：存储未被配对的单字
+            const unusedWords = [];
 
-            // 获取所有已使用的单词
-            const usedWords = new Set(); // 新增：存储已使用的單詞
+            const usedWords = new Set();
             targetElements.forEach(target => {
-                const droppedWord = target.dataset.droppedWord; // 獲取目標元素的dataset.droppedWord屬性
-                if (droppedWord) { // 如果droppedWord存在
+                const droppedWord = target.dataset.droppedWord;
+                if (droppedWord) {
                     usedWords.add(droppedWord);
                     if (words.find(w => w.word === droppedWord)?.translation === target.dataset.translation) {
-                        target.classList.add('correct'); // 添加correct類別
-                        correctAnswers.push(droppedWord); // 將droppedWord添加到correctAnswers中
+                        target.classList.add('correct');
+                        correctAnswers.push(droppedWord);
                     } else {
-                        target.classList.add('incorrect'); // 添加incorrect類別
-                        wrongAnswers.push(droppedWord); // 將droppedWord添加到wrongAnswers中
+                        target.classList.add('incorrect');
+                        wrongAnswers.push(droppedWord);
                     }
                 } else {
                     target.classList.add('incorrect');
                 }
             });
 
-            // 找出未被配对的单字
             document.querySelectorAll('.word').forEach(wordDiv => {
                 const word = wordDiv.dataset.word;
                 if (!usedWords.has(word)) {
@@ -488,8 +495,10 @@
                 }
             });
 
-            // 把配對正確的字移除
-            remainingWords = remainingWords.filter(word => !correctAnswers.includes(word.word));
+            // 更新剩余单词列表，只保留错误的单词
+            remainingWords = currentRoundWords.filter(word => 
+                wrongAnswers.includes(word.word) || unusedWords.some(w => w.word === word.word)
+            );
 
             const resultDiv = document.getElementById('result');
             const answersDiv = document.getElementById('answers');
@@ -507,7 +516,6 @@
             const t = translations[currentLanguage];
             resultDiv.innerHTML = `<h2>${correctAnswers.length} ${t.correct}, ${wrongAnswers.length + unfilledTargets.length} ${t.incorrect}.</h2>`;
             
-            // 显示所有错误答案和未使用的单字
             let answersHTML = '';
             if (wrongAnswers.length > 0) {
                 answersHTML += `<p>${t.correctAnswersTitle}</p><ul>`;
@@ -526,6 +534,7 @@
             }
             answersDiv.innerHTML = answersHTML;
 
+            // 根据剩余单词数量决定显示哪个按钮
             if (remainingWords.length > 0) {
                 nextRoundBtn.style.display = 'block';
                 restartBtn.style.display = 'none';
@@ -551,11 +560,12 @@
 switchLanguage(userLang.startsWith('zh') ? 'zh' : 'en');
 
         function restartGame() {
-    remainingWords = [...words]; // 重設單字
-    document.getElementById('result').style.display = 'none'; // 隱藏result元素
-    document.getElementById('answers').style.display = 'none'; // 隱藏answers元素
-    document.getElementById('restart-btn').style.display = 'none'; // 隱藏restart-btn元素
-    document.getElementById('wordbank-btn').style.display = 'inline-block';   // ✅ 重新顯示單字庫按鈕
+    remainingWords = [...words];
+    isFirstRound = true;
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('answers').style.display = 'none';
+    document.getElementById('restart-btn').style.display = 'none';
+    document.getElementById('wordbank-btn').style.display = 'inline-block';
     createGame();
 }
 function openWordBank() {

@@ -2,7 +2,7 @@
 <html lang="UTF-8">
 <head>
   <meta charset="UTF-8">
-  <title>單字管理後台</title>
+  <title></title> 
   <style>
   body {
    font-family: Arial, sans-serif;
@@ -95,14 +95,15 @@
   </style>
 </head>
 <body>
-  <h1>單字管理後台</h1>
-  <p id="saveReminder"></p>  <button id="langToggleBtn" onclick="toggleLanguage()">🌐 切換語言</button>
+  <h1 id="mainTitle"></h1> 
+  <p id="saveReminder"></p>  
+  <button id="langToggleBtn" onclick="toggleLanguage()">🌐 切換語言</button>
   <div class="container">
 
     <div class="left-panel">
       <div>
-        <h2 id="bulkAndBackupTitle">單字匯入 / 數據備份與還原</h2>
-        <textarea id="dataTextarea" rows="10" cols="50" placeholder="請在此輸入「英文,中文」格式單字（每行一組），或貼上備份數據..."></textarea><br>
+        <h2 id="bulkAndBackupTitle"></h2>
+        <textarea id="dataTextarea" rows="10" cols="50"></textarea><br>
         <div>
             <button onclick="bulkImportFromTextarea()" id="bulkImportBtn"></button>
             <button onclick="exportAllData()" id="exportDataBtn"></button>
@@ -113,36 +114,39 @@
       <hr>
 
       <div>
-        <h2>遊戲設定</h2>
+        <h2 id="gameSettingsTitle"></h2>
         <div style="margin-bottom: 10px;">
-          <label for="wordsPerRound" id="wordsPerRoundLabel">每局單字數量：</label>
+          <label for="wordsPerRound" id="wordsPerRoundLabel"></label>
           <input type="number" id="wordsPerRound" min="1" value="10">
         </div>
         
         <div style="margin-bottom: 10px;">
           <label>
             <input type="checkbox" id="enableWeightSystem"> 
-            <span id="enableWeightSystemLabel">啟用權重出題系統 (優先考錯的字)</span>
+            <span id="enableWeightSystemLabel"></span>
           </label>
         </div>
         
         <div>
           <button class="button" onclick="resetAllWrongCounts()">
-            <span id="resetWeightsButtonText">📊 重設所有單字權重</span>
+            <span id="resetWeightsButtonText"></span>
           </button>
         </div>
       </div>
 
       <div class="save-buttons">
-        <button id="saveAllButton" onclick="saveAll()">💾儲存所有設定</button>
-        <button class="danger-button" onclick="clearAllWords()">❌一鍵刪除所有單字</button>
+        <button id="saveAllButton" onclick="saveAll()"></button> 
+        <button class="danger-button" id="clearAllWordsButton" onclick="clearAllWords()"></button>
       </div>
 
     </div>
 
     <div class="right-panel">
-      <h2>單字列</h2>
+      <h2 id="wordListSectionTitle"></h2>
       <div class="word-list" id="wordList"></div>
+      <div id="noWordsInWordBankMessage" style="display: none; text-align: center; padding: 20px; color: #666; font-size: 1.1em;">
+          <p id="noWordsBankText"></p>
+      </div>
     </div>
   </div>
 
@@ -213,35 +217,50 @@
 
     function renderWords() {
         const wordList = document.getElementById('wordList');
-        wordList.innerHTML = '';
+        const noWordsMessageDiv = document.getElementById('noWordsInWordBankMessage'); 
+        const noWordsBankText = document.getElementById('noWordsBankText'); 
         const t = translations[currentLanguage]; 
-        words.forEach((item, index) => {
-            const div = document.createElement('div');
-            div.className = 'word-item';
 
-            const totalAttempts = item.correctCount + item.wrongCount;
-            const accuracyRate = totalAttempts > 0 ? ((item.correctCount / totalAttempts) * 100).toFixed(0) : 0; 
+        if (words.length === 0) {
+            wordList.innerHTML = ''; 
+            wordList.style.display = 'none'; 
+            // 動態獲取標題文本，並插入到提示語中
+            const bulkAndBackupTitleText = document.getElementById('bulkAndBackupTitle').textContent;
+            noWordsBankText.innerHTML = `${t.noWordsInBank}<br>${t.promptToAddWordsInBankDynamic.replace('{0}', bulkAndBackupTitleText)}`; 
+            noWordsMessageDiv.style.display = 'block'; 
+        } else {
+            noWordsMessageDiv.style.display = 'none'; 
+            wordList.style.display = 'block'; 
+            wordList.innerHTML = ''; 
 
-            const infoSpan = document.createElement('span');
-            infoSpan.className = 'word-item-info';
-            infoSpan.textContent = `${item.word} - ${item.translation} (${t.accuracyRateLabel} ${accuracyRate}%)`;
-            div.appendChild(infoSpan);
+            words.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'word-item';
 
-            const actionsDiv = document.createElement('div');
-            actionsDiv.className = 'word-item-actions';
+                const totalAttempts = item.correctCount + item.wrongCount;
+                const accuracyRate = totalAttempts > 0 ? ((item.correctCount / totalAttempts) * 100).toFixed(0) : 0; 
 
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = t.delete;
-            deleteBtn.onclick = () => {
-                words.splice(index, 1);
-                renderWords();
-                markAsNeedsSave();
-            };
-            actionsDiv.appendChild(deleteBtn);
+                const infoSpan = document.createElement('span');
+                infoSpan.className = 'word-item-info';
+                infoSpan.textContent = `${item.word} - ${item.translation} (${t.accuracyRateLabel} ${accuracyRate}%)`;
+                div.appendChild(infoSpan);
 
-            div.appendChild(actionsDiv);
-            wordList.appendChild(div);
-        });
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'word-item-actions';
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = t.delete;
+                deleteBtn.onclick = () => {
+                    words.splice(index, 1);
+                    renderWords(); 
+                    markAsNeedsSave();
+                };
+                actionsDiv.appendChild(deleteBtn);
+
+                div.appendChild(actionsDiv);
+                wordList.appendChild(div);
+            });
+        }
     }
 
     // 輔助函數：更新或新增單字（用於批量匯入英文,中文格式）
@@ -342,7 +361,7 @@
         if (confirm(t.confirmDeleteAll)) {
             words = [];
             localStorage.removeItem('words');
-            renderWords();
+            renderWords(); 
             markAsNeedsSave();
             console.log(t.alertDeleteAllDone); 
         }
@@ -429,9 +448,9 @@
                 if (existingWord) {
                     // 如果單字已存在，更新其屬性（以匯入數據為準，這是"同步"的邏輯）
                     existingWord.translation = importedWord.translation;
-                    existingWord.wrongCount = importedWord.wrongCount !== undefined ? importedWord.wrongCount : 0; // 從備份中取，如果沒有就設為0
-                    existingWord.correctCount = importedWord.correctCount !== undefined ? importedWord.correctCount : 0; // 從備份中取，如果沒有就設為0
-                    existingWord.hasBeenTested = importedWord.hasBeenTested !== undefined ? importedWord.hasBeenTested : false; // 從備份中取，如果沒有就設為false
+                    existingWord.wrongCount = importedWord.wrongCount !== undefined ? importedWord.wrongCount : 0; 
+                    existingWord.correctCount = importedWord.correctCount !== undefined ? importedWord.correctCount : 0; 
+                    existingWord.hasBeenTested = importedWord.hasBeenTested !== undefined ? importedWord.hasBeenTested : false; 
                 } else {
                     // 如果單字不存在，則新增到 Map (並確保所有屬性都有)
                     currentWordsMap.set(importedWord.word, {
@@ -472,21 +491,24 @@
 
     const translations = {
         zh: {
-            title: '單字管理後台',
-            // 移除單字新增相關的翻譯
-            bulkAndBackupTitle: '單字匯入 / 數據備份與還原', // 新增合併區塊標題
-            bulkTextareaPlaceholder: '請在此輸入「英文,中文或意思」格式的單字（用,隔開；每行一組），或貼上備份數據...', // 新增 placeholder
-            bulkImportBtn: '批量匯入單字（更新或新增）', // 批量匯入按鈕
-            exportDataBtn: '匯出所有數據（複製貼上）', // 匯出數據按鈕
-            importDataBtn: '匯入所有數據（覆蓋與合併）', // 匯入數據按鈕
+            title: '單字管理後台', // <title> 和 H1 標題
+            bulkAndBackupTitle: '單字匯入 / 數據備份與還原', // H2 標題
+            bulkTextareaPlaceholder: '請在此輸入「英文,中文」格式單字（每行一組），或貼上備份數據...', 
+            bulkImportBtn: '批量匯入單字（更新或新增）', 
+            exportDataBtn: '匯出所有數據（複製貼上）', 
+            importDataBtn: '匯入所有數據（覆蓋與合併）', 
             
             save: '💾儲存所有設定', 
-            clear: '❌一鍵刪除所有單字',
-            wordListTitle: '單字列',
+            clear: '❌一鍵刪除所有單字', 
+            gameSettingsTitle: '遊戲設定', // H2 標題
+            wordsPerRoundLabel: '每局單字數量：', // Label 文字
+            enableWeightSystemText: '啟用權重出題系統 (優先考錯的字)', // Span 文字
+            resetAllWrongCountsText: '📊 重設所有單字權重', // Span 文字
+            wordListSectionTitle: '單字列', // H2 標題
             delete: '刪除',
             reminder: '🔔 您有未儲存的變更！請點擊【💾儲存所有設定】', 
-            alertPasteWordsRequired: '請在文字區域輸入或貼上單字！', // 批量匯入的提示
-            alertUseImportAllData: '偵測到可能是完整的備份數據。請點擊「匯入所有數據」按鈕。', // 提示用戶切換功能
+            alertPasteWordsRequired: '請在文字區域輸入或貼上單字！', 
+            alertUseImportAllData: '偵測到可能是完整的備份數據。請點擊「匯入所有數據」按鈕。', 
             alertBulkImportSummary: '批量匯入完成！', 
             alertBulkImportAdded: '新增', 
             alertBulkImportUpdated: '更新', 
@@ -494,36 +516,38 @@
             alertSaveDone: '儲存成功！',
             confirmDeleteAll: '確定要刪除所有單字嗎？這個動作無法復原！',
             alertDeleteAllDone: '已清空所有單字！',
-            settingsTitle: '遊戲設定',
-            wordsPerRoundLabel: '每局單字數量：',
             alertInvalidNumber: '請輸入有效的數字！',
             alertNoChangesToSave: '沒有變更需要儲存。',
             confirmResetWeights: '確定要重設所有單字的錯誤次數（權重）嗎？此動作無法復原！',
             alertWeightsReset: '所有單字的權重已重設。',
-            enableWeightSystemText: '啟用權重出題系統 (優先考錯的字)',
-            resetAllWrongCountsText: '📊 重設所有單字權重',
             accuracyRateLabel: '答對率:', 
             alertDataCopied: '數據已複製到剪貼板！',
             alertPasteBackupRequired: '請在文字區域貼上備份數據！',
             alertInvalidData: '無效的數據格式！請檢查您貼上的內容是否為正確的 JSON 格式。',
             alertDataImported: '數據匯入成功！',
+            // 單字庫頁面專用的無單字提示
+            noWordsInBank: '目前單字庫中沒有單字。',
+            promptToAddWordsInBankDynamic: '請使用上方「{0}」功能新增單字。', 
         },
         en: {
             title: 'Word Management',
-            // Remove single word add translations
-            bulkAndBackupTitle: 'Word Import / Data Backup & Restore', // New combined title
-            bulkTextareaPlaceholder: 'Please enter the word in the format of "English, meaning or translation" (separated by, one group per line), or paste the backup data...', // New placeholder
-            bulkImportBtn: 'Bulk Import Words (Update or Add)', // Bulk import button
-            exportDataBtn: 'Export All Data (Copy/Paste)', // Export data button
-            importDataBtn: 'Import All Data (Overwrite & Merge)', // Import data button
+            bulkAndBackupTitle: 'Word Import / Data Backup & Restore', 
+            bulkTextareaPlaceholder: 'Enter "English,Chinese" format words here (one per line), or paste backup data...', 
+            bulkImportBtn: 'Bulk Import Words (Update or Add)', 
+            exportDataBtn: 'Export All Data (Copy/Paste)', 
+            importDataBtn: 'Import All Data (Overwrite & Merge)', 
 
             save: '💾 Save All Settings', 
-            clear: '❌ Delete All Words',
-            wordListTitle: 'Current Words',
+            clear: '❌ Delete All Words', 
+            gameSettingsTitle: 'Game Settings',
+            wordsPerRoundLabel: 'Words per round:',
+            enableWeightSystemText: 'Enable Weighted Question System (Prioritize incorrect words)',
+            resetAllWrongCountsText: '📊 Reset All Word Weights',
+            wordListSectionTitle: 'Current Words',
             delete: 'Delete',
             reminder: '🔔 You have unsaved changes! Click 【💾 Save All Settings】', 
-            alertPasteWordsRequired: 'Please enter or paste words into the text area!', // Bulk import prompt
-            alertUseImportAllData: 'Detected a complete backup data. Please click "Import All Data" button.', // Prompt to switch function
+            alertPasteWordsRequired: 'Please enter or paste words into the text area!', 
+            alertUseImportAllData: 'Detected a complete backup data. Please click "Import All Data" button.', 
             alertBulkImportSummary: 'Bulk import complete!', 
             alertBulkImportAdded: 'added', 
             alertBulkImportUpdated: 'updated', 
@@ -531,19 +555,18 @@
             alertSaveDone: 'Saved successfully!',
             confirmDeleteAll: 'Are you sure you want to delete all words? This cannot be undone!',
             alertDeleteAllDone: 'All words have been cleared!',
-            settingsTitle: 'Game Settings',
-            wordsPerRoundLabel: 'Words per round:',
             alertInvalidNumber: 'Please enter a valid number!',
             alertNoChangesToSave: 'No changes to save.',
             confirmResetWeights: 'Are you sure you want to reset all word error counts (weights)? This action cannot be undone!',
             alertWeightsReset: 'All word weights have been reset.',
-            enableWeightSystemText: 'Enable Weighted Question System (Prioritize incorrect words)',
-            resetAllWrongCountsText: '📊 Reset All Word Weights',
             accuracyRateLabel: 'Accuracy Rate:', 
             alertDataCopied: 'Data copied to clipboard!',
             alertPasteBackupRequired: 'Please paste backup data into the text area!',
             alertInvalidData: 'Invalid data format! Please check if the content you pasted is in correct JSON format.',
             alertDataImported: 'Data imported successfully!',
+            // Word bank page specific no words message
+            noWordsInBank: 'No words currently in the word bank.',
+            promptToAddWordsInBankDynamic: 'Please use the "{0}" function above to add words.',
         }
     };
 
@@ -554,36 +577,50 @@
 
     function updateLanguage() {
         const t = translations[currentLanguage];
-        document.title = t.title;
-        document.querySelector('h1').textContent = t.title;
         
-        // 合併區塊標題和 textarea
-        document.getElementById('bulkAndBackupTitle').textContent = t.bulkAndBackupTitle;
+        // 修正點：設置頁面 <title> 文字
+        document.title = t.title;
+
+        // 設置 H1 標題文字
+        document.getElementById('mainTitle').textContent = t.title;
+
+        // 設置「單字匯入 / 數據備份與還原」H2 標題文字
+        document.getElementById('bulkAndBackupTitle').textContent = t.bulkAndBackupTitle; 
         document.getElementById('dataTextarea').placeholder = t.bulkTextareaPlaceholder;
         document.getElementById('bulkImportBtn').textContent = t.bulkImportBtn;
         document.getElementById('exportDataBtn').textContent = t.exportDataBtn;
         document.getElementById('importDataBtn').textContent = t.importDataBtn;
         
-        saveAllButton.textContent = t.save; 
-        document.querySelector('button[onclick="clearAllWords()"]').textContent = t.clear;
-        document.querySelectorAll('h2')[1].textContent = t.settingsTitle; // 遊戲設定
-        document.querySelectorAll('h2')[2].textContent = t.wordListTitle; // 單字列標題
-        document.getElementById('langToggleBtn').textContent = '🌐 ' + (currentLanguage === 'zh' ? 'English' : '中文');
+        // 設置「遊戲設定」H2 標題文字
+        document.getElementById('gameSettingsTitle').textContent = t.gameSettingsTitle;
         
+        // 設置「每局單字數量」Label 文字
         const wordsPerRoundLabel = document.getElementById('wordsPerRoundLabel');
-        if (wordsPerRoundLabel) {
+        if (wordsPerRoundLabel) { // 這裡加了個檢查，確保元素存在再操作
             wordsPerRoundLabel.textContent = t.wordsPerRoundLabel;
         }
 
+        // 設置「啟用權重出題系統」Span 文字
         const enableWeightSystemLabel = document.getElementById('enableWeightSystemLabel');
         if (enableWeightSystemLabel) {
             enableWeightSystemLabel.textContent = t.enableWeightSystemText;
         }
+        
+        // 設置「重設所有單字權重」Span 文字
         const resetWeightsButtonText = document.getElementById('resetWeightsButtonText');
         if (resetWeightsButtonText) {
             resetWeightsButtonText.textContent = t.resetAllWrongCountsText;
         }
+        
+        // 設置「單字列」H2 標題文字
+        document.getElementById('wordListSectionTitle').textContent = t.wordListSectionTitle;
 
+        // 按鈕文字現在完全由 updateLanguage 函數根據當前語言來設定
+        document.getElementById('saveAllButton').textContent = t.save; 
+        document.getElementById('clearAllWordsButton').textContent = t.clear; 
+        
+        document.getElementById('langToggleBtn').textContent = '🌐 ' + (currentLanguage === 'zh' ? 'English' : '中文');
+        
         renderWords(); 
         updateSaveButtonState();
     }
@@ -595,9 +632,7 @@
         originalWords = JSON.parse(JSON.stringify(words));
         originalSettings = JSON.parse(JSON.stringify(settings));
 
-        // 監聽變更以觸發儲存提醒
-        // 只有遊戲設定和數據輸入框需要監聽
-        document.getElementById('dataTextarea').addEventListener('input', markAsNeedsSave); // 統一監聽這個 textarea
+        document.getElementById('dataTextarea').addEventListener('input', markAsNeedsSave); 
         document.getElementById('wordsPerRound').addEventListener('input', markAsNeedsSave);
         document.getElementById('enableWeightSystem').addEventListener('change', markAsNeedsSave);
 

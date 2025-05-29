@@ -98,79 +98,91 @@
             vertical-align: middle;/*垂直對齊*/
         }
 
-
+        /* 九宮格相關 CSS - 保持在 Schedule.html */
         #launcher-menu small {
             font-size: 18px;/*字體大小*/
             display: block;/*塊級元素*/
             margin-top: 4px;/*上邊距*/
             line-height: 1.2;/*行高*/
             white-space: nowrap;/*不換行*/
-}
-/* —— 启动器按钮 自适应 —— */
-#launcher-button {
-  /* 最小 36px、最大 60px，中间跟视窗宽度 5% 挂钩 */
-        width: clamp(10px, 5vw, 30px);
-        height: clamp(10px, 5vw, 30px);
-        padding: clamp(6px, 1vw, 12px);
-  /* 保留原有定位与样式 */
-  position: fixed;
-  top: clamp(8px, 1vw, 16px);
-  right: clamp(8px, 1vw, 16px);
-    /* 原本已有的 clamp() 大小、定位、padding…… */
-    background-color: white;       /* 加这一行 */
-  border-radius: clamp(4px,1vw,8px);  /* 可选，保持圆角 */
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* 可选，保持阴影 */
-  z-index: 9999;  /*最上層*/
-}
-#launcher-button svg {
-  width: 100%;
-  height: 100%;
+        }
+        #launcher-button {
+            /* 最小 36px、最大 60px，中間跟視窗寬度 5% 挂鉤 */
+            width: clamp(10px, 5vw, 30px);
+            height: clamp(10px, 5vw, 30px);
+            padding: clamp(6px, 1vw, 12px);
+            /* 保留原有定位與樣式 */
+            position: fixed;
+            top: clamp(8px, 1vw, 16px);
+            right: clamp(8px, 1vw, 16px);
+            background-color: white;       /* 加這一行 */
+            border-radius: clamp(4px,1vw,8px);  /* 可選，保持圓角 */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* 可選，保持陰影 */
+            z-index: 9999;  /*最上層*/
+        }
+        #launcher-button svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 九宮格容器與項目自適應 */
+        /* 已有 .responsive-grid，可再微調內邊距 */
+        .responsive-grid {
+            gap: clamp(8px, 1vw, 16px);
+        }
+        .responsive-grid .grid-item {
+            /* 讓每個格子多一點呼吸空間 */
+            padding: clamp(8px, 1vw, 12px);
+        }
+        .responsive-grid img {
+            /* 圖標永遠填滿格子寬度 */
+            width: 100%;
+            height: auto;
+        }
+        .responsive-grid .grid-item small {
+            /* 文字最小 12px、最大 18px，中間 1.5vw */
+            font-size: clamp(12px, 1.5vw, 18px);
+            line-height: 1.2;
+        }
+        /* 右邊測攔 */
+        .social-sidebar {
+            position: fixed;/*固定位置*/
+            top: 50%;/*上邊距*/
+            left: 10px;/*左邊距*/
+            transform: translateY(-50%);/*垂直居中*/
+            background-color: rgba(255, 255, 255, 0.8); /* 白色半透明底 */
+            padding: clamp(8px, 1.5vw, 16px);/*內邊距*/
+            border-radius: clamp(8px, 1vw, 16px);/*圓角*/
+            box-shadow: 0 4px 8px rgba(0,0,0,1.0);/*陰影*/
+            display: flex;/*彈性盒*/
+            flex-direction: column;/*垂直排列*/
+            gap: clamp(10px, 1.5vw, 20px);/*間距*/
+            z-index: 1000;/*層級*/
+        }
+
+        .social-sidebar a img {
+            width: clamp(24px, 3vw, 40px);/*圖片寬度*/
+            height: clamp(24px, 3vw, 40px);/*圖片高度*/
+            transition: transform 0.2s;/*過渡*/
+        }
+
+        .social-sidebar a:hover img {
+            transform: scale(1.2);/*放大*/
+        }
+        .music-button {
+  background: none;/*背景*/
+  border: none;/*邊框*/
+  cursor: pointer;/*游標*/
+  display: inline-flex;/*行內元素*/
+  align-items: center;/*垂直居中*/
+  font-size: clamp(16px, 3vw, 32px);/*字體大小*/
+  color: black;/*顏色*/
+  transition: color 0.2s ease, background-color 0.2s ease;/*過渡*/
+  padding: 0.3em 0.6em;/*內邊距*/
+  border-radius: 8px; /* 加一點圓角更自然 */
 }
 
-/* —— 九宫格容器与项目 自适应 —— */
-/* 已有 .responsive-grid，可再微调内边距 */
-.responsive-grid {
-  gap: clamp(8px, 1vw, 16px);
-}
-.responsive-grid .grid-item {
-  /* 让每个格子多一点呼吸空间 */
-  padding: clamp(8px, 1vw, 12px);
-}
-.responsive-grid img {
-  /* 图标永远填满格子宽度 */
-  width: 100%;
-  height: auto;
-}
-.responsive-grid .grid-item small {
-  /* 文字最小 12px、最大 18px，中间 1.5vw */
-  font-size: clamp(12px, 1.5vw, 18px);
-  line-height: 1.2;
-}
-/* 右邊測攔 */
-.social-sidebar {
-  position: fixed;/*固定位置*/
-  top: 50%;/*上邊距*/
-  left: 10px;/*左邊距*/
-  transform: translateY(-50%);/*垂直居中*/
-  background-color: rgba(255, 255, 255, 0.8); /* 白色半透明底 */
-  padding: clamp(8px, 1.5vw, 16px);/*內邊距*/
-  border-radius: clamp(8px, 1vw, 16px);/*圓角*/
-  box-shadow: 0 4px 8px rgba(0,0,0,1.0);/*陰影*/
-  display: flex;/*彈性盒*/
-  flex-direction: column;/*垂直排列*/
-  gap: clamp(10px, 1.5vw, 20px);/*間距*/
-  z-index: 1000;/*層級*/
-}
-
-.social-sidebar a img {
-  width: clamp(24px, 3vw, 40px);/*圖片寬度*/
-  height: clamp(24px, 3vw, 40px);/*圖片高度*/
-  transition: transform 0.2s;/*過渡*/
-}
-
-.social-sidebar a:hover img {
-  transform: scale(1.2);/*放大*/
-}
+/* 音樂播放按鈕的基礎樣式，你原有的 */
 .music-button {
   background: none;/*背景*/
   border: none;/*邊框*/
@@ -187,249 +199,154 @@
 /* 滑鼠滑過時變色 */
 .music-button:hover {
   background-color: rgba(200, 200, 200, 0.5);  /* 半透明灰底 */
- /* color: rgb(0, 77, 100); /* 你也可以改成別的顏色 */
+  /* color: rgb(0, 77, 100); /* 你也可以改成別的顏色 */
+}
+
+/* 霓虹燈光圈效果的 CSS */
+/* 當 .music-button 有 playing class 時，它裡面的 .icon-img 就會應用動畫 */
+.music-button.playing .icon-img {
+    animation: neon-morph-glow 4s infinite alternate ease-in-out; /* 綁定新動畫，4秒循環，來回播放 */
+    border-radius: 50%; /* 讓光圈看起來更自然，圍繞圓形圖標 */
+    /* 確保過渡效果平滑，如果從沒有光圈到有光圈 */
+    transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out, filter 0.3s ease-in-out;
+}
+
+/* 定義霓虹燈光圈動畫 */
+/* 新的動畫名稱：neon-morph-glow，以實現形狀變化 */
+@keyframes neon-morph-glow {
+    0% {
+        /* 起始狀態：基礎光暈，略微向左上偏移 */
+        box-shadow:
+            0px 0px 5px 2px rgba(0, 255, 255, 0.7),   /* 主體光暈 */
+            -3px -3px 12px 4px rgba(0, 255, 255, 0.5), /* 偏移光暈1，形成「凸」*/
+            3px 3px 18px 6px rgba(0, 255, 255, 0.3);  /* 偏移光暈2，形成「凹」 */
+        transform: scale(1); /* 圖片原始大小 */
+        filter: hue-rotate(0deg); /* 顏色起始點 */
+    }
+    25% {
+        /* 第一個變化點：光暈擴散，顏色轉為洋紅，形狀向右下變化 */
+        box-shadow:
+            5px -5px 10px 3px rgba(255, 0, 255, 0.8),
+            -8px 8px 25px 7px rgba(255, 0, 255, 0.6),
+            0px 0px 35px 10px rgba(255, 0, 255, 0.4);
+        transform: scale(1.08); /* 圖片略微放大，模擬律動高點 */
+        filter: hue-rotate(90deg); /* 顏色變化 */
+    }
+    50% {
+        /* 第二個變化點：光暈最亮，顏色轉為黃綠，形狀向左變化 */
+        box-shadow:
+            -5px 5px 15px 4px rgba(255, 255, 0, 0.9),
+            5px -5px 30px 9px rgba(255, 255, 0, 0.7),
+            -0px 0px 50px 14px rgba(255, 255, 0, 0.5);
+        transform: scale(1.15); /* 圖片進一步放大 */
+        filter: hue-rotate(180deg); /* 顏色變化 */
+    }
+    75% {
+        /* 第三個變化點：光暈減弱，顏色轉為藍綠，形狀向左上變化 */
+        box-shadow:
+            -8px 8px 10px 3px rgba(0, 255, 0, 0.8),
+            5px -5px 20px 6px rgba(0, 255, 0, 0.6),
+            3px 3px 30px 9px rgba(0, 255, 0, 0.4);
+        transform: scale(1.08); /* 圖片縮小 */
+        filter: hue-rotate(270deg); /* 顏色變化 */
+    }
+    100% {
+        /* 回到起始狀態：光暈最弱，顏色回到最初的藍綠色 (完成色相環一圈) */
+        box-shadow:
+            0px 0px 5px 2px rgba(0, 255, 255, 0.7),
+            -3px -3px 12px 4px rgba(0, 255, 255, 0.5),
+            3px 3px 18px 6px rgba(0, 255, 255, 0.3);
+        transform: scale(1); /* 回到原始大小 */
+        filter: hue-rotate(360deg); /* 顏色變化完成一圈 */
+    }
 }
     </style>
 </head>
 
 <body background="33.jpg">
     <base target="_blank">
-    <!-- 🔲 九宮格啟動器按鈕 -->
-    <div id="launcher-button">
-      <svg viewBox="0 0 36 36" fill="black" width="100%" height="auto">
-        <!-- 第一排 -->
-        <circle cx="6"  cy="6"  r="4"/>
-        <circle cx="18" cy="6"  r="4"/>
-        <circle cx="30" cy="6"  r="4"/>
-        <!-- 第二排 -->
-        <circle cx="6"  cy="18" r="4"/>
-        <circle cx="18" cy="18" r="4"/>
-        <circle cx="30" cy="18" r="4"/>
-        <!-- 第三排 -->
-        <circle cx="6"  cy="30" r="4"/>
-        <circle cx="18" cy="30" r="4"/>
-        <circle cx="30" cy="30" r="4"/>
-      </svg>
-    </div>
-  <!-- 🔲 九宮格啟動器選單 -->
-  <div id="launcher-menu"
-  style="
-    display: none;
-    position: fixed;
-    top: 55px;
-    right: 10px;
-    z-index: 1000;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    /* 最大高度：取 80vh 和 500px 中的最小值 */
-    max-height: min(80vh, 500px);
-    overflow-y: auto;
-    overflow-x: hidden;
-    z-index: 9999; 
-  ">
-    <div id="launcher-grid" style="display: grid; grid-template-columns: repeat(3, 80px); gap: 20px; text-align: center;">
-      <div class="grid-item" data-id="account">
-        <a href="https://myaccount.google.com/" target="_blank">
-          <img src="https://www.google.com/s2/favicons?sz=64&domain=google.com" width="40"><br>
-          <small>Account</small>
-        </a>
-      </div>
-      <div class="grid-item" data-id="gmail">
-        <a href="https://mail.google.com" target="_blank">
-          <img src="https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico" width="40"><br>
-          <small>Gmail</small>
-        </a>
-      </div>
-      <div class="grid-item" data-id="drive">
-        <a href="https://drive.google.com" target="_blank">
-          <img src="https://ssl.gstatic.com/images/branding/product/2x/drive_2020q4_48dp.png" width="40"><br>
-          <small>Drive</small>
-        </a>
-      </div>
-      <div class="grid-item" data-id="youtube">
-        <a href="https://www.youtube.com" target="_blank">
-          <img src="https://www.google.com/s2/favicons?sz=64&domain=youtube.com" width="40"><br>
-          <small>YouTube</small>
-        </a>
-      </div>
-      <div class="grid-item" data-id="gemini">
-        <a href="https://gemini.google.com/app" target="_blank">
-          <img src="https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg" width="40"><br>
-          <small>Gemini</small>
-        </a>
-      </div>
-      <div class="grid-item" data-id="calendar">
-        <a href="https://calendar.google.com" target="_blank">
-          <img src="https://ssl.gstatic.com/calendar/images/dynamiclogo_2020q4/calendar_7_2x.png" width="40"><br>
-          <small>Calendar</small>
-        </a>
-      </div>
-      <div class="grid-item" data-id="docs">
-        <a href="https://docs.google.com" target="_blank">
-          <img src="https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png" width="40"><br>
-          <small>Docs</small>
-        </a>
-      </div>
-      <div class="grid-item" data-id="sheets">
-        <a href="https://sheets.google.com" target="_blank">
-          <img src="https://www.gstatic.com/images/branding/product/1x/sheets_2020q4_48dp.png" width="40"><br>
-          <small>Sheets</small>
-        </a>
-      </div>
-      <div class="grid-item" data-id="meet">
-        <a href="https://meet.google.com" target="_blank">
-          <img src="https://www.google.com/s2/favicons?sz=64&domain=meet.google.com" width="40"><br>
-          <small>Meet</small>
-        </a>
-      </div>
-      <div class="grid-item" data-id="classroom">
-        <a href="https://classroom.google.com" target="_blank">
-          <img src="https://www.gstatic.com/classroom/logo_square_rounded.svg" width="40"><br>
-          <small>Classroom</small>
-        </a>
-      </div>
-      <div class="grid-item" data-id="translate">
-        <a href="https://translate.google.com" target="_blank">
-          <img src="https://www.google.com/s2/favicons?sz=64&domain=translate.google.com" width="40"><br>
-          <small>Translate</small>
-        </a>
-      </div>
-      <div class="grid-item" data-id="slides">
-        <a href="https://docs.google.com/presentation/" target="_blank">
-          <img src="https://www.gstatic.com/images/branding/product/1x/slides_2020q4_48dp.png" width="40"><br>
-          <small>Slides</small>
-        </a>
-      </div>
-      <div class="grid-item" data-id="chat">
-        <a href="https://mail.google.com/chat" target="_blank">
-          <img src="https://www.gstatic.com/marketing-cms/assets/images/25/5f/c96350b5427fbfdbdef268515872/google-chat.webp=s96-fcrop64=1,00000000ffffffff-rw" width="40"><br>
-          <small>Chat</small>
-        </a>
-      </div>
-      <div class="grid-item" data-id="maps">
-        <a href="https://www.google.com/maps" target="_blank">
-          <img src="https://www.gstatic.com/marketing-cms/assets/images/0f/9a/58f1d92b46069b4a8bdc556b612c/google-maps.webp=s96-fcrop64=1,00000000ffffffff-rw" width="40"><br>
-          <small>Map</small>
-        </a>
-      </div>
-      <div class="grid-item" data-id="forms">
-        <a href="https://docs.google.com/forms" target="_blank">
-          <img src="https://www.gstatic.com/images/branding/product/2x/forms_2020q4_48dp.png" width="40"><br>
-          <small>Forms</small>
-        </a>
-      </div>
-      
-      <div class="grid-item" data-id="earth">
-        <a href="https://earth.google.com" target="_blank">
-          <img src="https://www.gstatic.com/earth/00-favicon.ico" width="40"><br>
-          <small>Earth</small>
-          </a>
-        </div>
 
-          <div class="grid-item" data-id="sites">
-            <a href="https://sites.google.com/" target="_blank">
-              <img src="https://www.gstatic.com/images/branding/product/2x/sites_2020q4_48dp.png" width="40"><br>
-              <small>Sites</small>
-        </a>
-       </div>
+    <div id="launcher-container"></div> 
 
-       <div class="grid-item" data-id="voice">
-        <a href="https://voice.google.com" target="_blank">
-          <img src="https://fonts.gstatic.com/s/i/productlogos/voice_2020q4/v1/web-32dp/logo_voice_2020q4_color_2x_web_32dp.png" width="40"><br>
-          <small>Voice</small>
-          </a>
-        </div>
-        <div class="grid-item" data-id="contacts">
-          <a href="https://contacts.google.com/" target="_blank">
-            <img src="https://www.gstatic.com/images/branding/product/2x/contacts_2022_48dp.png" width="40"><br>
-            <small>Contacts</small>
-            </a>
-          </div>
-          <div class="grid-item" data-id="contacts">
-            <a href="https://chromewebstore.google.com/" target="_blank">
-              <img src="https://fonts.gstatic.com/s/i/productlogos/chrome_store/v7/192px.svg" width="40"><br>
-              <small>Web Store</small>
-              </a>
-            </div>
-    </div>
-  </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const launcherContainer = document.getElementById("launcher-container");
 
-  <style>
-    .grid-item {
-      cursor: move;
-      user-select: none;
-    }
-    .grid-item:hover {
-      background-color: rgba(0, 0, 0, 0.05);
-      border-radius: 8px;
-    }
-    .sortable-ghost {
-      opacity: 0.4;
-    }
-  </style>
+            try {
+                // 使用 fetch API 讀取 九宮格.html 檔案的內容
+                const response = await fetch("九宮格.html"); // 這裡指向你的九宮格檔案
+                if (response.ok) { // 如果讀取成功 (HTTP 狀態碼 200)
+                    const htmlContent = await response.text(); // 取得檔案的文字內容
+                    launcherContainer.innerHTML = htmlContent; // 把內容放入 launcher-container
 
-  <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const launcherButton = document.getElementById("launcher-button");
-  const launcherMenu   = document.getElementById("launcher-menu");
-  const grid           = document.getElementById("launcher-grid");
+                    // ！！！重要：因為內容是動態載入的，必須在這裡重新初始化相關的 JavaScript 邏輯！！！
+                    // 把你原來控制九宮格顯示/隱藏和拖曳排序的 JavaScript 程式碼，複製到這裡面
+                    const launcherButton = document.getElementById("launcher-button");
+                    const launcherMenu   = document.getElementById("launcher-menu");
+                    const grid           = document.getElementById("launcher-grid");
 
-  function showMenu() {
-    launcherMenu.style.display = "block";
-  }
-  function hideMenu() {
-    launcherMenu.style.display = "none";
-  }
-    // 鼠标移入按钮或菜单时打开
-    launcherButton.addEventListener("mouseenter", showMenu);
-  launcherMenu.addEventListener("mouseenter", showMenu);
+                    function showMenu() {
+                        launcherMenu.style.display = "block";
+                    }
+                    function hideMenu() {
+                        launcherMenu.style.display = "none";
+                    }
+                    
+                    // 鼠标移入按钮或菜单时打开
+                    launcherButton.addEventListener("mouseenter", showMenu);
+                    launcherMenu.addEventListener("mouseenter", showMenu);
 
-  // 鼠标移出菜单时关闭
-  launcherMenu.addEventListener("mouseleave", hideMenu);
+                    // 鼠标移出菜单时关闭
+                    launcherMenu.addEventListener("mouseleave", hideMenu);
 
-  // 鼠标从按钮移出，如果移到的不是菜单，也关闭
-  launcherButton.addEventListener("mouseleave", (e) => {
-    if (!launcherMenu.contains(e.relatedTarget)) {
-      hideMenu();
-    }
-  });
-      // 初始化拖拽排序
-      const sortable = Sortable.create(grid, {
-        animation: 150,
-        ghostClass: 'sortable-ghost',
-        onEnd: function () {
-          // 保存新的顺序到 localStorage
-          const order = sortable.toArray();
-          localStorage.setItem('launcherOrder', JSON.stringify(order));
-        }
-      });
+                    // 鼠标从按钮移出，如果移到的不是菜单，也关闭
+                    launcherButton.addEventListener("mouseleave", (e) => {
+                        if (!launcherMenu.contains(e.relatedTarget)) {
+                            hideMenu();
+                        }
+                    });
+                    
+                    // 初始化拖拽排序
+                    const sortable = Sortable.create(grid, {
+                        animation: 150,
+                        ghostClass: 'sortable-ghost',
+                        onEnd: function () {
+                            // 保存新的順序到 localStorage
+                            const order = sortable.toArray();
+                            localStorage.setItem('launcherOrder', JSON.stringify(order));
+                        }
+                    });
 
-      // 加载保存的顺序
-      const savedOrder = localStorage.getItem('launcherOrder');
-      if (savedOrder) {
-        const order = JSON.parse(savedOrder);
-        order.forEach(id => {
-          const item = grid.querySelector(`[data-id="${id}"]`);
-          if (item) grid.appendChild(item);
+                    // 加載保存的順序
+                    const savedOrder = localStorage.getItem('launcherOrder');
+                    if (savedOrder) {
+                        const order = JSON.parse(savedOrder);
+                        order.forEach(id => {
+                            const item = grid.querySelector(`[data-id="${id}"]`);
+                            if (item) grid.appendChild(item);
+                        });
+                    }
+
+                    // 點擊按鈕顯示/隱藏菜單
+                    launcherButton.addEventListener("click", () => {
+                        launcherMenu.style.display = launcherMenu.style.display === "none" ? "block" : "none";
+                    });
+
+                    // 點擊其他地方關閉菜單
+                    document.addEventListener("click", (event) => {
+                        if (!launcherButton.contains(event.target) && !launcherMenu.contains(event.target)) {
+                            launcherMenu.style.display = "none";
+                        }
+                    });
+
+                } else {
+                    console.error("Failed to load launcher content:", response.statusText);
+                }
+            } catch (error) {
+                console.error("Error fetching launcher content:", error);
+            }
         });
-      }
-
-      // 点击按钮显示/隐藏菜单
-      launcherButton.addEventListener("click", () => {
-        launcherMenu.style.display = launcherMenu.style.display === "none" ? "block" : "none";
-      });
-
-      // 点击其他地方关闭菜单
-      document.addEventListener("click", (event) => {
-        if (!launcherButton.contains(event.target) && !launcherMenu.contains(event.target)) {
-          launcherMenu.style.display = "none";
-        }
-      });
-    });
-  </script>
+    </script>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
@@ -458,7 +375,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 img.onerror = () => {
                     if (!img.classList.contains("error")) {
                         img.classList.add("error");
-                        img.src = "path/to/default-image.png";
+                        img.src = "path/to/default-image.png"; // 這裡應該填寫一個預設圖片的路徑
                         img.alt = "Default logo";
                     }
                 };
@@ -467,15 +384,15 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
     </script>
-<div class="social-sidebar">
-  <a href="https://www.youtube.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube"></a>
-  <a href="https://www.facebook.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook"></a>
-  <a href="https://www.instagram.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
-  <a href="https://twitter.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/5968/5968830.png" alt="X"></a>
-  <a href="https://www.reddit.com" target="_blank"><img src="https://static-00.iconduck.com/assets.00/reddit-icon-1024x1024-6c2aoary.png" alt="Reddit"></a>
-  <a href="https://discord.com" target="_blank"><img src="https://static-00.iconduck.com/assets.00/discord-icon-2048x2048-nnt62s2u.png" alt="Discord"></a>
- <a href="https://web.whatsapp.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp"></a> 
-</div>
+    <div class="social-sidebar">
+        <a href="https://www.youtube.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube"></a>
+        <a href="https://www.facebook.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook"></a>
+        <a href="https://www.instagram.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
+        <a href="https://twitter.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/5968/5968830.png" alt="X"></a>
+        <a href="https://www.reddit.com" target="_blank"><img src="https://static-00.iconduck.com/assets.00/reddit-icon-1024x1024-6c2aoary.png" alt="Reddit"></a>
+        <a href="https://discord.com" target="_blank"><img src="https://static-00.iconduck.com/assets.00/discord-icon-2048x2048-nnt62s2u.png" alt="Discord"></a>
+        <a href="https://web.whatsapp.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp"></a>
+    </div>
 
     <div class="table-wrapper">
         <table class="scale-table">
@@ -483,90 +400,96 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="no-right-border">
                     <span class="section-title">APP</span><br>
                     <a href="https://mail.google.com/" class="link-logo">Gmail</a><br>
-                    <!--<a href="https://discord.com/channels/@me" class="link-logo">Discord</a><br>-->
                     <a href="https://chatgpt.com/"><img src="https://cdn.oaistatic.com/assets/favicon-180x180-od45eci6.webp" class="icon-img">ChatGPT</a><br>
                     <a href="https://translate.google.com" class="link-logo">Translate</a><br>
                     <a href="https://open.spotify.com/" class="link-logo">Spotify</a><br>
 
                     <button class="music-button" onclick="togglePlay()">
-                      <img id="playPauseImage" 
-                           src="https://cdn-icons-png.flaticon.com/512/120/120625.png" 
-                           class="icon-img">
-                      <span>Music</span>
+                        <img id="playPauseImage"
+                             src="https://cdn-icons-png.flaticon.com/512/120/120625.png"
+                             class="icon-img">
+                        <span>Music</span>
                     </button>
-                    
-                      
 
-                   
-                   <div id="playerContainer"></div>
-                   
-                   <script>
-                     let player;
-                     let isPlaying = false;
-                     let iframeLoaded = false;
-                   
-                     function togglePlay() {
-                       if (!iframeLoaded) {
-                         const confirmPlay = confirm("Do you want to play music?");
-                         if (!confirmPlay) return;  // 使用者按「取消」
-                   
-                         const tag = document.createElement('script');
-                         tag.src = "https://www.youtube.com/iframe_api";
-                         document.head.appendChild(tag);
-                   
-                         window.onYouTubeIframeAPIReady = function() {
-                           player = new YT.Player('playerContainer', {
-                             height: '0',
-                             width: '0',
-                             videoId: 'YTf9awkaerk',
-                             events: {
-                               'onReady': (event) => {
-                                 event.target.setPlaybackQuality('tiny'); // 設定為 144p
-                                 event.target.setVolume(100);
-                                 event.target.playVideo();
-                                 event.target.unMute();
-                                 document.getElementById("playPauseImage").src =
-                                   "https://cdn2.iconfinder.com/data/icons/simple-circular-icons-filled/78/Vertical_Bars_Filled-512.png";
-                                 isPlaying = true;
-                               }
-                             }
-                           });
-                         };
-                   
-                         iframeLoaded = true;
-                       } else if (isPlaying) {
-                         player.pauseVideo();
-                         document.getElementById("playPauseImage").src =
-                           "https://cdn-icons-png.flaticon.com/512/120/120625.png";
-                         isPlaying = false;
-                       } else {
-                         player.playVideo();
-                         player.unMute();
-                         document.getElementById("playPauseImage").src =
-                           "https://cdn2.iconfinder.com/data/icons/simple-circular-icons-filled/78/Vertical_Bars_Filled-512.png";
-                         isPlaying = true;
-                       }
-                     }
-                   </script>
-                    </span>
+
+                    <div id="playerContainer"></div>
+
+                    <script>
+                        let player;
+                        let isPlaying = false;
+                        let iframeLoaded = false;
+                        const musicButton = document.querySelector(".music-button"); // 獲取按鈕元素
+
+                        function togglePlay() {
+                            if (!iframeLoaded) {
+                                const confirmPlay = confirm("Do you want to play music?");
+                                if (!confirmPlay) return;  // 使用者按「取消」
+
+                                const tag = document.createElement('script');
+                                tag.src = "https://www.youtube.com/iframe_api";
+                                document.head.appendChild(tag);
+
+                                window.onYouTubeIframeAPIReady = function() {
+                                    player = new YT.Player('playerContainer', {
+                                        height: '0',
+                                        width: '0',
+                                        videoId: 'YTf9awkaerk',
+                                        events: {
+                                            'onReady': (event) => {
+                                                event.target.setPlaybackQuality('tiny'); // 設定為 144p
+                                                event.target.setVolume(100);
+                                                event.target.playVideo();
+                                                event.target.unMute();
+                                                document.getElementById("playPauseImage").src =
+                                                    "https://cdn2.iconfinder.com/data/icons/simple-circular-icons-filled/78/Vertical_Bars_Filled-512.png";
+                                                isPlaying = true;
+                                                musicButton.classList.add("playing"); // 添加 playing class，觸發霓虹燈效果
+                                            },
+                                            'onStateChange': (event) => {
+                                                // 當播放器狀態改變時，更新按鈕的 class
+                                                if (event.data === YT.PlayerState.PLAYING) {
+                                                    musicButton.classList.add("playing"); // 確保播放時有 class
+                                                } else {
+                                                    musicButton.classList.remove("playing"); // 暫停或停止時移除 class
+                                                }
+                                            }
+                                        }
+                                    });
+                                };
+
+                                iframeLoaded = true;
+                            } else if (isPlaying) {
+                                player.pauseVideo();
+                                document.getElementById("playPauseImage").src =
+                                    "https://cdn-icons-png.flaticon.com/512/120/120625.png";
+                                isPlaying = false;
+                                musicButton.classList.remove("playing"); // 移除 playing class，關閉霓虹燈效果
+                            } else {
+                                player.playVideo();
+                                player.unMute();
+                                document.getElementById("playPauseImage").src =
+                                    "https://cdn2.iconfinder.com/data/icons/simple-circular-icons-filled/78/Vertical_Bars_Filled-512.png";
+                                isPlaying = true;
+                                musicButton.classList.add("playing"); // 添加 playing class，觸發霓虹燈效果
+                            }
+                        }
+                    </script>
                 </td>
                 <td class="no-left-border">
                     <span class="section-title">🏫School</span><br>
 
 
-                        <a href="https://gbn.glenbrook225.org/" class="link-logo">GBN</a><br>
-                        <a href="https://glenbrook225.powerschool.com" class="link-logo">PowerSchool</a><br>
-                        <a href="https://glenbrook.mywconline.com/" class="link-logo">ARC</a><br>
-                        <a href="單字卡.html" ><img src="https://www.svgrepo.com/show/335618/quiz-submissions.svg" class="icon-img">Flashcard</a><br>
-                        <a style="color: rgb(0, 145, 255); font-weight: normal; text-decoration: none; vertical-align: sub;">Games：</a>
-                        <a href="https://app.classkick.com/" class="link-logo"></a>
-                        <a href="https://quizizz.com/join"><img src="https://cf.quizizz.com/img/favicon/apple-touch-icon.png" class="icon-img"></a>
-                        <a href="https://quizlet.com/live" class="link-logo"></a>
-                        <a href="https://kahoot.it/" class="link-logo"></a>
-                        <a href="https://gimkit.com/join" class="link-logo"></a><br>
-                    
-                    </span>
-                
+                    <a href="https://gbn.glenbrook225.org/" class="link-logo">GBN</a><br>
+                    <a href="https://glenbrook225.powerschool.com" class="link-logo">PowerSchool</a><br>
+                    <a href="https://glenbrook.mywconline.com/" class="link-logo">ARC</a><br>
+                    <a href="單字卡.html" ><img src="https://www.svgrepo.com/show/335618/quiz-submissions.svg" class="icon-img">Flashcard</a><br>
+                    <a style="color: rgb(0, 145, 255); font-weight: normal; text-decoration: none; vertical-align: sub;">Games：</a>
+                    <a href="https://app.classkick.com/" class="link-logo"></a>
+                    <a href="https://quizizz.com/join"><img src="https://cf.quizizz.com/img/favicon/apple-touch-icon.png" class="icon-img"></a>
+                    <a href="https://quizlet.com/live" class="link-logo"></a>
+                    <a href="https://kahoot.it/" class="link-logo"></a>
+                    <a href="https://gimkit.com/join" class="link-logo"></a><br>
+
                 </td>
             </tr>
             <tr>
@@ -592,18 +515,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     <a href="https://classroom.google.com">--</a><br>
 
                     <br><br><br><br><br>
-                
+
                 </td>
             </tr>
         </table>
         <p align="right">
-          <a href="Games.html"
-          style="position: fixed; bottom: 20px; right: 20px;">
-         <img src="https://static.vecteezy.com/system/resources/thumbnails/017/744/677/small_2x/video-game-icon-png.png"
-              style="width: clamp(100px, 20vw, 200px); height: auto; display: block;">
-       </a>
-          </p>
-          
+            <a href="Games.html"
+               style="position: fixed; bottom: 20px; right: 20px;">
+                <img src="https://static.vecteezy.com/system/resources/thumbnails/017/744/677/small_2x/video-game-icon-png.png"
+                     style="width: clamp(100px, 20vw, 200px); height: auto; display: block;">
+            </a>
+        </p>
+
     </div>
 </body>
 </html>

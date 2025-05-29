@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>單字配對</title>
+    <title></title>
     <link rel="icon" href="https://www.svgrepo.com/show/335618/quiz-submissions.svg">
     <style>
         body {
@@ -168,11 +168,12 @@
 </head>
 <body>
     <div class="game-container">
-        <h1 id="title"></h1> <p class="instructions" id="instructions"></p>
+        <h1 id="title"></h1> 
+        <p class="instructions" id="instructions"></p>
         <div class="words">
-            </div>
+        </div>
         <div class="targets">
-            </div>
+        </div>
         <div class="buttons">
             <button class="button" onclick="toggleDarkMode()" id="dark-mode-btn"></button>
             <button class="button" onclick="undoLastAction()" id="undo-btn"></button>
@@ -182,8 +183,6 @@
             <button class="button" onclick="switchLanguage('en')">English</button>
             <button id="next-round-btn" class="button" onclick="nextRound()" style="display:none;"></button>
             <button id="restart-btn" class="button" onclick="restartGame()" style="display:none;"></button>
-            
-</div>
         </div>
         <div id="result" class="result" style="display:none;"></div>
         <div id="answers" class="answers" style="display:none;"></div>
@@ -194,7 +193,7 @@
 
         const translations = {
           zh: {
-            title: "單字配對",
+            title: "單字配對", // 頁面 title 和 H1 標題
             instructions: "點擊或拖放單詞到對應的意思或翻譯區域。",
             submit: "提交",
             undo: "撤銷",
@@ -205,13 +204,12 @@
             correct: "答對",
             incorrect: "答錯",
             correctAnswersTitle: "正確答案：",
-            wordBankInitialPlaceholder: "沒有單字可供測驗。", // 新增此行
-            wordBankInitialPlaceholderTranslation: "請點擊「查看單字庫」新增單字。" // 新增此行
-
+            noWordsToTest: "沒有單字可供測驗。", 
+            promptToAddWords: "請點擊「查看單字庫」新增單字。", // 保留這個提示語
+            unselected: "未選擇" 
           },
-
           en: {
-            title: "Word Game",
+            title: "Word Matching Game", 
             instructions: "Click or drag the words to match their meanings or translations.",
             submit: "Submit",
             undo: "Undo",
@@ -222,15 +220,27 @@
             correct: "correct",
             incorrect: "incorrect",
             correctAnswersTitle: "Correct Answers:",
-            wordBankInitialPlaceholder: "No words to test.", // 新增此行
-            wordBankInitialPlaceholderTranslation: "Click \"View Word Bank\" to add words." // 新增此行
+            noWordsToTest: "No words available for testing.", 
+            promptToAddWords: "Please click \"View Word Bank\" to add words.", // 保留這個提示語
+            unselected: "Unselected" 
           }
         };
         
     let isFirstRound = true;
-    // words 陣列現在只在 createGame 和 checkAnswers 內部需要時重新載入
 
-    // 擴展單字數據結構，確保每個單字都有 wrongCount, correctCount 和 hasBeenTested
+    let settings = JSON.parse(localStorage.getItem('wordGameSettings')) || { 
+        wordsPerRound: 10,
+        enableWeightSystem: true 
+    };
+
+    let wordsTestedInSession = new Set();
+    let totalUniqueWords = 0; 
+
+    let currentRoundWords = [];
+    let selectedWord = null;
+    const actionHistory = [];
+
+    // 輔助函數：初始化或更新單字數據結構，確保所有單字都有 required 屬性
     function initializeOrUpdateWords(wordsArray) {
         return wordsArray.map(wordItem => {
             return {
@@ -238,74 +248,69 @@
                 translation: wordItem.translation,
                 wrongCount: wordItem.wrongCount !== undefined ? wordItem.wrongCount : 0,
                 correctCount: wordItem.correctCount !== undefined ? wordItem.correctCount : 0, 
-                hasBeenTested: wordItem.hasBeenTested !== undefined ? wordItem.hasBeenTested : false 
+                hasBeenTested: wordItem.hasBeenTested !== undefined ? wordItem.hasBeenTested : false
             };
         });
     }
-
-
-    let settings = JSON.parse(localStorage.getItem('wordGameSettings')) || { 
-        wordsPerRound: 10,
-        enableWeightSystem: true 
-    };
-
-    // 追蹤本輪遊戲中已經出題的單字
-    let wordsTestedInSession = new Set();
-    // 總單字數，用於判斷是否所有單字都考過一次
-    let totalUniqueWords = 0; // 將在 createGame 中設定
-
-    let currentRoundWords = [];
-    let selectedWord = null;
-    const actionHistory = [];
 
     function shuffle(array) {
         return array.sort(() => Math.random() - 0.5);
     }
 
     function createGame() {
-        // **BUG FIX 1: 每次創建遊戲時，從 localStorage 重新載入最新數據**
-        let words = JSON.parse(localStorage.getItem('words')) || [];
-        words = initializeOrUpdateWords(words); // 確保每個單字有必要的屬性
+    let words = JSON.parse(localStorage.getItem('words')) || [];
+    words = initializeOrUpdateWords(words);
 
-        const wordContainer = document.querySelector('.words');
-        const targetContainer = document.querySelector('.targets');
-        const submitButton = document.getElementById('submit-btn');
-        wordContainer.innerHTML = "";
-        targetContainer.innerHTML = "";
-        submitButton.disabled = true;
+    const wordContainer = document.querySelector('.words');
+    const targetContainer = document.querySelector('.targets');
+    const submitButton = document.getElementById('submit-btn');
+    wordContainer.innerHTML = "";
+    targetContainer.innerHTML = "";
+    submitButton.disabled = true;
 
-        // 更新 totalUniqueWords
-        totalUniqueWords = new Set(words.map(w => w.word)).size;
+    totalUniqueWords = new Set(words.map(w => w.word)).size;
 
-        // 如果 words 為空，顯示提示信息
-        if (words.length === 0 || (words.length === 1 && words[0].word === translations[currentLanguage].wordBankInitialPlaceholder)) {
-            wordContainer.innerHTML = `<p>${translations[currentLanguage].wordBankInitialPlaceholderTranslation}</p>`;
-            document.getElementById('submit-btn').style.display = 'none'; // 隱藏提交按鈕
-            return; 
-        } else {
-             document.getElementById('submit-btn').style.display = 'inline-block'; // 顯示提交按鈕
-        }
+    if (words.length === 0) {
+        wordContainer.innerHTML = `
+            <p>${translations[currentLanguage].noWordsToTest}</p>
+            <p>${translations[currentLanguage].promptToAddWords}</p>
+        `;
+        // 當沒有單字時，將 wordContainer 的 display 設置為 block 或清除 flex 屬性，
+        // 讓 <p> 標籤可以正常換行。
+        wordContainer.style.display = 'block'; // 或者 'initial', 'flex-direction: column'
+        wordContainer.style.textAlign = 'center'; // 讓提示文字居中
+        document.getElementById('submit-btn').style.display = 'none'; 
+        document.getElementById('next-round-btn').style.display = 'none';
+        document.getElementById('restart-btn').style.display = 'none';
+        document.getElementById('result').style.display = 'none';
+        document.getElementById('answers').style.display = 'none';
+        return;
+    } else {
+        // 當有單字時，恢復 wordContainer 的 flex 佈局，以便顯示單字卡
+        wordContainer.style.display = 'flex'; // 恢復原本的 flex 佈局
+        wordContainer.style.textAlign = 'initial'; // 恢復文字對齊
+        document.getElementById('submit-btn').style.display = 'inline-block';
+    }
 
         const numWordsForRound = Math.min(settings.wordsPerRound, words.length); 
         let wordsToChoose = [...words]; 
 
-        // 重置 wordsTestedInSession，因為每次創建遊戲都可能讀取到新的 words 數據
         wordsTestedInSession = new Set(words.filter(w => w.hasBeenTested).map(w => w.word));
 
 
-        // 如果未啟用權重系統，則只隨機選擇單字
         if (!settings.enableWeightSystem) {
             currentRoundWords = shuffle(wordsToChoose).slice(0, numWordsForRound);
         } else {
-            // **權重出題系統啟用時的邏輯**
-            // 判斷是否所有單字都已考過一次 (基於 wordsTestedInSession)
             const allWordsTestedOnce = wordsTestedInSession.size >= totalUniqueWords;
 
             let newWords = wordsToChoose.filter(w => !w.hasBeenTested); 
-            let testedWords = wordsToChoose.filter(w => w.hasBeenTested); 
-
-            if (!allWordsTestedOnce && newWords.length > 0) {
-                // 策略：優先考新的 (2/3)，權重 (1/3)
+            let testedWords = wordsToChoose.filter(w => w.hasBeenTested); // 修正：這裡是 hasBeenTested
+            
+            if (testedWords.length === 0 && newWords.length > 0) {
+                // 如果沒有測試過的單字，但有新單字，則從新單字中選取
+                currentRoundWords = shuffle(newWords).slice(0, numWordsForRound);
+            } else if (!allWordsTestedOnce && newWords.length > 0) {
+                // 還有未測試的單字，混合新單字和加權單字
                 let numNew = Math.min(Math.ceil(numWordsForRound * (2 / 3)), newWords.length);
                 let selectedNewWords = shuffle(newWords).slice(0, numNew);
 
@@ -316,21 +321,21 @@
                 currentRoundWords = shuffle([...selectedNewWords, ...selectedWeightedWords]);
 
             } else {
-                // 策略：所有考題都考過後，權重 (3/4)，隨機抽出 (1/4)
+                // 所有單字都測試過至少一次，主要根據權重和隨機選取
                 let numWeighted = Math.min(Math.ceil(numWordsForRound * (3 / 4)), testedWords.length);
                 let numRandom = numWordsForRound - numWeighted;
 
                 let weightedWords = testedWords.sort((a, b) => b.wrongCount - a.wrongCount); 
                 let selectedWeightedWords = shuffle(weightedWords).slice(0, numWeighted); 
 
-                let remainingRandomWords = testedWords.filter(word => !selectedWeightedWords.includes(word)); 
+                let remainingRandomWords = testedWords.filter(word => !selectedWeightedWords.some(sw => sw.word === word.word)); // 修正過濾邏輯
                 let selectedRandomWords = shuffle(remainingRandomWords).slice(0, numRandom);
 
                 currentRoundWords = shuffle([...selectedWeightedWords, ...selectedRandomWords]);
             }
         }
         
-        // 確保至少有 enough words to fill the round
+        // 確保至少有足夠的單字來填滿這一輪
         if (currentRoundWords.length < numWordsForRound && wordsToChoose.length > currentRoundWords.length) {
             const alreadySelectedWords = new Set(currentRoundWords.map(w => w.word));
             const availableWords = wordsToChoose.filter(w => !alreadySelectedWords.has(w.word));
@@ -343,7 +348,6 @@
              currentRoundWords = shuffle([...words]).slice(0, numWordsForRound);
         }
 
-        // **標記本輪被選中的單字為已考過**
         currentRoundWords.forEach(wordObj => {
             const originalWordIndex = words.findIndex(w => w.word === wordObj.word);
             if (originalWordIndex !== -1) {
@@ -351,7 +355,7 @@
                 wordsTestedInSession.add(wordObj.word); 
             }
         });
-        localStorage.setItem('words', JSON.stringify(words)); // 保存標記後的單字
+        localStorage.setItem('words', JSON.stringify(words)); 
 
         const shuffledWords = shuffle([...currentRoundWords]);
         const shuffledTranslations = shuffle([...currentRoundWords]);
@@ -387,10 +391,16 @@
                 targetContainer.appendChild(targetDiv);
             });
         }
+
         function switchLanguage(lang) {
             currentLanguage = lang;
             const t = translations[currentLanguage];
+            
+            // 修正點 4: 設置頁面 Title
+            document.title = t.title; 
+            // 設置 H1 標題
             document.getElementById('title').textContent = t.title; 
+
             document.getElementById('instructions').textContent = t.instructions; 
             document.getElementById('submit-btn').textContent = t.submit; 
             document.getElementById('undo-btn').textContent = t.undo; 
@@ -403,21 +413,7 @@
             document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = (lang === 'zh' ? 'none' : 'inline-block');
             document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = (lang === 'en' ? 'none' : 'inline-block');
 
-            // 重新創建遊戲來更新佔位符單字的語言
-            // 這段邏輯現在由 createGame 處理，因為它會重新讀取 words
-            // 但如果當前 words 是空的，還是需要確保 placeholder 翻譯正確
-            let wordsFromStorage = JSON.parse(localStorage.getItem('words')) || [];
-            if (wordsFromStorage.length === 0 || (wordsFromStorage.length === 1 && wordsFromStorage[0].word === translations['zh'].wordBankInitialPlaceholder || wordsFromStorage[0].word === translations['en'].wordBankInitialPlaceholder)) {
-                wordsFromStorage = [{ 
-                    word: t.wordBankInitialPlaceholder, 
-                    translation: t.wordBankInitialPlaceholderTranslation, 
-                    wrongCount: 0, 
-                    correctCount: 0, 
-                    hasBeenTested: false 
-                }];
-                localStorage.setItem('words', JSON.stringify(wordsFromStorage));
-            }
-            createGame(); // 重新渲染以更新佔位符或遊戲內容
+            createGame(); // 重新渲染以更新遊戲內容和提示語
         }
 
 
@@ -534,7 +530,7 @@
             document.querySelectorAll('.target').forEach(target => { 
                 target.querySelector('.moved-word').textContent = ""; 
                 delete target.dataset.droppedWord; 
-                target.classList.remove('correct', 'incorrect'); // 清除對錯顏色
+                target.classList.remove('correct', 'incorrect'); 
                 toggleDeleteButton(target); 
             });
             document.querySelectorAll('.word').forEach(word => {
@@ -547,14 +543,12 @@
         function checkIfAllFilled() {
             const targetElements = document.querySelectorAll('.target'); 
             const allFilled = Array.from(targetElements).every(target => target.dataset.droppedWord); 
-            // 只有當所有目標都填寫了，提交按鈕才啟用
             document.getElementById('submit-btn').disabled = !allFilled; 
         }
 
         function checkAnswers() {
-            // **BUG FIX 2: 每次提交答案時，從 localStorage 重新載入最新數據**
             let words = JSON.parse(localStorage.getItem('words')) || [];
-            words = initializeOrUpdateWords(words); // 確保每個單字有必要的屬性
+            words = initializeOrUpdateWords(words); // 確保單字數據結構正確
 
             const targetElements = document.querySelectorAll('.target');
             const unfilledTargets = Array.from(targetElements).filter(target => !target.dataset.droppedWord);
@@ -576,8 +570,8 @@
             const usedWords = new Set();
             targetElements.forEach(target => {
                 const droppedWord = target.dataset.droppedWord;
-                const originalTranslation = target.dataset.translation; // 獲取目標的原始翻譯
-                target.classList.remove('correct', 'incorrect'); // 清除之前的狀態
+                const originalTranslation = target.dataset.translation; 
+                target.classList.remove('correct', 'incorrect'); 
 
                 if (droppedWord) {
                     usedWords.add(droppedWord);
@@ -585,15 +579,15 @@
 
                     if (originalWordIndex !== -1) { 
                         const originalWordObj = words[originalWordIndex]; 
-                        if (originalWordObj.translation === originalTranslation) { // 與目標的原始翻譯比較
+                        if (originalWordObj.translation === originalTranslation) { 
                             target.classList.add('correct');
                             correctAnswers.push(droppedWord);
-                            originalWordObj.correctCount++; // 答對次數加1
-                            originalWordObj.wrongCount = Math.max(0, originalWordObj.wrongCount - 1); // 答錯次數減1（最低為0）
+                            originalWordObj.correctCount++; 
+                            originalWordObj.wrongCount = Math.max(0, originalWordObj.wrongCount - 1); 
                         } else {
                             target.classList.add('incorrect');
                             wrongAnswers.push(droppedWord);
-                            originalWordObj.wrongCount++; // 答錯次數加1
+                            originalWordObj.wrongCount++; 
                         }
                     }
                 } else {
@@ -608,19 +602,12 @@
                     if (originalWordIndex !== -1) {
                         const wordObj = words[originalWordIndex];
                         unusedWords.push(wordObj);
-                        // 未使用的單字：也視為錯誤，增加權重
-                        wordObj.wrongCount++;
+                        wordObj.wrongCount++; // 未使用的單字也增加權重
                     }
                 }
             });
 
-            // **重要：將更新後的 words 數據存回 localStorage**
             localStorage.setItem('words', JSON.stringify(words));
-
-            // 更新剩余单词列表，只保留错误的单词
-            remainingWords = currentRoundWords.filter(word => 
-                wrongAnswers.includes(word.word) || unusedWords.some(w => w.word === word.word)
-            );
 
             const resultDiv = document.getElementById('result');
             const answersDiv = document.getElementById('answers');
@@ -629,7 +616,7 @@
 
             resultDiv.style.display = 'block';
             answersDiv.style.display = 'block';
-            document.getElementById('submit-btn').disabled = true; // 提交後禁用按鈕
+            document.getElementById('submit-btn').disabled = true; 
             
             if (isFirstRound) {
                 document.getElementById('wordbank-btn').style.display = 'none';
@@ -640,87 +627,70 @@
             resultDiv.innerHTML = `<h2>${correctAnswers.length} ${t.correct}, ${wrongAnswers.length + unfilledTargets.length} ${t.incorrect}.</h2>`;
             
             let answersHTML = '';
-            if (wrongAnswers.length > 0 || unusedWords.length > 0) { // 只有當有錯誤或未使用的單字時才顯示正確答案標題
+            if (wrongAnswers.length > 0 || unusedWords.length > 0) { 
                 answersHTML += `<p>${t.correctAnswersTitle}</p><ul>`; 
                 wrongAnswers.forEach(word => {
                     const correctTranslation = words.find(w => w.word === word)?.translation;
                     answersHTML += `<li>${word}: ${correctTranslation}</li>`;
                 });
-                unusedWords.forEach(wordObj => { // 未使用的單字
-                    answersHTML += `<li>${wordObj.word}: ${wordObj.translation} (${currentLanguage === 'zh' ? '未選擇' : 'Unselected'})</li>`;
+                unusedWords.forEach(wordObj => { 
+                    answersHTML += `<li>${wordObj.word}: ${wordObj.translation} (${t.unselected})</li>`;
                 });
                 answersHTML += '</ul>';
             } else {
-                answersHTML += `<p>${currentLanguage === 'zh' ? '太棒了！所有單字都答對了！' : 'Excellent! All words matched correctly!'}</p>`;
+                answersHTML += `<p>${t.correct === 'correct' ? 'Excellent! All words matched correctly!' : '太棒了！所有單字都答對了！'}</p>`;
             }
             answersDiv.innerHTML = answersHTML;
 
-            // 重新計算 remainingWords，只包含在這一輪中答錯或未使用的單字
-            remainingWords = currentRoundWords.filter(wordObj => 
-                wrongAnswers.includes(wordObj.word) || unusedWords.some(w => w.word === wordObj.word)
-            );
-
-            if (remainingWords.length > 0) {
-                nextRoundBtn.style.display = 'block';
-                restartBtn.style.display = 'none';
-            } else {
-                nextRoundBtn.style.display = 'none';
-                restartBtn.style.display = 'block';
-            }
+            nextRoundBtn.style.display = 'inline-block';
+            restartBtn.style.display = 'inline-block';
+            document.getElementById('undo-btn').style.display = 'none'; 
+            document.getElementById('dark-mode-btn').style.display = 'none'; 
+            document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = 'none';
+            document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = 'none';
         }
-    function nextRound() { 
-        document.getElementById('result').style.display = 'none'; 
-        document.getElementById('answers').style.display = 'none'; 
-        document.getElementById('next-round-btn').style.display = 'none'; 
-        document.getElementById('wordbank-btn').style.display = 'inline-block'; 
-        resetGame(); // 清空上次的答案和顏色
-        createGame(); 
+
+
+        function nextRound() {
+            resetGame();
+            createGame();
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('answers').style.display = 'none';
+            document.getElementById('next-round-btn').style.display = 'none';
+            document.getElementById('restart-btn').style.display = 'none';
+            document.getElementById('undo-btn').style.display = 'inline-block';
+            document.getElementById('dark-mode-btn').style.display = 'inline-block';
+            document.getElementById('wordbank-btn').style.display = 'inline-block';
+            document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = (currentLanguage === 'zh' ? 'none' : 'inline-block');
+            document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = (currentLanguage === 'en' ? 'none' : 'inline-block');
+        }
+
+        function restartGame() {
+            // 重置所有單字的 hasBeenTested 屬性為 false
+            let words = JSON.parse(localStorage.getItem('words')) || [];
+            words.forEach(wordItem => {
+                wordItem.hasBeenTested = false;
+            });
+            localStorage.setItem('words', JSON.stringify(words));
+            wordsTestedInSession.clear(); // 清空已測試單字的 Set
+
+            nextRound(); // 開始新的一輪
         }
 
         function toggleDarkMode() {
             document.body.classList.toggle('dark-mode');
         }
 
-        // 頁面載入時根據瀏覽器語言或預設語言設定介面
+        function openWordBank() {
+            window.open('單字庫.html', '_blank');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const langParam = urlParams.get('lang');
-            if (langParam && (langParam === 'zh' || langParam === 'en')) {
-                currentLanguage = langParam;
-            } else {
-                const userLang = navigator.language || navigator.userLanguage;
-                currentLanguage = userLang.startsWith('zh') ? 'zh' : 'en';
-            }
-            
-            // 初始載入時，先設定好語言，然後讓 createGame 去處理 words
-            switchLanguage(currentLanguage); // 第一次載入時設定所有文字
-            createGame(); // 載入遊戲
+            // 在頁面載入時，先設定語言（預設為中文）
+            switchLanguage(currentLanguage);
+            // 然後根據語言設定，載入遊戲
+            createGame(); 
         });
-
-
-function restartGame() {
-        // **BUG FIX 3: 重新載入 words 陣列以確保是最新的**
-        let words = JSON.parse(localStorage.getItem('words')) || [];
-        words = initializeOrUpdateWords(words);
-
-        // 重置所有單字的 hasBeenTested 狀態為 false
-        words.forEach(word => word.hasBeenTested = false);
-        localStorage.setItem('words', JSON.stringify(words)); 
-
-        wordsTestedInSession.clear(); 
-
-        isFirstRound = true;
-        document.getElementById('result').style.display = 'none';
-        document.getElementById('answers').style.display = 'none';
-        document.getElementById('restart-btn').style.display = 'none';
-        document.getElementById('wordbank-btn').style.display = 'inline-block';
-        resetGame(); // 清空上次的答案和顏色
-        createGame();
-    }
-function openWordBank() {
-    window.open(`單字庫.html?lang=${currentLanguage}`, '_blank');
-}
-
     </script>
 </body>
 </html>

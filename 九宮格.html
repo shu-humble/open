@@ -1,0 +1,162 @@
+  <!-- 🔲 九宮格啟動器按鈕 -->
+  <div id="launcher-button">
+    <svg viewBox="0 0 36 36" fill="black" width="100%" height="auto">
+      <!-- 第一排 -->
+      <circle cx="6"  cy="6"  r="4"/>
+      <circle cx="18" cy="6"  r="4"/>
+      <circle cx="30" cy="6"  r="4"/>
+      <!-- 第二排 -->
+      <circle cx="6"  cy="18" r="4"/>
+      <circle cx="18" cy="18" r="4"/>
+      <circle cx="30" cy="18" r="4"/>
+      <!-- 第三排 -->
+      <circle cx="6"  cy="30" r="4"/>
+      <circle cx="18" cy="30" r="4"/>
+      <circle cx="30" cy="30" r="4"/>
+    </svg>
+  </div>
+<!-- 🔲 九宮格啟動器選單 -->
+<div id="launcher-menu"
+style="
+  display: none;
+  position: fixed;
+  top: 55px;
+  right: 10px;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  /* 最大高度：取 80vh 和 500px 中的最小值 */
+  max-height: min(80vh, 500px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 9999; 
+">
+  <div id="launcher-grid" style="display: grid; grid-template-columns: repeat(3, 80px); gap: 20px; text-align: center;">
+    <div class="grid-item" data-id="account">
+      <a href="https://myaccount.google.com/" target="_blank">
+        <img src="https://www.google.com/s2/favicons?sz=64&domain=google.com" width="40"><br>
+        <small>Account</small>
+      </a>
+    </div>
+    <div class="grid-item" data-id="gmail">
+      <a href="https://mail.google.com" target="_blank">
+        <img src="https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico" width="40"><br>
+        <small>Gmail</small>
+      </a>
+    </div>
+    <div class="grid-item" data-id="drive">
+      <a href="https://drive.google.com" target="_blank">
+        <img src="https://ssl.gstatic.com/images/branding/product/2x/drive_2020q4_48dp.png" width="40"><br>
+        <small>Drive</small>
+      </a>
+    </div>
+    <div class="grid-item" data-id="youtube">
+      <a href="https://www.youtube.com" target="_blank">
+        <img src="https://www.google.com/s2/favicons?sz=64&domain=youtube.com" width="40"><br>
+        <small>YouTube</small>
+      </a>
+    </div>
+    <div class="grid-item" data-id="gemini">
+      <a href="https://gemini.google.com/app" target="_blank">
+        <img src="https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg" width="40"><br>
+        <small>Gemini</small>
+      </a>
+    </div>
+    <div class="grid-item" data-id="calendar">
+      <a href="https://calendar.google.com" target="_blank">
+        <img src="https://ssl.gstatic.com/calendar/images/dynamiclogo_2020q4/calendar_7_2x.png" width="40"><br>
+        <small>Calendar</small>
+      </a>
+    </div>
+    <div class="grid-item" data-id="docs">
+      <a href="https://docs.google.com" target="_blank">
+        <img src="https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png" width="40"><br>
+        <small>Docs</small>
+      </a>
+    </div>
+    <div class="grid-item" data-id="sheets">
+      <a href="https://sheets.google.com" target="_blank">
+        <img src="https://www.gstatic.com/images/branding/product/1x/sheets_2020q4_48dp.png" width="40"><br>
+        <small>Sheets</small>
+      </a>
+    </div>
+    <div class="grid-item" data-id="meet">
+      <a href="https://meet.google.com" target="_blank">
+        <img src="https://www.google.com/s2/favicons?sz=64&domain=meet.google.com" width="40"><br>
+        <small>Meet</small>
+      </a>
+    </div>
+    <div class="grid-item" data-id="classroom">
+      <a href="https://classroom.google.com" target="_blank">
+        <img src="https://www.gstatic.com/classroom/logo_square_rounded.svg" width="40"><br>
+        <small>Classroom</small>
+      </a>
+    </div>
+    <div class="grid-item" data-id="translate">
+      <a href="https://translate.google.com" target="_blank">
+        <img src="https://www.google.com/s2/favicons?sz=64&domain=translate.google.com" width="40"><br>
+        <small>Translate</small>
+      </a>
+    </div>
+    <div class="grid-item" data-id="slides">
+      <a href="https://docs.google.com/presentation/" target="_blank">
+        <img src="https://www.gstatic.com/images/branding/product/1x/slides_2020q4_48dp.png" width="40"><br>
+        <small>Slides</small>
+      </a>
+    </div>
+    <div class="grid-item" data-id="chat">
+      <a href="https://mail.google.com/chat" target="_blank">
+        <img src="https://www.gstatic.com/marketing-cms/assets/images/25/5f/c96350b5427fbfdbdef268515872/google-chat.webp=s96-fcrop64=1,00000000ffffffff-rw" width="40"><br>
+        <small>Chat</small>
+      </a>
+    </div>
+    <div class="grid-item" data-id="maps">
+      <a href="https://www.google.com/maps" target="_blank">
+        <img src="https://www.gstatic.com/marketing-cms/assets/images/0f/9a/58f1d92b46069b4a8bdc556b612c/google-maps.webp=s96-fcrop64=1,00000000ffffffff-rw" width="40"><br>
+        <small>Map</small>
+      </a>
+    </div>
+    <div class="grid-item" data-id="forms">
+      <a href="https://docs.google.com/forms" target="_blank">
+        <img src="https://www.gstatic.com/images/branding/product/2x/forms_2020q4_48dp.png" width="40"><br>
+        <small>Forms</small>
+      </a>
+    </div>
+    
+    <div class="grid-item" data-id="earth">
+      <a href="https://earth.google.com" target="_blank">
+        <img src="https://www.gstatic.com/earth/00-favicon.ico" width="40"><br>
+        <small>Earth</small>
+        </a>
+      </div>
+
+        <div class="grid-item" data-id="sites">
+          <a href="https://sites.google.com/" target="_blank">
+            <img src="https://www.gstatic.com/images/branding/product/2x/sites_2020q4_48dp.png" width="40"><br>
+            <small>Sites</small>
+      </a>
+     </div>
+
+     <div class="grid-item" data-id="voice">
+      <a href="https://voice.google.com" target="_blank">
+        <img src="https://fonts.gstatic.com/s/i/productlogos/voice_2020q4/v1/web-32dp/logo_voice_2020q4_color_2x_web_32dp.png" width="40"><br>
+        <small>Voice</small>
+        </a>
+      </div>
+      <div class="grid-item" data-id="contacts">
+        <a href="https://contacts.google.com/" target="_blank">
+          <img src="https://www.gstatic.com/images/branding/product/2x/contacts_2022_48dp.png" width="40"><br>
+          <small>Contacts</small>
+          </a>
+        </div>
+        <div class="grid-item" data-id="contacts">
+          <a href="https://chromewebstore.google.com/" target="_blank">
+            <img src="https://fonts.gstatic.com/s/i/productlogos/chrome_store/v7/192px.svg" width="40"><br>
+            <small>Web Store</small>
+            </a>
+          </div>
+  </div>
+</div>

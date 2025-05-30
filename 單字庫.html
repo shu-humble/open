@@ -143,6 +143,14 @@
 
     <div class="right-panel">
       <h2 id="wordListSectionTitle"></h2>
+      <div style="margin-bottom: 10px;">
+          <label for="sortOrder" id="sortOrderLabel"></label>
+          <select id="sortOrder" onchange="renderWords()">
+              <option value="default" id="sortDefaultOption"></option>
+              <option value="accuracy_desc" id="sortAccuracyDescOption"></option>
+              <option value="accuracy_asc" id="sortAccuracyAscOption"></option>
+          </select>
+      </div>
       <div class="word-list" id="wordList"></div>
       <div id="noWordsInWordBankMessage" style="display: none; text-align: center; padding: 20px; color: #666; font-size: 1.1em;">
           <p id="noWordsBankText"></p>
@@ -215,11 +223,40 @@
       }
     }
 
+    // New function to sort words
+    function sortWords(sortOption) {
+        if (sortOption === 'accuracy_desc') {
+            words.sort((a, b) => {
+                const totalA = a.correctCount + a.wrongCount;
+                const accuracyA = totalA > 0 ? (a.correctCount / totalA) : 0;
+                const totalB = b.correctCount + b.wrongCount;
+                const accuracyB = totalB > 0 ? (b.correctCount / totalB) : 0;
+                return accuracyB - accuracyA; // Descending
+            });
+        } else if (sortOption === 'accuracy_asc') {
+            words.sort((a, b) => {
+                const totalA = a.correctCount + a.wrongCount;
+                const accuracyA = totalA > 0 ? (a.correctCount / totalA) : 0;
+                const totalB = b.correctCount + b.wrongCount;
+                const accuracyB = totalB > 0 ? (b.correctCount / totalB) : 0;
+                return accuracyA - accuracyB; // Ascending
+            });
+        } else {
+            // Default sort (e.g., by original input order or alphabetically)
+            // For simplicity, we'll keep the current order if no specific sort is chosen
+            // Or you could sort alphabetically by word:
+            words.sort((a, b) => a.word.localeCompare(b.word));
+        }
+    }
+
     function renderWords() {
         const wordList = document.getElementById('wordList');
         const noWordsMessageDiv = document.getElementById('noWordsInWordBankMessage'); 
         const noWordsBankText = document.getElementById('noWordsBankText'); 
         const t = translations[currentLanguage]; 
+        
+        const sortOption = document.getElementById('sortOrder').value;
+        sortWords(sortOption); // Apply sorting before rendering
 
         if (words.length === 0) {
             wordList.innerHTML = ''; 
@@ -493,7 +530,7 @@
         zh: {
             title: '單字管理後台', // <title> 和 H1 標題
             bulkAndBackupTitle: '單字匯入 / 數據備份與還原', // H2 標題
-            bulkTextareaPlaceholder: '請在此輸入「英文,中文」格式單字（每行一組），或貼上備份數據...', 
+            bulkTextareaPlaceholder: '請在此輸入「單字,意思或翻譯」格式單字（每行一組），或貼上備份數據...', 
             bulkImportBtn: '批量匯入單字（更新或新增）', 
             exportDataBtn: '匯出所有數據（複製貼上）', 
             importDataBtn: '匯入所有數據（覆蓋與合併）', 
@@ -528,11 +565,16 @@
             // 單字庫頁面專用的無單字提示
             noWordsInBank: '目前單字庫中沒有單字。',
             promptToAddWordsInBankDynamic: '請使用上方「{0}」功能新增單字。', 
+            // New sort options
+            sortOrderLabel: '排序方式:',
+            sortDefaultOption: '預設 (按字母順序)',
+            sortAccuracyDescOption: '答對率 (高到低)',
+            sortAccuracyAscOption: '答對率 (低到高)',
         },
         en: {
             title: 'Word Management',
             bulkAndBackupTitle: 'Word Import / Data Backup & Restore', 
-            bulkTextareaPlaceholder: 'Enter "English,Chinese" format words here (one per line), or paste backup data...', 
+            bulkTextareaPlaceholder: 'Enter "English,Meaning or Translation" format words here (one per line), or paste backup data...', 
             bulkImportBtn: 'Bulk Import Words (Update or Add)', 
             exportDataBtn: 'Export All Data (Copy/Paste)', 
             importDataBtn: 'Import All Data (Overwrite & Merge)', 
@@ -567,6 +609,11 @@
             // Word bank page specific no words message
             noWordsInBank: 'No words currently in the word bank.',
             promptToAddWordsInBankDynamic: 'Please use the "{0}" function above to add words.',
+            // New sort options
+            sortOrderLabel: 'Sort by:',
+            sortDefaultOption: 'Default (Alphabetical)',
+            sortAccuracyDescOption: 'Accuracy (High to Low)',
+            sortAccuracyAscOption: 'Accuracy (Low to High)',
         }
     };
 
@@ -614,6 +661,12 @@
         
         // 設置「單字列」H2 標題文字
         document.getElementById('wordListSectionTitle').textContent = t.wordListSectionTitle;
+
+        // Update sort labels
+        document.getElementById('sortOrderLabel').textContent = t.sortOrderLabel;
+        document.getElementById('sortDefaultOption').textContent = t.sortDefaultOption;
+        document.getElementById('sortAccuracyDescOption').textContent = t.sortAccuracyDescOption;
+        document.getElementById('sortAccuracyAscOption').textContent = t.sortAccuracyAscOption;
 
         // 按鈕文字現在完全由 updateLanguage 函數根據當前語言來設定
         document.getElementById('saveAllButton').textContent = t.save; 

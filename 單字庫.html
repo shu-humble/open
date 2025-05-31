@@ -248,6 +248,7 @@
             words.sort((a, b) => b.word.localeCompare(a.word)); // Alphabetical Z-A
         } else {
             // Default sort if no valid option is selected (e.g., initial load or invalid option)
+            // Since "default" is removed, we explicitly set a fallback
             words.sort((a, b) => a.word.localeCompare(b.word)); // Fallback to A-Z
         }
     }
@@ -446,9 +447,10 @@
             words: words,
             settings: settings
         };
-        const jsonString = JSON.stringify(data, null, 2); // 格式化輸出
+        // 移除 null, 2 參數，讓 JSON 字符串不包含換行和縮排，以減少資料量
+        const jsonString = JSON.stringify(data);
         const dataTextarea = document.getElementById('dataTextarea');
-        dataTextarea.value = jsonString; // Put it in the textarea for visibility
+        dataTextarea.value = jsonString; // 將其放入 textarea 以供查看
 
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(jsonString)
@@ -714,9 +716,9 @@
         needsSave = false;
         updateLanguage();
 
-        // Ensure a default sort option is selected when the page loads, as "default" is removed.
-        // This will make "Alphabetical (A-Z)" the initial selected sort.
-        document.getElementById('sortOrder').value = 'accuracy_asc';
+        // 確保頁面載入時選中一個預設排序選項
+        // 由於 "default" 已被移除，我們將初始選中的排序設置為 "字母順序 (A-Z)"
+        document.getElementById('sortOrder').value = 'alphabetical_asc';
         renderWords();
     });
 </script>

@@ -2,7 +2,7 @@
 <html lang="UTF-8">
 <head>
   <meta charset="UTF-8">
-  <title></title> 
+  <title></title>
   <style>
   body {
    font-family: Arial, sans-serif;
@@ -33,7 +33,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 5px;
-      border-bottom: 1px solid #eee;  
+      border-bottom: 1px solid #eee;
     }
     .word-item:last-child {
       border-bottom: none;
@@ -95,8 +95,8 @@
   </style>
 </head>
 <body>
-  <h1 id="mainTitle"></h1> 
-  <p id="saveReminder"></p>  
+  <h1 id="mainTitle"></h1>
+  <p id="saveReminder"></p>
   <button id="langToggleBtn" onclick="toggleLanguage()">🌐 切換語言</button>
   <div class="container">
 
@@ -119,14 +119,14 @@
           <label for="wordsPerRound" id="wordsPerRoundLabel"></label>
           <input type="number" id="wordsPerRound" min="1" value="10">
         </div>
-        
+
         <div style="margin-bottom: 10px;">
           <label>
-            <input type="checkbox" id="enableWeightSystem"> 
+            <input type="checkbox" id="enableWeightSystem">
             <span id="enableWeightSystemLabel"></span>
           </label>
         </div>
-        
+
         <div>
           <button class="button" onclick="resetAllWrongCounts()">
             <span id="resetWeightsButtonText"></span>
@@ -135,7 +135,7 @@
       </div>
 
       <div class="save-buttons">
-        <button id="saveAllButton" onclick="saveAll()"></button> 
+        <button id="saveAllButton" onclick="saveAll()"></button>
         <button class="danger-button" id="clearAllWordsButton" onclick="clearAllWords()"></button>
       </div>
 
@@ -146,9 +146,10 @@
       <div style="margin-bottom: 10px;">
           <label for="sortOrder" id="sortOrderLabel"></label>
           <select id="sortOrder" onchange="renderWords()">
-              <option value="default" id="sortDefaultOption"></option>
-              <option value="accuracy_desc" id="sortAccuracyDescOption"></option>
-              <option value="accuracy_asc" id="sortAccuracyAscOption"></option>
+            <option value="accuracy_asc" id="sortAccuracyAscOption"></option>
+            <option value="accuracy_desc" id="sortAccuracyDescOption"></option>
+              <option value="alphabetical_asc" id="sortAlphabeticalAscOption"></option>
+              <option value="alphabetical_desc" id="sortAlphabeticalDescOption"></option>
           </select>
       </div>
       <div class="word-list" id="wordList"></div>
@@ -161,21 +162,21 @@
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     let currentLanguage = urlParams.get('lang') || 'zh';
-  
+
     let words = JSON.parse(localStorage.getItem('words')) || [];
     words = words.map(wordItem => {
         return {
             word: wordItem.word,
             translation: wordItem.translation,
             wrongCount: wordItem.wrongCount !== undefined ? wordItem.wrongCount : 0,
-            correctCount: wordItem.correctCount !== undefined ? wordItem.correctCount : 0, 
+            correctCount: wordItem.correctCount !== undefined ? wordItem.correctCount : 0,
             hasBeenTested: wordItem.hasBeenTested !== undefined ? wordItem.hasBeenTested : false
         };
     });
 
-    let settings = JSON.parse(localStorage.getItem('wordGameSettings')) || { 
+    let settings = JSON.parse(localStorage.getItem('wordGameSettings')) || {
         wordsPerRound: 10,
-        enableWeightSystem: true 
+        enableWeightSystem: true
     };
 
     let originalWords;
@@ -201,9 +202,9 @@
     function markAsNeedsSave() {
       const currentWordsString = JSON.stringify(words);
       const currentWordsPerRound = parseInt(document.getElementById('wordsPerRound').value);
-      const currentEnableWeightSystem = document.getElementById('enableWeightSystem').checked; 
-      
-      const currentSettings = { 
+      const currentEnableWeightSystem = document.getElementById('enableWeightSystem').checked;
+
+      const currentSettings = {
           wordsPerRound: currentWordsPerRound,
           enableWeightSystem: currentEnableWeightSystem
       };
@@ -241,41 +242,43 @@
                 const accuracyB = totalB > 0 ? (b.correctCount / totalB) : 0;
                 return accuracyA - accuracyB; // Ascending
             });
+        } else if (sortOption === 'alphabetical_asc') {
+            words.sort((a, b) => a.word.localeCompare(b.word)); // Alphabetical A-Z
+        } else if (sortOption === 'alphabetical_desc') {
+            words.sort((a, b) => b.word.localeCompare(a.word)); // Alphabetical Z-A
         } else {
-            // Default sort (e.g., by original input order or alphabetically)
-            // For simplicity, we'll keep the current order if no specific sort is chosen
-            // Or you could sort alphabetically by word:
-            words.sort((a, b) => a.word.localeCompare(b.word));
+            // Default sort if no valid option is selected (e.g., initial load or invalid option)
+            words.sort((a, b) => a.word.localeCompare(b.word)); // Fallback to A-Z
         }
     }
 
     function renderWords() {
         const wordList = document.getElementById('wordList');
-        const noWordsMessageDiv = document.getElementById('noWordsInWordBankMessage'); 
-        const noWordsBankText = document.getElementById('noWordsBankText'); 
-        const t = translations[currentLanguage]; 
-        
+        const noWordsMessageDiv = document.getElementById('noWordsInWordBankMessage');
+        const noWordsBankText = document.getElementById('noWordsBankText');
+        const t = translations[currentLanguage];
+
         const sortOption = document.getElementById('sortOrder').value;
         sortWords(sortOption); // Apply sorting before rendering
 
         if (words.length === 0) {
-            wordList.innerHTML = ''; 
-            wordList.style.display = 'none'; 
+            wordList.innerHTML = '';
+            wordList.style.display = 'none';
             // 動態獲取標題文本，並插入到提示語中
             const bulkAndBackupTitleText = document.getElementById('bulkAndBackupTitle').textContent;
-            noWordsBankText.innerHTML = `${t.noWordsInBank}<br>${t.promptToAddWordsInBankDynamic.replace('{0}', bulkAndBackupTitleText)}`; 
-            noWordsMessageDiv.style.display = 'block'; 
+            noWordsBankText.innerHTML = `${t.noWordsInBank}<br>${t.promptToAddWordsInBankDynamic.replace('{0}', bulkAndBackupTitleText)}`;
+            noWordsMessageDiv.style.display = 'block';
         } else {
-            noWordsMessageDiv.style.display = 'none'; 
-            wordList.style.display = 'block'; 
-            wordList.innerHTML = ''; 
+            noWordsMessageDiv.style.display = 'none';
+            wordList.style.display = 'block';
+            wordList.innerHTML = '';
 
             words.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'word-item';
 
                 const totalAttempts = item.correctCount + item.wrongCount;
-                const accuracyRate = totalAttempts > 0 ? ((item.correctCount / totalAttempts) * 100).toFixed(0) : 0; 
+                const accuracyRate = totalAttempts > 0 ? ((item.correctCount / totalAttempts) * 100).toFixed(0) : 0;
 
                 const infoSpan = document.createElement('span');
                 infoSpan.className = 'word-item-info';
@@ -289,7 +292,7 @@
                 deleteBtn.textContent = t.delete;
                 deleteBtn.onclick = () => {
                     words.splice(index, 1);
-                    renderWords(); 
+                    renderWords();
                     markAsNeedsSave();
                 };
                 actionsDiv.appendChild(deleteBtn);
@@ -323,7 +326,7 @@
             alert(t.alertPasteWordsRequired);
             return;
         }
-        
+
         // 檢查是否是 JSON 數據，如果是，提示用戶使用「匯入所有數據」
         try {
             const potentialJson = JSON.parse(inputText);
@@ -367,14 +370,14 @@
 
     function saveSettings() {
         const wordsPerRoundInput = document.getElementById('wordsPerRound');
-        const newWordsPerRound = parseInt(wordsPerRoundInput.value); 
+        const newWordsPerRound = parseInt(wordsPerRoundInput.value);
         const newEnableWeightSystem = document.getElementById('enableWeightSystem').checked;
         const t = translations[currentLanguage];
 
         if (isNaN(newWordsPerRound) || newWordsPerRound < 1) {
-            alert(t.alertInvalidNumber); 
+            alert(t.alertInvalidNumber);
             wordsPerRoundInput.value = settings.wordsPerRound;
-            return; 
+            return;
         }
 
         let settingsChanged = false;
@@ -398,19 +401,19 @@
         if (confirm(t.confirmDeleteAll)) {
             words = [];
             localStorage.removeItem('words');
-            renderWords(); 
+            renderWords();
             markAsNeedsSave();
-            console.log(t.alertDeleteAllDone); 
+            console.log(t.alertDeleteAllDone);
         }
     }
 
-    function resetAllWrongCounts() { 
+    function resetAllWrongCounts() {
         const t = translations[currentLanguage];
         if (confirm(t.confirmResetWeights)) {
             words.forEach(item => {
                 item.wrongCount = 0;
-                item.correctCount = 0; 
-                item.hasBeenTested = false; 
+                item.correctCount = 0;
+                item.hasBeenTested = false;
             });
             renderWords();
             markAsNeedsSave();
@@ -430,8 +433,8 @@
       originalWords = JSON.parse(JSON.stringify(words));
       originalSettings = JSON.parse(JSON.stringify(settings));
 
-      needsSave = false; 
-      updateSaveButtonState(); 
+      needsSave = false;
+      updateSaveButtonState();
       console.log(translations[currentLanguage].alertSaveDone);
     }
 
@@ -445,13 +448,29 @@
         };
         const jsonString = JSON.stringify(data, null, 2); // 格式化輸出
         const dataTextarea = document.getElementById('dataTextarea');
-        dataTextarea.value = jsonString;
-        dataTextarea.select();
-        try {
-            document.execCommand('copy'); // 嘗試複製到剪貼板
-            console.log(t.alertDataCopied);
-        } catch (err) {
-            console.warn('Unable to copy to clipboard. Please copy manually.');
+        dataTextarea.value = jsonString; // Put it in the textarea for visibility
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(jsonString)
+                .then(() => {
+                    alert(t.alertDataCopied);
+                    console.log(t.alertDataCopied);
+                })
+                .catch(err => {
+                    console.error('Failed to copy data: ', err);
+                    alert('自動複製數據失敗。請手動從文字區域複製文本。'); // Updated alert for failure
+                });
+        } else {
+            // Fallback for browsers that don't support navigator.clipboard
+            dataTextarea.select();
+            try {
+                document.execCommand('copy');
+                alert(t.alertDataCopied);
+                console.log(t.alertDataCopied);
+            } catch (err) {
+                console.warn('Unable to copy to clipboard. Please copy manually.');
+                alert('您的瀏覽器不支持自動複製。請選擇文字區域中的文本並手動複製。'); // Updated alert for fallback
+            }
         }
     }
 
@@ -473,7 +492,7 @@
             document.getElementById('dataTextarea').value = ''; // 清空 textarea
         }
     }
-    
+
     function applyImportedData(importedData) {
         let currentWordsMap = new Map();
         words.forEach(word => currentWordsMap.set(word.word, word)); // 將現有單字轉為 Map 便於查詢
@@ -485,9 +504,9 @@
                 if (existingWord) {
                     // 如果單字已存在，更新其屬性（以匯入數據為準，這是"同步"的邏輯）
                     existingWord.translation = importedWord.translation;
-                    existingWord.wrongCount = importedWord.wrongCount !== undefined ? importedWord.wrongCount : 0; 
-                    existingWord.correctCount = importedWord.correctCount !== undefined ? importedWord.correctCount : 0; 
-                    existingWord.hasBeenTested = importedWord.hasBeenTested !== undefined ? importedWord.hasBeenTested : false; 
+                    existingWord.wrongCount = importedWord.wrongCount !== undefined ? importedWord.wrongCount : 0;
+                    existingWord.correctCount = importedWord.correctCount !== undefined ? importedWord.correctCount : 0;
+                    existingWord.hasBeenTested = importedWord.hasBeenTested !== undefined ? importedWord.hasBeenTested : false;
                 } else {
                     // 如果單字不存在，則新增到 Map (並確保所有屬性都有)
                     currentWordsMap.set(importedWord.word, {
@@ -521,7 +540,7 @@
         renderWords();
         originalWords = JSON.parse(JSON.stringify(words));
         originalSettings = JSON.parse(JSON.stringify(settings));
-        needsSave = false; 
+        needsSave = false;
         updateSaveButtonState();
     }
 
@@ -530,26 +549,26 @@
         zh: {
             title: '單字管理後台', // <title> 和 H1 標題
             bulkAndBackupTitle: '單字匯入 / 數據備份與還原', // H2 標題
-            bulkTextareaPlaceholder: '請在此輸入「單字,意思或翻譯」格式單字（每行一組），或貼上備份數據...', 
-            bulkImportBtn: '批量匯入單字（更新或新增）', 
-            exportDataBtn: '匯出所有數據（複製貼上）', 
-            importDataBtn: '匯入所有數據（覆蓋與合併）', 
-            
-            save: '💾儲存所有設定', 
-            clear: '❌一鍵刪除所有單字', 
+            bulkTextareaPlaceholder: '請在此輸入「單字,意思或翻譯」格式單字（每行一組），或貼上備份數據...',
+            bulkImportBtn: '批量匯入單字（更新或新增）',
+            exportDataBtn: '匯出所有數據（複製貼上）',
+            importDataBtn: '匯入所有數據（覆蓋與合併）',
+
+            save: '💾儲存所有設定',
+            clear: '❌一鍵刪除所有單字',
             gameSettingsTitle: '遊戲設定', // H2 標題
             wordsPerRoundLabel: '每局單字數量：', // Label 文字
             enableWeightSystemText: '啟用權重出題系統 (優先考錯的字)', // Span 文字
             resetAllWrongCountsText: '📊 重設所有單字權重', // Span 文字
             wordListSectionTitle: '單字列', // H2 標題
             delete: '刪除',
-            reminder: '🔔 您有未儲存的變更！請點擊【💾儲存所有設定】', 
-            alertPasteWordsRequired: '請在文字區域輸入或貼上單字！', 
-            alertUseImportAllData: '偵測到可能是完整的備份數據。請點擊「匯入所有數據」按鈕。', 
-            alertBulkImportSummary: '批量匯入完成！', 
-            alertBulkImportAdded: '新增', 
-            alertBulkImportUpdated: '更新', 
-            alertNoValidWordsImported: '沒有有效單字被匯入或更新。', 
+            reminder: '🔔 您有未儲存的變更！請點擊【💾儲存所有設定】',
+            alertPasteWordsRequired: '請在文字區域輸入或貼上單字！',
+            alertUseImportAllData: '偵測到可能是完整的備份數據。請點擊「匯入所有數據」按鈕。',
+            alertBulkImportSummary: '批量匯入完成！',
+            alertBulkImportAdded: '新增',
+            alertBulkImportUpdated: '更新',
+            alertNoValidWordsImported: '沒有有效單字被匯入或更新。',
             alertSaveDone: '儲存成功！',
             confirmDeleteAll: '確定要刪除所有單字嗎？這個動作無法復原！',
             alertDeleteAllDone: '已清空所有單字！',
@@ -557,43 +576,44 @@
             alertNoChangesToSave: '沒有變更需要儲存。',
             confirmResetWeights: '確定要重設所有單字的錯誤次數（權重）嗎？此動作無法復原！',
             alertWeightsReset: '所有單字的權重已重設。',
-            accuracyRateLabel: '答對率:', 
+            accuracyRateLabel: '答對率:',
             alertDataCopied: '數據已複製到剪貼板！',
             alertPasteBackupRequired: '請在文字區域貼上備份數據！',
             alertInvalidData: '無效的數據格式！請檢查您貼上的內容是否為正確的 JSON 格式。',
             alertDataImported: '數據匯入成功！',
             // 單字庫頁面專用的無單字提示
             noWordsInBank: '目前單字庫中沒有單字。',
-            promptToAddWordsInBankDynamic: '請使用上方「{0}」功能新增單字。', 
+            promptToAddWordsInBankDynamic: '請使用上方「{0}」功能新增單字。',
             // New sort options
             sortOrderLabel: '排序方式:',
-            sortDefaultOption: '預設 (按字母順序)',
+            sortAlphabeticalAscOption: '字母順序 (A-Z)',
+            sortAlphabeticalDescOption: '字母順序 (Z-A)',
             sortAccuracyDescOption: '答對率 (高到低)',
             sortAccuracyAscOption: '答對率 (低到高)',
         },
         en: {
             title: 'Word Management',
-            bulkAndBackupTitle: 'Word Import / Data Backup & Restore', 
-            bulkTextareaPlaceholder: 'Enter "English,Meaning or Translation" format words here (one per line), or paste backup data...', 
-            bulkImportBtn: 'Bulk Import Words (Update or Add)', 
-            exportDataBtn: 'Export All Data (Copy/Paste)', 
-            importDataBtn: 'Import All Data (Overwrite & Merge)', 
+            bulkAndBackupTitle: 'Word Import / Data Backup & Restore',
+            bulkTextareaPlaceholder: 'Enter "English,Meaning or Translation" format words here (one per line), or paste backup data...',
+            bulkImportBtn: 'Bulk Import Words (Update or Add)',
+            exportDataBtn: 'Export All Data (Copy/Paste)',
+            importDataBtn: 'Import All Data (Overwrite & Merge)',
 
-            save: '💾 Save All Settings', 
-            clear: '❌ Delete All Words', 
+            save: '💾 Save All Settings',
+            clear: '❌ Delete All Words',
             gameSettingsTitle: 'Game Settings',
             wordsPerRoundLabel: 'Words per round:',
             enableWeightSystemText: 'Enable Weighted Question System (Prioritize incorrect words)',
             resetAllWrongCountsText: '📊 Reset All Word Weights',
             wordListSectionTitle: 'Current Words',
             delete: 'Delete',
-            reminder: '🔔 You have unsaved changes! Click 【💾 Save All Settings】', 
-            alertPasteWordsRequired: 'Please enter or paste words into the text area!', 
-            alertUseImportAllData: 'Detected a complete backup data. Please click "Import All Data" button.', 
-            alertBulkImportSummary: 'Bulk import complete!', 
-            alertBulkImportAdded: 'added', 
-            alertBulkImportUpdated: 'updated', 
-            alertNoValidWordsImported: 'No valid words were imported or updated.', 
+            reminder: '🔔 You have unsaved changes! Click 【💾 Save All Settings】',
+            alertPasteWordsRequired: 'Please enter or paste words into the text area!',
+            alertUseImportAllData: 'Detected a complete backup data. Please click "Import All Data" button.',
+            alertBulkImportSummary: 'Bulk import complete!',
+            alertBulkImportAdded: 'added',
+            alertBulkImportUpdated: 'updated',
+            alertNoValidWordsImported: 'No valid words were imported or updated.',
             alertSaveDone: 'Saved successfully!',
             confirmDeleteAll: 'Are you sure you want to delete all words? This cannot be undone!',
             alertDeleteAllDone: 'All words have been cleared!',
@@ -601,7 +621,7 @@
             alertNoChangesToSave: 'No changes to save.',
             confirmResetWeights: 'Are you sure you want to reset all word error counts (weights)? This action cannot be undone!',
             alertWeightsReset: 'All word weights have been reset.',
-            accuracyRateLabel: 'Accuracy Rate:', 
+            accuracyRateLabel: 'Accuracy Rate:',
             alertDataCopied: 'Data copied to clipboard!',
             alertPasteBackupRequired: 'Please paste backup data into the text area!',
             alertInvalidData: 'Invalid data format! Please check if the content you pasted is in correct JSON format.',
@@ -611,7 +631,8 @@
             promptToAddWordsInBankDynamic: 'Please use the "{0}" function above to add words.',
             // New sort options
             sortOrderLabel: 'Sort by:',
-            sortDefaultOption: 'Default (Alphabetical)',
+            sortAlphabeticalAscOption: 'Alphabetical (A-Z)',
+            sortAlphabeticalDescOption: 'Alphabetical (Z-A)',
             sortAccuracyDescOption: 'Accuracy (High to Low)',
             sortAccuracyAscOption: 'Accuracy (Low to High)',
         }
@@ -624,7 +645,7 @@
 
     function updateLanguage() {
         const t = translations[currentLanguage];
-        
+
         // 修正點：設置頁面 <title> 文字
         document.title = t.title;
 
@@ -632,15 +653,15 @@
         document.getElementById('mainTitle').textContent = t.title;
 
         // 設置「單字匯入 / 數據備份與還原」H2 標題文字
-        document.getElementById('bulkAndBackupTitle').textContent = t.bulkAndBackupTitle; 
+        document.getElementById('bulkAndBackupTitle').textContent = t.bulkAndBackupTitle;
         document.getElementById('dataTextarea').placeholder = t.bulkTextareaPlaceholder;
         document.getElementById('bulkImportBtn').textContent = t.bulkImportBtn;
         document.getElementById('exportDataBtn').textContent = t.exportDataBtn;
         document.getElementById('importDataBtn').textContent = t.importDataBtn;
-        
+
         // 設置「遊戲設定」H2 標題文字
         document.getElementById('gameSettingsTitle').textContent = t.gameSettingsTitle;
-        
+
         // 設置「每局單字數量」Label 文字
         const wordsPerRoundLabel = document.getElementById('wordsPerRoundLabel');
         if (wordsPerRoundLabel) { // 這裡加了個檢查，確保元素存在再操作
@@ -652,29 +673,30 @@
         if (enableWeightSystemLabel) {
             enableWeightSystemLabel.textContent = t.enableWeightSystemText;
         }
-        
+
         // 設置「重設所有單字權重」Span 文字
         const resetWeightsButtonText = document.getElementById('resetWeightsButtonText');
         if (resetWeightsButtonText) {
             resetWeightsButtonText.textContent = t.resetAllWrongCountsText;
         }
-        
+
         // 設置「單字列」H2 標題文字
         document.getElementById('wordListSectionTitle').textContent = t.wordListSectionTitle;
 
-        // Update sort labels
+        // Update sort labels - Removed 'sortDefaultOption'
         document.getElementById('sortOrderLabel').textContent = t.sortOrderLabel;
-        document.getElementById('sortDefaultOption').textContent = t.sortDefaultOption;
+        document.getElementById('sortAlphabeticalAscOption').textContent = t.sortAlphabeticalAscOption;
+        document.getElementById('sortAlphabeticalDescOption').textContent = t.sortAlphabeticalDescOption;
         document.getElementById('sortAccuracyDescOption').textContent = t.sortAccuracyDescOption;
         document.getElementById('sortAccuracyAscOption').textContent = t.sortAccuracyAscOption;
 
         // 按鈕文字現在完全由 updateLanguage 函數根據當前語言來設定
-        document.getElementById('saveAllButton').textContent = t.save; 
-        document.getElementById('clearAllWordsButton').textContent = t.clear; 
-        
+        document.getElementById('saveAllButton').textContent = t.save;
+        document.getElementById('clearAllWordsButton').textContent = t.clear;
+
         document.getElementById('langToggleBtn').textContent = '🌐 ' + (currentLanguage === 'zh' ? 'English' : '中文');
-        
-        renderWords(); 
+
+        renderWords();
         updateSaveButtonState();
     }
 
@@ -685,12 +707,17 @@
         originalWords = JSON.parse(JSON.stringify(words));
         originalSettings = JSON.parse(JSON.stringify(settings));
 
-        document.getElementById('dataTextarea').addEventListener('input', markAsNeedsSave); 
+        document.getElementById('dataTextarea').addEventListener('input', markAsNeedsSave);
         document.getElementById('wordsPerRound').addEventListener('input', markAsNeedsSave);
         document.getElementById('enableWeightSystem').addEventListener('change', markAsNeedsSave);
 
         needsSave = false;
-        updateLanguage(); 
+        updateLanguage();
+
+        // Ensure a default sort option is selected when the page loads, as "default" is removed.
+        // This will make "Alphabetical (A-Z)" the initial selected sort.
+        document.getElementById('sortOrder').value = 'accuracy_asc';
+        renderWords();
     });
 </script>
 </body>

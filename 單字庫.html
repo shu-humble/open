@@ -561,37 +561,47 @@
     // --- 數據匯出/匯入功能 (純文字版) ---
 
     function exportAllData() {
-        const t = translations[currentLanguage];
-        const data = {
-            words: words,
-            settings: settings
-        };
-        const jsonString = JSON.stringify(data);
-        const dataTextarea = document.getElementById('dataTextarea');
-        dataTextarea.value = jsonString;
+  const t = translations[currentLanguage];
+  const data = {
+    words: words,
+    settings: settings
+  };
+  const jsonString = JSON.stringify(data);
 
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(jsonString)
-                .then(() => {
-                    alert(t.alertDataCopied);
-                    console.log(t.alertDataCopied);
-                })
-                .catch(err => {
-                    console.error('Failed to copy data: ', err);
-                    alert('自動複製數據失敗。請手動從文字區域複製文本。');
-                });
-        } else {
-            dataTextarea.select();
-            try {
-                document.execCommand('copy');
-                alert(t.alertDataCopied);
-                console.log(t.alertDataCopied);
-            } catch (err) {
-                console.warn('Unable to copy to clipboard. Please copy manually.');
-                alert('您的瀏覽器不支持自動複製。請選擇文字區域中的文本並手動複製。');
-            }
-        }
-    }
+  // 先嘗試 Clipboard API
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(jsonString)
+      .then(() => {
+        alert(t.alertDataCopied); // 成功複製時顯示提示
+        console.log(t.alertDataCopied);
+      })
+      .catch(err => {
+        // 若失敗，再把字串填入 textarea 讓使用者手動複製
+        console.error('Clipboard API 複製失敗：', err);
+        fallbackToTextarea(jsonString, t);
+      });
+  } else {
+    // 不支援 Clipboard API，直接讓使用者手動複製
+    fallbackToTextarea(jsonString, t);
+  }
+}
+
+// 把 JSON 塞到 <textarea>，並全選讓使用者複製
+function fallbackToTextarea(jsonString, t) {
+  const dataTextarea = document.getElementById('dataTextarea');
+  dataTextarea.value = jsonString;
+  dataTextarea.style.display = 'block';   // 若原本隱藏，可先顯示
+  dataTextarea.select();
+  try {
+    document.execCommand('copy');
+    alert(t.alertDataCopied);
+    console.log(t.alertDataCopied);
+  } catch (err) {
+    console.warn('execCommand 複製失敗，請手動複製文字區域內容。', err);
+    alert('自動複製數據失敗，請手動複製文字區域中的文本。');
+  }
+}
+
 
     function importAllData() {
         const t = translations[currentLanguage];

@@ -38,12 +38,72 @@
     .word-item:last-child {
       border-bottom: none;
     }
+    /* ***** 修改點 1: info-button 層級提高的 CSS ***** */
     .word-item-info {
-        flex-grow: 1; /* 讓信息部分佔據更多空間 */
+        flex-grow: 1;
+        position: relative;
+        display: flex; /* 讓內容水平排列 */
+        align-items: center; /* 垂直居中 */
     }
+    .word-info-text { /* ***** 新增 class 來包裹文字信息 ***** */
+        flex-grow: 1;
+    }
+    .info-button {
+        /* background: none; */ /* 移除，以防覆蓋 */
+        /* border: none; */ /* 移除，以防覆蓋 */
+        color: #666;
+        cursor: pointer;
+        padding: 0 5px;
+        font-size: 14px;
+        /* ***** 將按鈕移到最前面，並給予固定寬度，使其不影響文字佈局 ***** */
+        order: -1; /* 將按鈕放在 flex 容器的最前面 */
+        flex-shrink: 0; /* 防止按鈕縮小 */
+        width: 20px; /* 固定寬度，保持一致性 */
+        height: 20px; /* 固定高度 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%; /* 圓形按鈕 */
+        background-color: #f0f0f0; /* 淺灰色背景 */
+        border: 1px solid #ccc; /* 邊框 */
+        box-sizing: border-box; /* 包含 padding 和 border 在寬高內 */
+    }
+    .info-button:hover {
+        color: #333;
+        background-color: #e0e0e0; /* hover 顏色 */
+    }
+    .stats-tooltip {
+    display: none;
+    position: absolute; /* 保持 absolute 定位 */
+    background: white;
+    border: 1px solid #ccc;
+    padding: 8px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 1000;
+    min-width: 150px;
+    max-width: 250px; /* 設置最大寬度 */
+    white-space: normal; /* 允許文字換行 */
+
+    /* 移除或註釋掉這些由 JS 動態設置的屬性，或者將它們設為初始值 */
+    /* left: 30px;  */
+    /* top: 0; */
+    /* margin-left: 5px; */
+
+    pointer-events: none; /* 讓滑鼠可以穿透 */
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out; /* 保持過渡效果 */
+}
+
+
+    .info-button:hover + .stats-tooltip {
+        display: block;
+        opacity: 1;
+    }
+
     .word-item-actions {
         display: flex;
-        gap: 5px; /* 按鈕之間的小間距 */
+        gap: 5px;
     }
     .save-buttons {
       margin: 20px 0;
@@ -91,7 +151,6 @@
       width: 100%;
       margin: 5px 0;
     }
-
   </style>
 </head>
 <body>
@@ -170,7 +229,9 @@
             translation: wordItem.translation,
             wrongCount: wordItem.wrongCount !== undefined ? wordItem.wrongCount : 0,
             correctCount: wordItem.correctCount !== undefined ? wordItem.correctCount : 0,
-            hasBeenTested: wordItem.hasBeenTested !== undefined ? wordItem.hasBeenTested : false
+            hasBeenTested: wordItem.hasBeenTested !== undefined ? wordItem.hasBeenTested : false,
+            // ***** 修改點 2: 連勝計數初始化時設為 0 *****
+            streakCount: wordItem.streakCount !== undefined ? wordItem.streakCount : 0
         };
     });
 
@@ -229,26 +290,26 @@
         if (sortOption === 'accuracy_desc') {
             words.sort((a, b) => {
                 const totalA = a.correctCount + a.wrongCount;
-                const accuracyA = totalA > 0 ? (a.correctCount / totalA) : 0;
+                // ***** 修改點 3: 熟練度計算公式更改 *****
+                const proficiencyA = totalA > 0 ? (a.correctCount + (a.streakCount > 0 ? (a.streakCount - 1) * 0.2 : 0)) / (totalA * (a.wrongCount + 1)) : 0;
                 const totalB = b.correctCount + b.wrongCount;
-                const accuracyB = totalB > 0 ? (b.correctCount / totalB) : 0;
-                return accuracyB - accuracyA; // Descending
+                const proficiencyB = totalB > 0 ? (b.correctCount + (b.streakCount > 0 ? (b.streakCount - 1) * 0.2 : 0)) / (totalB * (b.wrongCount + 1)) : 0;
+                return proficiencyB - proficiencyA; // Descending
             });
         } else if (sortOption === 'accuracy_asc') {
             words.sort((a, b) => {
                 const totalA = a.correctCount + a.wrongCount;
-                const accuracyA = totalA > 0 ? (a.correctCount / totalA) : 0;
+                // ***** 修改點 3: 熟練度計算公式更改 *****
+                const proficiencyA = totalA > 0 ? (a.correctCount + (a.streakCount > 0 ? (a.streakCount - 1) * 0.2 : 0)) / (totalA * (a.wrongCount + 1)) : 0;
                 const totalB = b.correctCount + b.wrongCount;
-                const accuracyB = totalB > 0 ? (b.correctCount / totalB) : 0;
-                return accuracyA - accuracyB; // Ascending
+                const proficiencyB = totalB > 0 ? (b.correctCount + (b.streakCount > 0 ? (b.streakCount - 1) * 0.2 : 0)) / (totalB * (b.wrongCount + 1)) : 0;
+                return proficiencyA - proficiencyB; // Ascending
             });
         } else if (sortOption === 'alphabetical_asc') {
             words.sort((a, b) => a.word.localeCompare(b.word)); // Alphabetical A-Z
         } else if (sortOption === 'alphabetical_desc') {
             words.sort((a, b) => b.word.localeCompare(a.word)); // Alphabetical Z-A
         } else {
-            // Default sort if no valid option is selected (e.g., initial load or invalid option)
-            // Since "default" is removed, we explicitly set a fallback
             words.sort((a, b) => a.word.localeCompare(b.word)); // Fallback to A-Z
         }
     }
@@ -260,12 +321,11 @@
         const t = translations[currentLanguage];
 
         const sortOption = document.getElementById('sortOrder').value;
-        sortWords(sortOption); // Apply sorting before rendering
+        sortWords(sortOption);
 
         if (words.length === 0) {
             wordList.innerHTML = '';
             wordList.style.display = 'none';
-            // 動態獲取標題文本，並插入到提示語中
             const bulkAndBackupTitleText = document.getElementById('bulkAndBackupTitle').textContent;
             noWordsBankText.innerHTML = `${t.noWordsInBank}<br>${t.promptToAddWordsInBankDynamic.replace('{0}', bulkAndBackupTitleText)}`;
             noWordsMessageDiv.style.display = 'block';
@@ -274,17 +334,76 @@
             wordList.style.display = 'block';
             wordList.innerHTML = '';
 
-            words.forEach((item, index) => {
+            words.forEach((item, index) => { // <-- 這個是正確的 forEach 循環
                 const div = document.createElement('div');
                 div.className = 'word-item';
 
                 const totalAttempts = item.correctCount + item.wrongCount;
-                const accuracyRate = totalAttempts > 0 ? ((item.correctCount / totalAttempts) * 100).toFixed(0) : 0;
+                // 熟練度計算公式
+                const proficiencyRate = totalAttempts > 0 ?
+                    ((item.correctCount + (item.streakCount > 0 ? (item.streakCount - 1) * 0.2 : 0)) / (totalAttempts * (item.wrongCount + 1)) * 100).toFixed(0) : 0;
 
                 const infoSpan = document.createElement('span');
                 infoSpan.className = 'word-item-info';
-                infoSpan.textContent = `${item.word} - ${item.translation} (${t.accuracyRateLabel} ${accuracyRate}%)`;
-                div.appendChild(infoSpan);
+
+                // HTML 結構調整，info-button 在文字信息之前
+                infoSpan.innerHTML = `
+                    <button class="info-button">ⓘ</button>
+                    <div class="stats-tooltip">
+                        ${t.correctCountLabel}: ${item.correctCount}<br>
+                        ${t.wrongCountLabel}: ${item.wrongCount}<br>
+                        ${t.streakCountLabel}: ${item.streakCount}
+                    </div>
+                    <span class="word-info-text">
+                        ${item.word} - ${item.translation} (${t.proficiencyRateLabel} ${proficiencyRate}%)
+                    </span>
+                `;
+
+                // 獲取按鈕和 tooltip 元素，以便添加事件監聽器和動態調整位置
+                const infoButton = infoSpan.querySelector('.info-button');
+                const statsTooltip = infoSpan.querySelector('.stats-tooltip');
+
+                // 滑鼠移入事件：顯示 tooltip 並動態調整位置
+                infoButton.addEventListener('mouseover', function() {
+                    statsTooltip.style.display = 'block'; // 先顯示，以便計算尺寸
+                    statsTooltip.style.opacity = '1';
+
+                    const buttonRect = infoButton.getBoundingClientRect();
+                    const tooltipRect = statsTooltip.getBoundingClientRect();
+                    const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+                    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+
+                    // 預設位置 (在按鈕右側，與按鈕頂部對齊)
+                    let left = buttonRect.width + 5; // 距按鈕右側 5px
+                    let top = 0; // 與按鈕頂部對齊 (相對於 infoButton 的父容器)
+
+                    // 檢查是否溢出右側
+                    if (buttonRect.right + tooltipRect.width + 10 > viewportWidth) {
+                        // 如果右側空間不足，嘗試顯示在左側
+                        left = -(tooltipRect.width + 5); // 距按鈕左側 5px
+                    }
+
+                    // 檢查是否溢出底部
+                    if (buttonRect.top + tooltipRect.height + 10 > viewportHeight) {
+                        // 如果底部空間不足，嘗試顯示在按鈕上方
+                        top = -(tooltipRect.height + 5); // 距按鈕頂部 5px
+                    }
+
+                    // 應用計算出的位置 (這裡的 left 和 top 是相對於 infoSpan 的)
+                    statsTooltip.style.left = `${left}px`;
+                    statsTooltip.style.top = `${top}px`;
+                });
+
+                // 滑鼠移出事件：隱藏 tooltip
+                infoButton.addEventListener('mouseleave', function() {
+                    statsTooltip.style.opacity = '0';
+                    // 延遲隱藏，確保過渡效果完成
+                    setTimeout(() => {
+                        statsTooltip.style.display = 'none';
+                    }, 200); // 與 CSS transition-duration 保持一致
+                });
+
+                div.appendChild(infoSpan); // 將 infoSpan 添加到 div
 
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'word-item-actions';
@@ -300,7 +419,7 @@
 
                 div.appendChild(actionsDiv);
                 wordList.appendChild(div);
-            });
+            }); // <-- 這個是 forEach 循環的正確結束標籤
         }
     }
 
@@ -308,13 +427,14 @@
     function updateOrCreateWord(newWordObj) {
         const existingIndex = words.findIndex(item => item.word === newWordObj.word);
         if (existingIndex !== -1) {
-            // 如果單字已存在，更新其翻譯，並保留原有的答對答錯次數
-            // 這裡假設批量匯入時，用戶更希望更新翻譯，而不是重置學習進度
             words[existingIndex].translation = newWordObj.translation;
+            // ***** 修改點 5: 批量匯入時，不清空連勝數，僅更新翻譯 *****
+            words[existingIndex].streakCount = words[existingIndex].streakCount !== undefined ? words[existingIndex].streakCount : 0;
             return 'updated';
         } else {
             // 如果單字不存在，新增
-            words.push(newWordObj);
+            // ***** 修改點 5: 批量匯入時，新單字預設連勝數為 0 *****
+            words.push({ ...newWordObj, streakCount: 0 }); // 確保新單字有 streakCount
             return 'added';
         }
     }
@@ -328,7 +448,6 @@
             return;
         }
 
-        // 檢查是否是 JSON 數據，如果是，提示用戶使用「匯入所有數據」
         try {
             const potentialJson = JSON.parse(inputText);
             if (potentialJson.words && Array.isArray(potentialJson.words)) {
@@ -336,7 +455,7 @@
                 return;
             }
         } catch (e) {
-            // 不是 JSON 數據，繼續按批量單字處理
+            // Not JSON data, proceed as bulk word
         }
 
         let addedCount = 0;
@@ -348,14 +467,13 @@
             if (parts.length >= 2 && parts[0] && parts[1]) {
                 const word = parts[0];
                 const translation = parts[1];
-                // 創建一個新的單字對象，包含默認的計數和狀態
-                const newWordObj = { word, translation, wrongCount: 0, correctCount: 0, hasBeenTested: false };
+                const newWordObj = { word, translation, wrongCount: 0, correctCount: 0, hasBeenTested: false, streakCount: 0 }; // 確保新建時有 streakCount
                 const status = updateOrCreateWord(newWordObj);
                 if (status === 'added') addedCount++;
                 else updatedCount++;
             }
         }
-        document.getElementById('dataTextarea').value = ''; // 清空 textarea
+        document.getElementById('dataTextarea').value = '';
         renderWords();
         if (addedCount > 0 || updatedCount > 0) {
             markAsNeedsSave();
@@ -415,6 +533,7 @@
                 item.wrongCount = 0;
                 item.correctCount = 0;
                 item.hasBeenTested = false;
+                item.streakCount = 0; // ***** 修改點 6: 重設權重時清空連勝數 *****
             });
             renderWords();
             markAsNeedsSave();
@@ -447,10 +566,9 @@
             words: words,
             settings: settings
         };
-        // 移除 null, 2 參數，讓 JSON 字符串不包含換行和縮排，以減少資料量
         const jsonString = JSON.stringify(data);
         const dataTextarea = document.getElementById('dataTextarea');
-        dataTextarea.value = jsonString; // 將其放入 textarea 以供查看
+        dataTextarea.value = jsonString;
 
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(jsonString)
@@ -460,10 +578,9 @@
                 })
                 .catch(err => {
                     console.error('Failed to copy data: ', err);
-                    alert('自動複製數據失敗。請手動從文字區域複製文本。'); // Updated alert for failure
+                    alert('自動複製數據失敗。請手動從文字區域複製文本。');
                 });
         } else {
-            // Fallback for browsers that don't support navigator.clipboard
             dataTextarea.select();
             try {
                 document.execCommand('copy');
@@ -471,7 +588,7 @@
                 console.log(t.alertDataCopied);
             } catch (err) {
                 console.warn('Unable to copy to clipboard. Please copy manually.');
-                alert('您的瀏覽器不支持自動複製。請選擇文字區域中的文本並手動複製。'); // Updated alert for fallback
+                alert('您的瀏覽器不支持自動複製。請選擇文字區域中的文本並手動複製。');
             }
         }
     }
@@ -491,42 +608,42 @@
             alert(t.alertInvalidData);
             console.error("Import error:", e);
         } finally {
-            document.getElementById('dataTextarea').value = ''; // 清空 textarea
+            document.getElementById('dataTextarea').value = '';
         }
     }
 
     function applyImportedData(importedData) {
         let currentWordsMap = new Map();
-        words.forEach(word => currentWordsMap.set(word.word, word)); // 將現有單字轉為 Map 便於查詢
+        words.forEach(word => currentWordsMap.set(word.word, word));
 
-        // 處理匯入的單字數據
         if (importedData.words && Array.isArray(importedData.words)) {
             importedData.words.forEach(importedWord => {
                 const existingWord = currentWordsMap.get(importedWord.word);
                 if (existingWord) {
-                    // 如果單字已存在，更新其屬性（以匯入數據為準，這是"同步"的邏輯）
                     existingWord.translation = importedWord.translation;
                     existingWord.wrongCount = importedWord.wrongCount !== undefined ? importedWord.wrongCount : 0;
                     existingWord.correctCount = importedWord.correctCount !== undefined ? importedWord.correctCount : 0;
                     existingWord.hasBeenTested = importedWord.hasBeenTested !== undefined ? importedWord.hasBeenTested : false;
+                    // ***** 修改點 7: 匯入時確保 streakCount 屬性被複製或初始化 *****
+                    existingWord.streakCount = importedWord.streakCount !== undefined ? importedWord.streakCount : 0;
                 } else {
-                    // 如果單字不存在，則新增到 Map (並確保所有屬性都有)
                     currentWordsMap.set(importedWord.word, {
                         word: importedWord.word,
                         translation: importedWord.translation,
                         wrongCount: importedWord.wrongCount !== undefined ? importedWord.wrongCount : 0,
                         correctCount: importedWord.correctCount !== undefined ? importedWord.correctCount : 0,
-                        hasBeenTested: importedWord.hasBeenTested !== undefined ? importedWord.hasBeenTested : false
+                        hasBeenTested: importedWord.hasBeenTested !== undefined ? importedWord.hasBeenTested : false,
+                        // ***** 修改點 7: 匯入時確保 streakCount 屬性被複製或初始化 *****
+                        streakCount: importedWord.streakCount !== undefined ? importedWord.streakCount : 0
                     });
                 }
             });
-            words = Array.from(currentWordsMap.values()); // 將 Map 轉回陣列
+            words = Array.from(currentWordsMap.values());
             localStorage.setItem('words', JSON.stringify(words));
         } else {
             console.warn("Imported data does not contain a valid 'words' array.");
         }
 
-        // 處理匯入的設定數據
         if (importedData.settings && typeof importedData.settings === 'object') {
             settings = {
                 wordsPerRound: importedData.settings.wordsPerRound !== undefined ? parseInt(importedData.settings.wordsPerRound) : 10,
@@ -549,8 +666,8 @@
 
     const translations = {
         zh: {
-            title: '單字管理後台', // <title> 和 H1 標題
-            bulkAndBackupTitle: '單字匯入 / 數據備份與還原', // H2 標題
+            title: '單字管理後台',
+            bulkAndBackupTitle: '單字匯入 / 數據備份與還原',
             bulkTextareaPlaceholder: '請在此輸入「單字,意思或翻譯」格式單字（每行一組），或貼上備份數據...',
             bulkImportBtn: '批量匯入單字（更新或新增）',
             exportDataBtn: '匯出所有數據（複製貼上）',
@@ -558,11 +675,11 @@
 
             save: '💾儲存所有設定',
             clear: '❌一鍵刪除所有單字',
-            gameSettingsTitle: '遊戲設定', // H2 標題
-            wordsPerRoundLabel: '每局單字數量：', // Label 文字
-            enableWeightSystemText: '啟用權重出題系統 (優先考錯的字)', // Span 文字
-            resetAllWrongCountsText: '📊 重設所有單字權重', // Span 文字
-            wordListSectionTitle: '單字列', // H2 標題
+            gameSettingsTitle: '遊戲設定',
+            wordsPerRoundLabel: '每局單字數量：',
+            enableWeightSystemText: '啟用權重出題系統 (優先考錯的字)',
+            resetAllWrongCountsText: '📊 重設所有單字權重',
+            wordListSectionTitle: '單字列',
             delete: '刪除',
             reminder: '🔔 您有未儲存的變更！請點擊【💾儲存所有設定】',
             alertPasteWordsRequired: '請在文字區域輸入或貼上單字！',
@@ -578,20 +695,22 @@
             alertNoChangesToSave: '沒有變更需要儲存。',
             confirmResetWeights: '確定要重設所有單字的錯誤次數（權重）嗎？此動作無法復原！',
             alertWeightsReset: '所有單字的權重已重設。',
-            accuracyRateLabel: '答對率:',
+            accuracyRateLabel: '答對率:', // 這個標籤可能不再使用，但暫時保留
             alertDataCopied: '數據已複製到剪貼板！',
             alertPasteBackupRequired: '請在文字區域貼上備份數據！',
             alertInvalidData: '無效的數據格式！請檢查您貼上的內容是否為正確的 JSON 格式。',
             alertDataImported: '數據匯入成功！',
-            // 單字庫頁面專用的無單字提示
             noWordsInBank: '目前單字庫中沒有單字。',
             promptToAddWordsInBankDynamic: '請使用上方「{0}」功能新增單字。',
-            // New sort options
             sortOrderLabel: '排序方式:',
             sortAlphabeticalAscOption: '字母順序 (A-Z)',
             sortAlphabeticalDescOption: '字母順序 (Z-A)',
-            sortAccuracyDescOption: '答對率 (高到低)',
-            sortAccuracyAscOption: '答對率 (低到高)',
+            sortAccuracyDescOption: '熟練度 (高到低)', // ***** 修改點 8: 更新排序選項的翻譯 *****
+            sortAccuracyAscOption: '熟練度 (低到高)', // ***** 修改點 8: 更新排序選項的翻譯 *****
+            proficiencyRateLabel: '熟練度:',
+            correctCountLabel: '答對次數',
+            wrongCountLabel: '答錯次數',
+            streakCountLabel: '當前連勝',
         },
         en: {
             title: 'Word Management',
@@ -628,15 +747,17 @@
             alertPasteBackupRequired: 'Please paste backup data into the text area!',
             alertInvalidData: 'Invalid data format! Please check if the content you pasted is in correct JSON format.',
             alertDataImported: 'Data imported successfully!',
-            // Word bank page specific no words message
             noWordsInBank: 'No words currently in the word bank.',
             promptToAddWordsInBankDynamic: 'Please use the "{0}" function above to add words.',
-            // New sort options
             sortOrderLabel: 'Sort by:',
             sortAlphabeticalAscOption: 'Alphabetical (A-Z)',
             sortAlphabeticalDescOption: 'Alphabetical (Z-A)',
-            sortAccuracyDescOption: 'Accuracy (High to Low)',
-            sortAccuracyAscOption: 'Accuracy (Low to High)',
+            sortAccuracyDescOption: 'Proficiency (High to Low)', // ***** 修改點 8: 更新排序選項的翻譯 *****
+            sortAccuracyAscOption: 'Proficiency (Low to High)', // ***** 修改點 8: 更新排序選項的翻譯 *****
+            proficiencyRateLabel: 'Proficiency:',
+            correctCountLabel: 'Correct',
+            wrongCountLabel: 'Wrong',
+            streakCountLabel: 'Current Streak',
         }
     };
 
@@ -648,51 +769,39 @@
     function updateLanguage() {
         const t = translations[currentLanguage];
 
-        // 修正點：設置頁面 <title> 文字
         document.title = t.title;
-
-        // 設置 H1 標題文字
         document.getElementById('mainTitle').textContent = t.title;
-
-        // 設置「單字匯入 / 數據備份與還原」H2 標題文字
         document.getElementById('bulkAndBackupTitle').textContent = t.bulkAndBackupTitle;
         document.getElementById('dataTextarea').placeholder = t.bulkTextareaPlaceholder;
         document.getElementById('bulkImportBtn').textContent = t.bulkImportBtn;
         document.getElementById('exportDataBtn').textContent = t.exportDataBtn;
         document.getElementById('importDataBtn').textContent = t.importDataBtn;
 
-        // 設置「遊戲設定」H2 標題文字
         document.getElementById('gameSettingsTitle').textContent = t.gameSettingsTitle;
 
-        // 設置「每局單字數量」Label 文字
         const wordsPerRoundLabel = document.getElementById('wordsPerRoundLabel');
-        if (wordsPerRoundLabel) { // 這裡加了個檢查，確保元素存在再操作
+        if (wordsPerRoundLabel) {
             wordsPerRoundLabel.textContent = t.wordsPerRoundLabel;
         }
 
-        // 設置「啟用權重出題系統」Span 文字
         const enableWeightSystemLabel = document.getElementById('enableWeightSystemLabel');
         if (enableWeightSystemLabel) {
             enableWeightSystemLabel.textContent = t.enableWeightSystemText;
         }
 
-        // 設置「重設所有單字權重」Span 文字
         const resetWeightsButtonText = document.getElementById('resetWeightsButtonText');
         if (resetWeightsButtonText) {
             resetWeightsButtonText.textContent = t.resetAllWrongCountsText;
         }
 
-        // 設置「單字列」H2 標題文字
         document.getElementById('wordListSectionTitle').textContent = t.wordListSectionTitle;
 
-        // Update sort labels - Removed 'sortDefaultOption'
         document.getElementById('sortOrderLabel').textContent = t.sortOrderLabel;
         document.getElementById('sortAlphabeticalAscOption').textContent = t.sortAlphabeticalAscOption;
         document.getElementById('sortAlphabeticalDescOption').textContent = t.sortAlphabeticalDescOption;
         document.getElementById('sortAccuracyDescOption').textContent = t.sortAccuracyDescOption;
         document.getElementById('sortAccuracyAscOption').textContent = t.sortAccuracyAscOption;
 
-        // 按鈕文字現在完全由 updateLanguage 函數根據當前語言來設定
         document.getElementById('saveAllButton').textContent = t.save;
         document.getElementById('clearAllWordsButton').textContent = t.clear;
 
@@ -701,6 +810,21 @@
         renderWords();
         updateSaveButtonState();
     }
+
+    // ***** 修改點 9: 從主遊戲頁面接收訊息以更新語言和模式 *****
+    window.addEventListener('message', function(event) {
+        if (event.data.type === 'languageChange') {
+            currentLanguage = event.data.lang;
+            updateLanguage();
+        }
+        if (event.data.type === 'darkModeChange') {
+            if (event.data.isDark) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('wordsPerRound').value = settings.wordsPerRound;
@@ -716,8 +840,6 @@
         needsSave = false;
         updateLanguage();
 
-        // 確保頁面載入時選中一個預設排序選項
-        // 由於 "default" 已被移除，我們將初始選中的排序設置為 "字母順序 (A-Z)"
         document.getElementById('sortOrder').value = 'alphabetical_asc';
         renderWords();
     });

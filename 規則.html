@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="UTF-8">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="rulesTitle"></title> 
+    <style>
+body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        margin: 20px;
+        padding: 0;
+        background-color: #f4f4f9;
+        color: #333; /* 淺色模式下預設文字顏色 */
+        transition: background-color 0.3s, color 0.3s;
+    }
+    /* 深色模式樣式 */
+    body.dark-mode {
+        background-color: #333;
+        color: #f4f4f9; /* 深色模式下預設文字顏色 */
+    }
+    body.dark-mode .rules-container {
+        background: #444;
+        color: #f4f4f9; /* 確保容器內的文字也變色 */
+    }
+
+    /* 確保 h1 和 h2 在深色模式下顏色正確 */
+    h1 {
+        color: #2c3e50; /* 淺色模式 */
+        margin-bottom: 20px;
+        transition: color 0.3s;
+    }
+    body.dark-mode h1 {
+        color: #eee; /* 深色模式下的 H1 顏色 */
+    }
+    h2 {
+        color: #34495e; /* 淺色模式 */
+        margin-top: 20px;
+        transition: color 0.3s;
+    }
+    body.dark-mode h2 {
+        color: #ccc; /* 深色模式下的 H2 顏色 */
+    }
+
+    /* 新增：確保 ul 和 li 在深色模式下顏色正確 */
+    ul {
+        padding-left: 20px;
+        color: #333; /* 淺色模式下預設顏色 */
+        transition: color 0.3s;
+    }
+    body.dark-mode ul {
+        color: #f4f4f9; /* 深色模式下 ul 內的文字顏色 */
+    }
+    li {
+        margin-bottom: 10px;
+        /* li 會繼承 ul 的顏色，通常無需單獨設置 */
+    }
+
+    .highlight {
+        background-color: #fff3cd;
+        padding: 2px 5px;
+        border-radius: 3px;
+        transition: background-color 0.3s, color 0.3s;
+    }
+    body.dark-mode .highlight {
+        background-color: #665522;
+        color: #f4f4f9;
+    }
+    </style>
+</head>
+<body>
+    <div class="rules-container">
+        <h1 id="mainTitle"></h1> <div id="rulesContent">
+            </div>
+    </div>
+
+    <script>
+        const translations = {
+            zh: {
+                title: "遊戲規則",
+                mainTitle: "單字配對遊戲規則",
+                basicGameplayTitle: "基本玩法",
+                basicGameplay: [
+                    "遊戲會隨機選擇一組單字，您需要將單字拖放到正確的翻譯位置。",
+                    "您可以點擊單字後再點擊目標位置，或直接拖放單字到目標位置。",
+                    "填完所有空格後，點擊「提交」按鈕檢查答案。"
+                ],
+                proficiencySystemTitle: "熟練度系統",
+                proficiencySystem: [
+                    '每個單字都有熟練度評分，計算公式為：<br><span class="highlight">熟練度 = (答對數 + 連勝數 × 0.2) / (挑戰數 × (答錯+1))</span>',
+                    "答對單字時，連勝數會增加。",
+                    "答錯或未使用單字時，連勝數會重置為 0。",
+                    "在單字庫中，可以點擊「i」按鈕查看每個單字的詳細統計信息。"
+                ],
+                weightSystemTitle: "權重系統",
+                weightSystem: [
+                    "系統會優先選擇您較不熟悉的單字進行測驗。",
+                    "答錯次數越多的單字，出現的機率越高。",
+                    "您可以在設定中開啟或關閉權重系統。"
+                ],
+                otherFeaturesTitle: "其他功能",
+                otherFeatures: [
+                    "可以隨時切換深色/淺色模式。",
+                    "支援中英文介面切換。",
+                    "可以查看單字庫，管理您的單字列表。",
+                    "支援批量匯入單字和數據備份功能。"
+                ]
+            },
+            en: {
+                title: "Game Rules",
+                mainTitle: "Word Matching Game Rules",
+                basicGameplayTitle: "Basic Gameplay",
+                basicGameplay: [
+                    "The game randomly selects a set of words. You need to drag and drop each word to its correct translation.",
+                    "You can click a word then click the target position, or simply drag and drop the word to the target.",
+                    "After filling all blanks, click the 'Submit' button to check your answers."
+                ],
+                proficiencySystemTitle: "Proficiency System",
+                proficiencySystem: [
+                    'Each word has a proficiency score, calculated by the formula:<br><span class="highlight">Proficiency = (Correct Count + Streak Count  × 0.2) / (Challenge Count × (Wrong Count + 1))</span>',
+                    "When a word is answered correctly, the streak count increases.",
+                    "When a word is answered incorrectly or left unused, the streak count resets to 0.",
+                    "In the word bank, you can click the 'i' button to view detailed statistics for each word."
+                ],
+                weightSystemTitle: "Weight System",
+                weightSystem: [
+                    "The system prioritizes selecting words you are less familiar with for testing.",
+                    "Words with more incorrect attempts have a higher probability of appearing.",
+                    "You can enable or disable the weight system in the settings."
+                ],
+                otherFeaturesTitle: "Other Features",
+                otherFeatures: [
+                    "You can switch between dark/light mode at any time.",
+                    "Supports Chinese and English interface switching.",
+                    "You can view the word bank to manage your word list.",
+                    "Supports bulk import of words and data backup functions."
+                ]
+            }
+        };
+
+        function applyLanguage(lang) {
+            const t = translations[lang];
+            document.getElementById('rulesTitle').textContent = t.title;
+            document.getElementById('mainTitle').textContent = t.mainTitle;
+
+            const rulesContentDiv = document.getElementById('rulesContent');
+            rulesContentDiv.innerHTML = `
+                <h2>${t.basicGameplayTitle}</h2>
+                <ul>${t.basicGameplay.map(item => `<li>${item}</li>`).join('')}</ul>
+
+                <h2>${t.proficiencySystemTitle}</h2>
+                <ul>${t.proficiencySystem.map(item => `<li>${item}</li>`).join('')}</ul>
+
+                <h2>${t.weightSystemTitle}</h2>
+                <ul>${t.weightSystem.map(item => `<li>${item}</li>`).join('')}</ul>
+
+                <h2>${t.otherFeaturesTitle}</h2>
+                <ul>${t.otherFeatures.map(item => `<li>${item}</li>`).join('')}</ul>
+            `;
+        }
+
+        function applyDarkMode(isDark) {
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+       // 監聽來自父視窗的訊息 (用於語言切換和模式切換)
+       window.addEventListener('message', function(event) {
+
+            const data = event.data;
+            if (data) {
+                if (data.type === 'languageChange') {
+                    applyLanguage(data.lang);
+                } else if (data.type === 'darkModeChange') { // << 新增這部分
+                    applyDarkMode(data.isDark);
+                }
+            }
+        });
+
+        // 初始載入時從 localStorage 讀取設定
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentLanguage = localStorage.getItem('currentLanguage') || 'zh';
+            applyLanguage(currentLanguage);
+
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            applyDarkMode(isDarkMode);
+
+            // 設置一個定時器，每隔一段時間檢查 localStorage，以便實時同步
+            // 由於 iframe 有時載入較晚，直接從 localStorage 讀取可能不夠即時
+            // 但如果單字卡主頁面在切換時會更新 localStorage，這種方式會更好
+            setInterval(() => {
+                const updatedLanguage = localStorage.getItem('currentLanguage') || 'zh';
+                if (updatedLanguage !== currentLanguage) {
+                    applyLanguage(updatedLanguage);
+                }
+                const updatedDarkMode = localStorage.getItem('darkMode') === 'true';
+                if (updatedDarkMode !== isDarkMode) {
+                    applyDarkMode(updatedDarkMode);
+                }
+            }, 500); // 每 500 毫秒檢查一次，你可以調整這個間隔
+        });
+
+        // 為了讓主頁面能通知 iframe 語言變更，
+        // 你需要在單字卡.html的 switchLanguage 函數中添加 postMessage
+        // 範例：
+        // function switchLanguage(lang) {
+        //     currentLanguage = lang;
+        //     localStorage.setItem('currentLanguage', lang); // 保存到 localStorage
+        //     // 其他語言切換邏輯
+        //     const rulesIframe = document.getElementById('rulesModal').querySelector('iframe');
+        //     if (rulesIframe && rulesIframe.contentWindow) {
+        //         rulesIframe.contentWindow.postMessage({ type: 'languageChange', lang: lang }, '*'); // 發送訊息
+        //     }
+        // }
+        // 還有 dark mode 也需要類似的修改，將狀態保存到 localStorage
+        // function toggleDarkMode() {
+        //     document.body.classList.toggle('dark-mode');
+        //     const isDark = document.body.classList.contains('dark-mode');
+        //     localStorage.setItem('darkMode', isDark); // 保存到 localStorage
+        // }
+    </script>
+</body>
+</html>

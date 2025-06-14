@@ -48,12 +48,15 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             background: #e0e0e0;
-            cursor: pointer;
+            cursor: pointer; /* ===== 恢復鼠標樣式為 pointer ===== */
             user-select: none;
             text-align: center;
             width: 120px;
             transition: background-color 0.3s, color 0.3s;
             position: relative;
+        }
+        .word:active {
+            cursor: grabbing;
         }
         .word.used {
             background: #d3d3d3;
@@ -109,8 +112,11 @@
         .target.incorrect {
             border-color: red;
         }
+        /* ===== 恢復 .selected 高亮樣式 ===== */
         .selected {
             background: #add8e6;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0,123,255,0.5);
         }
         body.dark-mode .selected {
             background: #87ceeb;
@@ -153,6 +159,12 @@
         .answers {
             background: #e0ffe0;
             border: 1px solid #b2d8b2;
+        }
+        .answers h4 {
+            margin-top: 15px;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
         }
         body.dark-mode .result {
             background: #444;
@@ -247,7 +259,7 @@
         const translations = {
           zh: {
             title: "單字配對",
-            instructions: "點擊或拖放單詞到對應的意思或翻譯區域。",
+            instructions: "點擊或拖放單詞到對應的意思或翻譯區域。", // ===== 恢復說明文字 =====
             submit: "提交",
             undo: "撤銷",
             darkMode: "切換深色/淡色模式",
@@ -255,7 +267,10 @@
             restart: "再玩一次",
             correct: "答對",
             incorrect: "答錯",
-            correctAnswersTitle: "正確答案：",
+            correctAnswersTitle: "答案解析：",
+            incorrectlyAnsweredTitle: "回答錯誤：",
+            unansweredTitle: "未作答：",
+            correctShouldBe: "應為",
             noWordsToTest: "沒有單字可供測驗。",
             promptToAddWords: "請點擊「查看單字庫」新增單字。",
             unselected: "未選擇",
@@ -263,7 +278,7 @@
           },
           en: {
             title: "Word Matching Game",
-            instructions: "Click or drag the words to match their meanings or translations.",
+            instructions: "Click or drag the words to match their meanings or translations.", // ===== 恢復說明文字 =====
             submit: "Submit",
             undo: "Undo",
             darkMode: "Toggle Dark/Light Mode",
@@ -272,6 +287,9 @@
             correct: "correct",
             incorrect: "incorrect",
             correctAnswersTitle: "Correct Answers:",
+            incorrectlyAnsweredTitle: "Incorrectly Answered:",
+            unansweredTitle: "Unanswered:",
+            correctShouldBe: "Correct is",
             noWordsToTest: "No words available for testing.",
             promptToAddWords: "Please click \"View Word Bank\" to add words.",
             unselected: "Unselected",
@@ -290,7 +308,7 @@
     let totalUniqueWords = 0;
 
     let currentRoundWords = [];
-    let selectedWord = null;
+    let selectedWord = null; // ===== 恢復 selectedWord 變數 =====
     const actionHistory = [];
 
     function initializeOrUpdateWords(wordsArray) {
@@ -321,8 +339,7 @@
         wordContainer.innerHTML = "";
         targetContainer.innerHTML = "";
         
-        // 確保提交按鈕在新的遊戲輪次開始時是可用的
-        submitButton.disabled = false; // ***** 重要修改點 *****
+        submitButton.disabled = false; 
 
         totalUniqueWords = new Set(words.map(w => w.word)).size;
 
@@ -416,7 +433,7 @@
 
             wordDiv.addEventListener('dragstart', dragStart);
             wordDiv.addEventListener('dragend', dragEnd);
-            wordDiv.addEventListener('click', () => selectWord(wordDiv));
+            wordDiv.addEventListener('click', () => selectWord(wordDiv)); // ===== 恢復單字點擊事件 =====
 
             wordContainer.appendChild(wordDiv);
         });
@@ -432,19 +449,18 @@
             `;
             targetDiv.addEventListener('dragover', allowDrop);
             targetDiv.addEventListener('drop', drop);
-            targetDiv.addEventListener('click', () => matchWord(targetDiv));
+            targetDiv.addEventListener('click', () => matchWord(targetDiv)); // ===== 恢復目標點擊事件 =====
 
             targetContainer.appendChild(targetDiv);
         });
 
-        // 重新啟用所有必要的控制按鈕
         document.getElementById('undo-btn').style.display = 'inline-block';
         document.getElementById('dark-mode-btn').style.display = 'inline-block';
         document.getElementById('wordbank-btn').style.display = 'inline-block';
         document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = (currentLanguage === 'zh' ? 'none' : 'inline-block');
         document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = (currentLanguage === 'en' ? 'none' : 'inline-block');
 
-        document.getElementById('restart-btn').style.display = 'none'; // 剛開始時隱藏再玩一次
+        document.getElementById('restart-btn').style.display = 'none';
     }
 
     function switchLanguage(lang) {
@@ -490,35 +506,48 @@
         handleAction(e.target, word);
     }
 
+    // ===== 恢復 selectWord 和 matchWord 函式 =====
     function selectWord(wordElement) {
+        if (wordElement.classList.contains('used')) return;
         if (selectedWord) {
             selectedWord.classList.remove('selected');
         }
-        selectedWord = wordElement;
-        selectedWord.classList.add('selected');
+        if (selectedWord === wordElement) {
+            selectedWord = null;
+        } else {
+            selectedWord = wordElement;
+            selectedWord.classList.add('selected');
+        }
     }
 
     function matchWord(targetElement) {
         if (selectedWord) {
             handleAction(targetElement, selectedWord.dataset.word);
-            selectedWord.classList.remove('selected');
-            selectedWord = null;
         }
     }
 
     function handleAction(targetElement, word) {
-        const movedWordDiv = targetElement.querySelector('.moved-word');
-        const oldWord = targetElement.dataset.droppedWord || null;
+        const actualTarget = targetElement.closest('.target');
+        if (!actualTarget) return;
+
+        const movedWordDiv = actualTarget.querySelector('.moved-word');
+        const oldWord = actualTarget.dataset.droppedWord || null;
         if (oldWord) {
             enableWord(oldWord);
         }
-        actionHistory.push({ target: targetElement, word: oldWord });
+        actionHistory.push({ target: actualTarget, word: oldWord });
 
         movedWordDiv.textContent = word;
         disableWord(word);
 
-        targetElement.dataset.droppedWord = word;
-        toggleDeleteButton(targetElement);
+        actualTarget.dataset.droppedWord = word;
+        toggleDeleteButton(actualTarget);
+
+        // 如果是透過點擊操作，取消高亮
+        if (selectedWord) {
+            selectedWord.classList.remove('selected');
+            selectedWord = null;
+        }
     }
 
     function toggleDeleteButton(targetElement) {
@@ -554,7 +583,7 @@
         if (wordDiv) {
             wordDiv.classList.remove('used');
             wordDiv.addEventListener('click', () => selectWord(wordDiv));
-            wordDiv.draggable = true; // ***** 重要修改點 *****
+            wordDiv.draggable = true;
         }
     }
 
@@ -563,7 +592,7 @@
         if (wordDiv) {
             wordDiv.classList.add('used');
             wordDiv.removeEventListener('click', selectWord);
-            wordDiv.draggable = false; // ***** 重要修改點 *****
+            wordDiv.draggable = false;
         }
     }
 
@@ -579,37 +608,33 @@
         toggleDeleteButton(target);
     }
 
-    // 這個函數現在只用於重置遊戲UI狀態，並為下一輪遊戲做準備
-    function resetGameUI() { // ***** 函數名稱變更為 resetGameUI 以示區別 *****
+    function resetGameUI() {
         document.querySelectorAll('.target').forEach(target => {
             target.querySelector('.moved-word').textContent = "";
             delete target.dataset.droppedWord;
             target.classList.remove('correct', 'incorrect');
-            toggleDeleteButton(target); // 確保刪除按鈕狀態正確
-            // 重新啟用目標的拖放和點擊事件
-            target.addEventListener('dragover', allowDrop); // ***** 重要修改點 *****
-            target.addEventListener('drop', drop); // ***** 重要修改點 *****
-            target.addEventListener('click', () => matchWord(target)); // ***** 重要修改點 *****
+            toggleDeleteButton(target);
+            target.addEventListener('dragover', allowDrop);
+            target.addEventListener('drop', drop);
+            target.addEventListener('click', () => matchWord(target));
         });
         document.querySelectorAll('.word').forEach(word => {
             word.classList.remove('used');
             word.addEventListener('click', () => selectWord(word));
-            word.draggable = true; // 重新啟用單字的可拖曳性 ***** 重要修改點 *****
+            word.draggable = true;
         });
 
-        // 清除結果和答案顯示
         document.getElementById('result').style.display = 'none';
         document.getElementById('answers').style.display = 'none';
 
-        // 重新顯示主遊戲按鈕
-        document.getElementById('submit-btn').disabled = false; // ***** 重要修改點 ***** 重新啟用提交按鈕
+        document.getElementById('submit-btn').disabled = false;
         document.getElementById('undo-btn').style.display = 'inline-block';
         document.getElementById('dark-mode-btn').style.display = 'inline-block';
         document.getElementById('wordbank-btn').style.display = 'inline-block';
         document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = (currentLanguage === 'zh' ? 'none' : 'inline-block');
         document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = (currentLanguage === 'en' ? 'none' : 'inline-block');
 
-        document.getElementById('restart-btn').style.display = 'none'; // 隱藏「再玩一次」按鈕
+        document.getElementById('restart-btn').style.display = 'none';
     }
 
 
@@ -630,16 +655,13 @@
 
         const correctAnswers = [];
         const wrongAnswers = [];
-        const unusedWords = [];
 
-        const usedWords = new Set();
         targetElements.forEach(target => {
             const droppedWord = target.dataset.droppedWord;
             const originalTranslation = target.dataset.translation;
             target.classList.remove('correct', 'incorrect');
 
             if (droppedWord) {
-                usedWords.add(droppedWord);
                 const originalWordIndex = words.findIndex(w => w.word === droppedWord);
 
                 if (originalWordIndex !== -1) {
@@ -662,18 +684,16 @@
             }
         });
 
-        document.querySelectorAll('.word').forEach(wordDiv => {
+        document.querySelectorAll('.word:not(.used)').forEach(wordDiv => {
             const word = wordDiv.dataset.word;
-            if (!usedWords.has(word)) {
-                const originalWordIndex = words.findIndex(w => w.word === word);
-                if (originalWordIndex !== -1) {
-                    const wordObj = words[originalWordIndex];
-                    unusedWords.push(wordObj);
-                    wordObj.wrongCount++;
-                    wordObj.streakCount = 0;
-                }
+            const originalWordIndex = words.findIndex(w => w.word === word);
+            if (originalWordIndex !== -1) {
+                const wordObj = words[originalWordIndex];
+                wordObj.wrongCount++;
+                wordObj.streakCount = 0;
             }
         });
+
 
         localStorage.setItem('words', JSON.stringify(words));
 
@@ -685,16 +705,15 @@
         answersDiv.style.display = 'block';
         document.getElementById('submit-btn').disabled = true;
 
-        // 提交後禁用所有單字和目標的交互
         document.querySelectorAll('.word').forEach(wordDiv => {
-            wordDiv.removeEventListener('click', () => selectWord(wordDiv));
+            wordDiv.removeEventListener('click', selectWord);
             wordDiv.draggable = false;
             wordDiv.classList.add('used');
         });
         document.querySelectorAll('.target').forEach(targetDiv => {
             targetDiv.removeEventListener('drop', drop);
             targetDiv.removeEventListener('dragover', allowDrop);
-            targetDiv.removeEventListener('click', () => matchWord(targetDiv));
+            targetDiv.removeEventListener('click', matchWord);
             targetDiv.querySelector('.delete-btn').style.display = 'none';
         });
 
@@ -707,27 +726,40 @@
         resultDiv.innerHTML = `<h2>${correctAnswers.length} ${t.correct}, ${wrongAnswers.length + unfilledTargets.length} ${t.incorrect}.</h2>`;
 
         let answersHTML = '';
-        if (wrongAnswers.length > 0 || unusedWords.length > 0 || unfilledTargets.length > 0) {
-            answersHTML += `<p>${t.correctAnswersTitle}</p><ul>`;
-            wrongAnswers.forEach(word => {
-                const correctTranslation = words.find(w => w.word === word)?.translation;
-                answersHTML += `<li>${word}: ${correctTranslation}</li>`;
-            });
-            unfilledTargets.forEach(target => {
-                const originalTranslation = target.dataset.translation;
-                const correctWord = currentRoundWords.find(w => w.translation === originalTranslation)?.word;
-                answersHTML += `<li>(${t.unselected}) ${correctWord}: ${originalTranslation}</li>`;
-            });
-            unusedWords.forEach(wordObj => {
-                answersHTML += `<li>${wordObj.word}: ${wordObj.translation} (${t.unselected})</li>`;
-            });
-            answersHTML += '</ul>';
+        if (wrongAnswers.length > 0 || unfilledTargets.length > 0) {
+            answersHTML += `<p><b>${t.correctAnswersTitle}</b></p>`;
+
+            // Section 1: Incorrectly Answered
+            if (wrongAnswers.length > 0) {
+                answersHTML += `<h4>${t.incorrectlyAnsweredTitle}</h4><ul>`;
+                wrongAnswers.forEach(word => {
+                    const correctTranslation = words.find(w => w.word === word)?.translation;
+                    const wrongTarget = Array.from(targetElements).find(t => t.dataset.droppedWord === word);
+                    const userChoiceTranslation = wrongTarget.dataset.translation;
+
+                    answersHTML += `<li><b>${word}</b> &rarr; <s>${userChoiceTranslation}</s> (${t.correctShouldBe}: ${correctTranslation})</li>`;
+                });
+                answersHTML += '</ul>';
+            }
+
+            // Section 2: Unanswered
+            if (unfilledTargets.length > 0) {
+                answersHTML += `<h4>${t.unansweredTitle}</h4><ul>`;
+                unfilledTargets.forEach(target => {
+                    const originalTranslation = target.dataset.translation;
+                    const correctWord = currentRoundWords.find(w => w.translation === originalTranslation)?.word;
+                    if(correctWord) {
+                        answersHTML += `<li>${correctWord} : ${originalTranslation}</li>`;
+                    }
+                });
+                answersHTML += '</ul>';
+            }
         } else {
             answersHTML += `<p>${t.correct === 'correct' ? 'Excellent! All words matched correctly!' : '太棒了！所有單字都答對了！'}</p>`;
         }
         answersDiv.innerHTML = answersHTML;
 
-        restartBtn.style.display = 'inline-block'; // 顯示「再玩一次」按鈕
+        restartBtn.style.display = 'inline-block';
         document.getElementById('undo-btn').style.display = 'none';
         document.getElementById('dark-mode-btn').style.display = 'none';
         document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = 'none';
@@ -736,7 +768,6 @@
 
 
     function restartGame() {
-        // 重置所有單字的 hasBeenTested 屬性為 false
         let words = JSON.parse(localStorage.getItem('words')) || [];
         words.forEach(wordItem => {
             wordItem.hasBeenTested = false;
@@ -744,8 +775,8 @@
         localStorage.setItem('words', JSON.stringify(words));
         wordsTestedInSession.clear();
 
-        resetGameUI(); // ***** 先重置 UI 狀態 *****
-        createGame();  // ***** 然後再創建新的遊戲內容 *****
+        resetGameUI();
+        createGame();
     }
 
     function toggleDarkMode() {

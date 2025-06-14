@@ -74,7 +74,7 @@
     }
     .stats-tooltip {
     display: none;
-    position: absolute; /* 保持 absolute 定位 */
+    position: fixed; /* 保持 absolute 定位 */
     background: white;
     border: 1px solid #ccc;
     padding: 8px;
@@ -383,35 +383,42 @@
                 const statsTooltip = infoSpan.querySelector('.stats-tooltip');
 
                 // 滑鼠移入事件：顯示 tooltip 並動態調整位置
-                infoButton.addEventListener('mouseover', function() {
-                    statsTooltip.style.display = 'block'; // 先顯示，以便計算尺寸
-                    statsTooltip.style.opacity = '1';
+// 滑鼠移入事件：顯示 tooltip 並動態調整位置
+infoButton.addEventListener('mouseover', function(event) { // 添加 event 參數
+    statsTooltip.style.display = 'block'; // 先顯示，以便計算尺寸
+    statsTooltip.style.opacity = '1';
 
-                    const buttonRect = infoButton.getBoundingClientRect();
-                    const tooltipRect = statsTooltip.getBoundingClientRect();
-                    const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-                    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    const buttonRect = infoButton.getBoundingClientRect();
+    const tooltipRect = statsTooltip.getBoundingClientRect();
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
 
-                    // 預設位置 (在按鈕右側，與按鈕頂部對齊)
-                    let left = buttonRect.width + 5; // 距按鈕右側 5px
-                    let top = 0; // 與按鈕頂部對齊 (相對於 infoButton 的父容器)
+    // 預設將提示框放在按鈕右邊一點 (這裡的 left/top 是相對於整個視窗的)
+    let left = buttonRect.right + 5; // 距離按鈕右邊 5 像素
+    let top = buttonRect.top; // 與按鈕頂部對齊
 
-                    // 檢查是否溢出右側
-                    if (buttonRect.right + tooltipRect.width + 10 > viewportWidth) {
-                        // 如果右側空間不足，嘗試顯示在左側
-                        left = -(tooltipRect.width + 5); // 距按鈕左側 5px
-                    }
+    // 檢查提示框是否會超出瀏覽器右邊界
+    if (left + tooltipRect.width + 10 > viewportWidth) {
+        // 如果超出右邊界，嘗試放在按鈕左邊
+        left = buttonRect.left - tooltipRect.width - 5; // 距離按鈕左邊 5 像素
+        if (left < 0) { // 如果放在左邊還會超出左邊界，就靠左對齊
+            left = 5;
+        }
+    }
 
-                    // 檢查是否溢出底部
-                    if (buttonRect.top + tooltipRect.height + 10 > viewportHeight) {
-                        // 如果底部空間不足，嘗試顯示在按鈕上方
-                        top = -(tooltipRect.height + 5); // 距按鈕頂部 5px
-                    }
+    // 檢查提示框是否會超出瀏覽器下邊界
+    if (top + tooltipRect.height + 10 > viewportHeight) {
+        // 如果超出下邊界，嘗試放在按鈕上方
+        top = viewportHeight - tooltipRect.height - 10; // 距離瀏覽器底部 10 像素
+        if (top < 0) { // 如果放在上面還會超出上邊界，就靠上對齊
+            top = 5;
+        }
+    }
 
-                    // 應用計算出的位置 (這裡的 left 和 top 是相對於 infoSpan 的)
-                    statsTooltip.style.left = `${left}px`;
-                    statsTooltip.style.top = `${top}px`;
-                });
+    // 將計算出的位置應用到提示框上
+    statsTooltip.style.left = `${left}px`;
+    statsTooltip.style.top = `${top}px`;
+});
 
                 // 滑鼠移出事件：隱藏 tooltip
                 infoButton.addEventListener('mouseleave', function() {

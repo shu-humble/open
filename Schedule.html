@@ -144,31 +144,37 @@
             font-size: clamp(12px, 1.5vw, 18px);
             line-height: 1.2;
         }
-        /* 右邊測攔 */
         .social-sidebar {
-            position: fixed;/*固定位置*/
-            top: 50%;/*上邊距*/
-            left: 10px;/*左邊距*/
-            transform: translateY(-50%);/*垂直居中*/
-            background-color: rgba(255, 255, 255, 0.8); /* 白色半透明底 */
-            padding: clamp(8px, 1.5vw, 16px);/*內邊距*/
-            border-radius: clamp(8px, 1vw, 16px);/*圓角*/
-            box-shadow: 0 4px 8px rgba(0,0,0,1.0);/*陰影*/
-            display: flex;/*彈性盒*/
-            flex-direction: column;/*垂直排列*/
-            gap: clamp(10px, 1.5vw, 20px);/*間距*/
-            z-index: 1000;/*層級*/
-        }
+  position: fixed;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  background-color: rgba(255,255,255,0.8);
+  border-radius: clamp(8px, 1vw, 16px);
+  box-shadow: 0 4px 8px rgba(0,0,0,1);
+  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: fit-content;
 
-        .social-sidebar a img {
-            width: clamp(24px, 3vw, 40px);/*圖片寬度*/
-            height: clamp(24px, 3vw, 40px);/*圖片高度*/
-            transition: transform 0.2s;/*過渡*/
-        }
+  /* 下面这行按方案 1/2/3 选一个替换 */
+  padding: 4px 4px;
+  gap: 4px;
 
-        .social-sidebar a:hover img {
-            transform: scale(1.2);/*放大*/
-        }
+  z-index: 1000;
+}
+
+.social-sidebar a img {
+  width:  clamp(40px, 4vw, 80px);
+  height: clamp(40px, 4vw, 80px);
+  transition: transform .2s;
+}
+
+.social-sidebar a:hover img {
+  transform: scale(1.2);
+}
+
         .music-button {
   background: none;/*背景*/
   border: none;/*邊框*/
@@ -385,13 +391,13 @@
         });
     </script>
     <div class="social-sidebar">
-        <a href="https://www.youtube.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube"></a>
-        <a href="https://www.facebook.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook"></a>
-        <a href="https://www.instagram.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
-        <a href="https://twitter.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/5968/5968830.png" alt="X"></a>
-        <a href="https://www.reddit.com" target="_blank"><img src="https://static-00.iconduck.com/assets.00/reddit-icon-1024x1024-6c2aoary.png" alt="Reddit"></a>
-        <a href="https://discord.com" target="_blank"><img src="https://static-00.iconduck.com/assets.00/discord-icon-2048x2048-nnt62s2u.png" alt="Discord"></a>
-        <a href="https://web.whatsapp.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp"></a>
+        <a href="https://www.youtube.com" target="_blank"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-youtube-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-v1-pack-logos-icons-12257595.png?f=webp" alt="YouTube"></a>
+        <a href="https://www.facebook.com" target="_blank"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-facebook-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-v1-pack-logos-icons-12257579.png?f=webp"></a>
+        <a href="https://www.instagram.com" target="_blank"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-instagram-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-v1-pack-logos-icons-12257577.png?f=webp" alt="Instagram"></a>
+        <a href="https://twitter.com" target="_blank"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-x-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-pack-logos-icons-11441454.png?f=webp" alt="X"></a>
+        <a href="https://www.reddit.com" target="_blank"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-reddit-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-v1-pack-logos-icons-12257585.png?f=webp" alt="Reddit"></a>
+        <a href="https://discord.com" target="_blank"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-discord-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-v1-pack-logos-icons-12257581.png?f=webp" alt="Discord"></a>
+        <a href="https://web.whatsapp.com" target="_blank"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-whatsapp-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-technology-brand-v1-pack-logos-icons-12257594.png?f=webp" alt="WhatsApp"></a>
     </div>
 
     <div class="table-wrapper">

@@ -6,41 +6,51 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="https://static.vecteezy.com/system/resources/thumbnails/017/744/677/small_2x/video-game-icon-png.png">
   <style>
-body {
-  background-color: transparent;
-  color: #000055;
-  margin: 0;
-  padding: 20px;
-  font-size: 1.8vw;
-  min-height: 100vh;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-background-position: center center;/*背景圖片位置*/
-  position: relative;
-  overflow: auto; /* 或者 overflow: scroll; */
-
-
-}
-
+    /* 全局文字和行高配置 */
+    body, table, td, a, span, b {
+      font-size: 1.8vw;
+      line-height: 1.2em;            /* 文字高度＝1em */
+      vertical-align: middle;
+    }
+  
+    /* 页面背景 */
+    body {
+      background-color: transparent;
+      color: #000055;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      position: relative;
+      overflow: auto;
+    }
+  
+    /* 表格样式 */
     table {
       width: 90%;
-      background-color: #33a0665f;
+      background-color: rgba(51, 160, 102, 0.37);
       border-collapse: collapse;
-      margin: 1em auto;
+      margin: 0.5em auto;
       box-sizing: border-box;
     }
-
+  
     td {
+      display: table-cell;
       width: 33%;
       border: 1px solid black;
       padding: 10px;
       vertical-align: top;
       max-width: 30vw;
       box-sizing: border-box;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-
+  
+    /* 链接样式 */
     a {
       color: #ffffff;
       text-decoration: none;
@@ -48,83 +58,92 @@ background-position: center center;/*背景圖片位置*/
       margin: 2px 0;
       max-width: 100%;
       box-sizing: border-box;
-      vertical-align: bottom;
-    }
-
-    a:visited {
-      color: #ffff00;
-    }
-
-    a:hover {
-      color: #ff0000;
-    }
-
-    .section-title {
-      /* 將字體大小調整為與其他文字一致 */
-      font-size: 2.5vw; 
-      color: #FFFF00;
-      font-weight: bold;
-      margin-bottom: 10px;
-      max-width: 100%;
-      box-sizing: border-box;
-      vertical-align: bottom;
-    }
-
-    .icon-img {
-      width: 1.3em;
-      height: auto;
-      vertical-align: bottom;
-      margin: 0 0.2em;
-      max-width: 100%;
-      box-sizing: border-box;
-    }
-
-    td, a, span, b, font {
-      font-size: 1.8vw;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 100%;
-      box-sizing: border-box;
-      /*vertical-align: bottom;*/
     }
-
-    img {
-      width: 0.9em;
-      height: auto;
-      vertical-align: bottom;
+    a:visited { color: #ffff00; }
+    a:hover   { color: #ff0000; }
+  
+    /* 标题样式 */
+    .section-title {
+      font-size: 2.0vw;
+      color: #ffff00;
+      font-weight: bold;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+  
+    /* 图标／图片高度＝文字高度 */
+    .icon-img,
+    img,
+    #toggle-battlecats-btn img,
+    #toggle-freefire-btn img,
+    #toggle-other-btn img {
+      height: 1em;
+      width: auto;
+      vertical-align: middle;
       margin: 0 0.2em;
-      max-width: 100%;
       box-sizing: border-box;
     }
-
-    @media (max-width: 600px) {
-      td, a, span, b, font {
-        font-size: 15px;
-      }
-    }
-  </style>
-  <style>
-    /* 調整按鈕樣式 */
-    #toggle-battlecats-btn, #toggle-freefire-btn, #toggle-other-btn {
+  
+    /* 按钮样式 */
+    #toggle-battlecats-btn,
+    #toggle-freefire-btn,
+    #toggle-other-btn {
       background: transparent;
       border: none;
       padding: 0;
       outline: none;
       box-shadow: none;
       cursor: pointer;
-      font-size: 1.8vw; /* 與 surrounding text 保持一致 */
+      font-size: 1.8vw;
+      line-height: 1em;
+      vertical-align: middle;
       margin-bottom: 5px;
-      vertical-align: bottom; /* 讓按鈕與文字底部對齊 */
     }
-    
-    /* 調整按鈕內圖片樣式 */
-    #toggle-battlecats-btn img, #toggle-freefire-btn img, #toggle-other-btn img {
-      width: 1.2em; /* 調整圖片大小，使其與文字大小協調 */
-      vertical-align: bottom; /* 讓圖片與按鈕文字底部對齊 */
-      margin-left: 0.2em; /* 微調圖片與文字間距 */
+  
+    /* 手机版（≤768px） */
+    @media (max-width: 768px) {
+      body, table, td, a, span, b {
+        font-size: 15px;
+        line-height: 1.2em;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+      }
+      table { width: 95%; }
+      td {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+      }
+      .section-title { 
+        font-size: 20px;
+        margin-bottom: 5px;
+      }
+      .icon-img,
+      img,
+      #toggle-battlecats-btn img,
+      #toggle-freefire-btn img,
+      #toggle-other-btn img {
+        height: 1em;
+      }
+      #toggle-battlecats-btn,
+      #toggle-freefire-btn,
+      #toggle-other-btn {
+        font-size: 15px;
+        line-height: 1em;
+      }
+    }
+  
+    /* 更小螢幕（≤480px） */
+    @media (max-width: 480px) {
+      body { padding: 10px; }
+      table { width: 100%; }
     }
   </style>
+  
 </head>
 <base target="_blank">
 <body style="background-image: url('Game桌布.jpg');">
@@ -217,12 +236,13 @@ background-position: center center;/*背景圖片位置*/
 <a href="https://sudoku.com/killer/">Killer</a></span><br>
 
 
-<br><br><br>
+<br><br>
 
 </td>
-<td width="33%">
+<td width="34%">
 
-  <a href="https://battlecats.club/"><b class="section-title"><img src="https://battlecats.club/wp-content/themes/nyanko/img/common/favicon.ico" alt="The Battle Cats icon">The Battle Cats</b></a>
+  <a href="https://battlecats.club/"><b class="section-title"><img src="https://battlecats.club/wp-content/themes/nyanko/img/common/favicon.ico"
+    width="18" height="18" alt="The Battle Cats icon">The Battle Cats</b></a>
 <button id="toggle-battlecats-btn">
   <img id="battlecats-arrow" src="https://cdn-icons-png.flaticon.com/512/15714/15714566.png" alt=">">
   </button>
@@ -247,14 +267,13 @@ background-position: center center;/*背景圖片位置*/
 <span style="display: inline-block; margin-bottom: 5px;">
   <a href="https://garenafreefire.fandom.com/wiki/Free_Fire_Wiki" ><favicon></favicon>Free Fire Wiki</a><br>
   <a href="https://ff.garena.com/zh/wallpaper"><favicon></favicon> Wallpaper</a><br>
-  <a href="https://rankguide.sea.freefiremobile.com/?lang=" ><favicon></favicon>排位</a><br>
+  <a href="https://rankguide.sea.freefiremobile.com/?lang=" ><favicon></favicon>牌位</a><br>
   <a href="https://ffcraftland.garena.com/" ><favicon></favicon>我的戰場</a><br>
   <a href="https://ff.garena.com/universe/en/" ><favicon></favicon>Universe-EN</a> 
-  <a href="https://ff.garena.com/universe/zh/" >-ZH</a>
+  <a href="https://ff.garena.com/universe/zh/" >-ZH</a><br>
 </span>
 </div>
 <br> 
-
 <b class="section-title">Other</b>
 <button id="toggle-other-btn">
   <img id="other-arrow" src="https://cdn-icons-png.flaticon.com/512/15714/15714566.png" alt=">">
@@ -263,17 +282,15 @@ background-position: center center;/*背景圖片位置*/
 <span style="display: inline-block;">
   <a href="https://beatsaver.com/" ><favicon></favicon>Beat Saver</a><br>
   <a href="https://tw.portal-pokemon.com/play/pokedex"><img src="https://png.pngtree.com/png-clipart/20240404/original/pngtree-3d-pokemon-ball-png-image_14754359.png" class="icon-img">Pokedex-TW</a>
-  <a href="https://www.pokemon.com/us/pokedex">-US</a><br>
+  <a href="https://www.pokemon.com/us/pokedex">-US</a>
 </span>
 </div>
+<br>
 
 
-<br>
-<br>
 </td>
 
 </tr>
-
 </table>
 </body>
 </html>

@@ -9,10 +9,10 @@
     /* 全局文字和行高配置 */
     body, table, td, a, span, b {
       font-size: 1.8vw;
-      line-height: 1.2em;            /* 文字高度＝1em */
+      line-height: 1.2em;
       vertical-align: middle;
     }
-  
+
     /* 页面背景 */
     body {
       background-color: transparent;
@@ -27,7 +27,7 @@
       position: relative;
       overflow: auto;
     }
-  
+
     /* 表格样式 */
     table {
       width: 90%;
@@ -36,7 +36,7 @@
       margin: 0.5em auto;
       box-sizing: border-box;
     }
-  
+
     td {
       display: table-cell;
       width: 33%;
@@ -49,7 +49,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-  
+
     /* 链接样式 */
     a {
       color: #ffffff;
@@ -64,7 +64,7 @@
     }
     a:visited { color: #ffff00; }
     a:hover   { color: #ff0000; }
-  
+
     /* 标题样式 */
     .section-title {
       font-size: 2.0vw;
@@ -73,7 +73,7 @@
       margin-bottom: 10px;
       box-sizing: border-box;
     }
-  
+
     /* 图标／图片高度＝文字高度 */
     .icon-img,
     img,
@@ -86,7 +86,7 @@
       margin: 0 0.2em;
       box-sizing: border-box;
     }
-  
+
     /* 按钮样式 */
     #toggle-battlecats-btn,
     #toggle-freefire-btn,
@@ -102,7 +102,26 @@
       vertical-align: middle;
       margin-bottom: 5px;
     }
-  
+
+    /* 語言切換按鈕樣式 */
+    #lang-toggle-btn {
+        position: fixed; /* 固定在頁面上 */
+        top: 20px;       /* 距離頂部 20px */
+        right: 20px;     /* 距離右側 20px */
+        background-color: rgba(0, 0, 0, 0.5); /* 半透明背景 */
+        border: none;
+        padding: 5px;
+        border-radius: 5px;
+        cursor: pointer;
+        z-index: 1000; /* 確保按鈕在最上層 */
+    }
+
+    #lang-toggle-btn img {
+        height: 40px; /* 調整圖片大小 */
+        width: 40px;
+        vertical-align: middle;
+    }
+
     /* 手机版（≤768px） */
     @media (max-width: 768px) {
       body, table, td, a, span, b {
@@ -118,7 +137,7 @@
         width: 100%;
         max-width: 100%;
       }
-      .section-title { 
+      .section-title {
         font-size: 20px;
         margin-bottom: 5px;
       }
@@ -135,46 +154,203 @@
         font-size: 15px;
         line-height: 1em;
       }
+      #lang-toggle-btn {
+          top: 10px;
+          right: 10px;
+      }
+      #lang-toggle-btn img {
+          height: 30px;
+          width: 30px;
+      }
     }
-  
+
     /* 更小螢幕（≤480px） */
     @media (max-width: 480px) {
       body { padding: 10px; }
       table { width: 100%; }
     }
   </style>
-  
+
 </head>
 <base target="_blank">
 <body style="background-image: url('Game桌布.jpg');">
 
+  <button id="lang-toggle-btn">
+    <img src="https://img.icons8.com/color/512/google-translate.png" alt="Language Toggle">
+  </button>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const faviconTags = document.querySelectorAll('favicon');
-        faviconTags.forEach(tag => {
+        // 標題和固定文字的翻譯對應
+        const translations = {
+            'Playables': { 'zh': '遊戲角落', 'en': 'Playables' },
+            'Gaming Platform': { 'zh': '遊戲平台', 'en': 'Gaming Platform' },
+            'Gun Games': { 'zh': '射擊遊戲', 'en': 'Gun Games' },
+            'Single-player game': { 'zh': '單人遊戲', 'en': 'Single-player game' },
+            'The Battle Cats': { 'zh': '貓咪大戰爭', 'en': 'The Battle Cats' },
+            'Other': { 'zh': '其他', 'en': 'Other' },
+            'Sudoku': { 'zh': '數獨', 'en': 'Sudoku' },
+            'Classic': { 'zh': '經典', 'en': 'Classic' },
+            'Killer': { 'zh': '殺手', 'en': 'Killer' },
+            'Universe': { 'zh': '宇宙', 'en': 'Universe' },
+            '寶可夢圖鑑': { 'zh': '寶可夢圖鑑', 'en': 'Pokedex' },
+            '排位': { 'zh': '排位', 'en': 'Rank' },
+            '我的戰場': { 'zh': '我的戰場', 'en': 'Craftland' },
+        };
+
+        // 核心的語言應用函數
+        function applyLanguage(langCode) {
+            // 處理特製化連結 (雙語名字)
+            document.querySelectorAll('.雙語名字').forEach(link => {
+                if (langCode === 'zh') {
+                    const zhHref = link.getAttribute('data-zh-href');
+                    if (zhHref) {
+                        link.href = zhHref;
+                    }
+                } else { // 英文模式
+                    const enHref = link.getAttribute('data-en-href');
+                    if (enHref) {
+                        link.href = enHref;
+                    }
+                }
+                // 處理連結文字的翻譯，目標是內部 span
+                const originalText = link.getAttribute('data-original-text');
+                const linkTextSpan = link.querySelector('.link-text'); // 查找 .link-text span
+                if (originalText && translations[originalText] && linkTextSpan) {
+                    linkTextSpan.textContent = translations[originalText][langCode];
+                } else if (originalText && translations[originalText]) {
+                    // 如果沒有 .link-text span，則直接更新 a 標籤的 textContent (適用於沒有圖片的連結)
+                    // 但對於帶圖片的 custom link，建議一定要用 span 包裹文字
+                    // link.textContent = translations[originalText][langCode];
+                    // 為了避免意外覆蓋圖片，如果沒有 linkTextSpan，這裡不做 textContent 替換
+                }
+            });
+
+            // 處理動態連結 (雙語連結)
+            document.querySelectorAll('.雙語連結').forEach(link => {
+                const originalHref = link.getAttribute('data-base-href');
+                if (originalHref && originalHref.includes('{lang_code}')) {
+                    link.href = originalHref.replace('{lang_code}', langCode);
+                }
+                // 處理連結文字的翻譯
+                const originalText = link.getAttribute('data-original-text');
+                const linkTextSpan = link.querySelector('.link-text'); // 查找 .link-text span
+                if (originalText && translations[originalText] && linkTextSpan) {
+                    linkTextSpan.textContent = translations[originalText][langCode];
+                } else if (originalText && translations[originalText]) {
+                    // 這裡預設動態連結可能沒有圖片，直接更新 textContent
+                    // 如果未來動態連結也可能包含圖片，也需為其文字添加 span 包裹
+                    link.textContent = translations[originalText][langCode];
+                }
+            });
+
+            // 更新標題
+            document.querySelectorAll('.section-title').forEach(titleElement => {
+                const originalText = titleElement.getAttribute('data-original-text');
+                if (originalText && translations[originalText]) {
+                    titleElement.textContent = translations[originalText][langCode];
+                }
+            });
+
+            // 更新 Sudoku 連結的顯示文字
+            const sudokuSpan = document.getElementById('sudoku-links');
+            if (sudokuSpan) {
+                const classicLink = sudokuSpan.querySelector('[data-type="classic"]');
+                const killerLink = sudokuSpan.querySelector('[data-type="killer"]');
+
+                if (classicLink && killerLink) { // 確保連結存在
+                    const classicOriginalText = classicLink.getAttribute('data-original-text');
+                    const killerOriginalText = killerLink.getAttribute('data-original-text');
+                    const sudokuTitleOriginalText = sudokuSpan.querySelector('b').getAttribute('data-original-text');
+
+                    let sudokuTitleText = sudokuTitleOriginalText;
+                    let classicLinkText = classicOriginalText;
+                    let killerLinkText = killerOriginalText;
+
+                    if (translations[sudokuTitleOriginalText]) {
+                        sudokuTitleText = translations[sudokuTitleOriginalText][langCode];
+                    }
+                    if (translations[classicOriginalText]) {
+                        classicLinkText = translations[classicOriginalText][langCode];
+                    }
+                    if (translations[killerOriginalText]) {
+                        killerLinkText = translations[killerOriginalText][langCode];
+                    }
+
+                    // 重新設置 innerHTML 以更新文字內容
+                    sudokuSpan.innerHTML = `<b data-original-text="Sudoku">${sudokuTitleText}</b>： <a href="${classicLink.href}" data-type="classic" data-original-text="Classic">${classicLinkText}</a> 、 <a href="${killerLink.href}" data-type="killer" data-original-text="Killer">${killerLinkText}</a>`;
+                }
+            }
+        }
+ 
+        // 初始化語言
+        let currentLang = localStorage.getItem('userLang') || (navigator.language.startsWith('zh') ? 'zh' : 'en');
+
+        // favicon 補圖處理，支援 雙語連結
+        document.querySelectorAll('favicon').forEach(tag => {
             const parentLink = tag.closest('a');
             if (parentLink) {
-                // ⭐ 加上 target="_blank"
                 parentLink.setAttribute('target', '_blank');
+                let targetUrlForFavicon = null;
+                
+                // 優先從 data-屬性獲取真實URL，因為 href 可能還是 '#'
+                if (parentLink.classList.contains('雙語名字')) {
+                    // 對於雙語名字 (lang-custom-link) 類別的連結，根據當前語言選擇 URL
+                    targetUrlForFavicon = (currentLang === 'zh') ?
+                                            parentLink.getAttribute('data-zh-href') :
+                                            parentLink.getAttribute('data-en-href');
+                } else if (parentLink.classList.contains('雙語連結')) {
+                    // 對於雙語連結 (lang-dynamic-link) 類別的連結，從 data-base-href 生成 URL
+                    const baseHref = parentLink.getAttribute('data-base-href');
+                    if (baseHref && baseHref.includes('{lang_code}')) {
+                        targetUrlForFavicon = baseHref.replace('{lang_code}', currentLang);
+                    }
+                }
+                
+                // 如果上述方法未能獲取到 URL，則嘗試使用 href (適用於非動態連結或已由 JS 更新的連結)
+                if (!targetUrlForFavicon && parentLink.href && parentLink.href !== '#') {
+                     targetUrlForFavicon = parentLink.href;
+                }
 
-                const url = new URL(parentLink.href);
-                const faviconUrl = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=256&url=${url.origin}`;
-                
-                const img = document.createElement('img');
-                img.src = faviconUrl;
-                img.className = 'icon-img';
-                
-                // 把圖示插入在 <favicon></favicon> 標籤的位置
-                tag.replaceWith(img);
+                let faviconOrigin = null;
+                if (targetUrlForFavicon) {
+                    try {
+                        // 從目標 URL 獲取來源
+                        faviconOrigin = new URL(targetUrlForFavicon).origin;
+                    } catch (e) {
+                        faviconOrigin = null;
+                    }
+                }
+
+                if (faviconOrigin) {
+                    const faviconUrl = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=256&url=${faviconOrigin}`;
+                    const img = document.createElement('img');
+                    img.src = faviconUrl;
+                    img.className = 'icon-img';
+                    tag.replaceWith(img);
+                } else {
+                    tag.remove(); // 無法產生 favicon 就移除
+                }
             }
         });
+        applyLanguage(currentLang);
+
+        // 語言切換按鈕事件監聽
+        const langToggleButton = document.getElementById('lang-toggle-btn');
+        if (langToggleButton) {
+            langToggleButton.addEventListener('click', function() {
+                currentLang = (currentLang === 'zh') ? 'en' : 'zh';
+                localStorage.setItem('userLang', currentLang); // 儲存語言偏好
+                applyLanguage(currentLang); // 應用新的語言
+            });
+        }
+
+
         // 展開/收合按鈕通用處理（圖片切換）
         function setupToggle(btnId, detailsId, imgId) {
             const btn = document.getElementById(btnId);
             const details = document.getElementById(detailsId);
             const arrowImg = document.getElementById(imgId);
-            // 這裡請將'收合圖連結.png'換成你要的收合圖，'展開圖連結.png'換成展開圖
             const collapsedImg = 'https://cdn-icons-png.flaticon.com/512/15714/15714566.png'; // 收合
             const expandedImg = 'https://cdn-icons-png.flaticon.com/512/3416/3416111.png'; //展開
             btn.addEventListener('click', function() {
@@ -190,50 +366,82 @@
         setupToggle('toggle-battlecats-btn', 'battlecats-details', 'battlecats-arrow');
         setupToggle('toggle-freefire-btn', 'freefire-details', 'freefire-arrow');
         setupToggle('toggle-other-btn', 'other-details', 'other-arrow');
+
+        // 標題點一下展開/收合，連續雙擊（dblclick）才跳連結
+        function setupTitleClick(titleId, btnId, linkUrl, dynamicUrl) {
+            const title = document.getElementById(titleId);
+            const btn = document.getElementById(btnId);
+            if (!title) return;
+            title.addEventListener('click', function(e) {
+                btn.click();
+            });
+            if (dynamicUrl) {
+                title.addEventListener('dblclick', function(e) {
+                    const url = dynamicUrl.replace('{lang_code}', currentLang);
+                    window.open(url, '_blank');
+                });
+            } else if (linkUrl) {
+                title.addEventListener('dblclick', function(e) {
+                    window.open(linkUrl, '_blank');
+                });
+            }
+        }
+        setupTitleClick('battlecats-title', 'toggle-battlecats-btn', 'https://battlecats.club/');
+        setupTitleClick('freefire-title', 'toggle-freefire-btn', null, 'https://ff.garena.com/{lang_code}');
+        setupTitleClick('other-title', 'toggle-other-btn', null); // Other 沒有連結
     });
 </script>
-    
+
 <center>
 
 <table border="1" width="80%">
 <tr valign="top">
 
-<td width="33%">
-<b class="section-title">Gaming Platform</b><br>
-<a href="https://www.youtube.com/playables " ><favicon></favicon>Playables</a><br>
-<a href="https://www.facebook.com/gaming/play/ " ><favicon></favicon>Facebook Gaming</a><br>
-<a href="https://Roblox.com" ><img src="https://images.rbxcdn.com/7c5fe83dffa97250aaddd54178900ea7.png" class="icon-img">Roblox</a><br>
-<a href="https://sites.google.com/site/populardoodlegames" ><favicon></favicon>Google Doodles Game</a><br>
-<a href="https://www.crazygames.com/"><img src="https://imgs.crazygames.com/favicons/favicon-transparent.png" class="icon-img">Crazy Games</a><br>
-<a href="https://poki.com/" ><favicon></favicon>Poki</a><br>
-<a href="https://classicgamezone.com/" ><favicon></favicon>Retro Games</a><br>
-<a href="https://zaixianwan.app/" ><img src="https://zaixianwan.app/pwa-192x192.png" class="icon-img">老遊戲在線玩</a><br>
-<a href="https://gameforge.com" ><favicon></favicon>Gameforge</a><br>
-<a href="https://agargame.io/hot-games"><img src="https://agargame.io/cache/data/image/options/agar-io-logo1-m144x144.png" class="icon-img">Agar.io</a><br>
-<a href="https://gamebol.com/" ><favicon></favicon>Gamebol</a><br>
-<a href="https://scratch.mit.edu/"><img src="https://upload.wikimedia.org/wikipedia/commons/7/75/Scratch.logo.S.png" class="icon-img">Scratch</a><br>
-<a href="https://stretch3.github.io/" ><favicon></favicon>Stretch3</a><br>
+<td width="33%"> 
+<b class="section-title" data-original-text="Gaming Platform">Gaming Platform</b><br>
+
+<a href="https://www.youtube.com/playables" class="雙語名字" data-type="classic" data-original-text="Playables"><favicon></favicon><span class="link-text">Playables</span></a><br>
+<a href="https://www.facebook.com/gaming/play/ " ><favicon></favicon><span class="link-text">Facebook Gaming</span></a><br>
+
+<a href="#"  class="雙語名字" 
+ data-en-href="https://www.msn.com/en-xl/play"
+ data-zh-href="https://www.msn.com/zh-tw/play" >
+  <favicon></favicon><span class="link-text">MSN</span></a><br>
+
+<a href="https://Roblox.com" ><img src="https://images.rbxcdn.com/7c5fe83dffa97250aaddd54178900ea7.png" class="icon-img"><span class="link-text">Roblox</span></a><br>
+<a href="https://sites.google.com/site/populardoodlegames" ><favicon></favicon><span class="link-text">Google Doodles Game</span></a><br>
+<a href="https://www.crazygames.com/"><img src="https://imgs.crazygames.com/favicons/favicon-transparent.png" class="icon-img"><span class="link-text">Crazy Games</span></a><br>
+<a href="https://poki.com/" ><favicon></favicon><span class="link-text">Poki</span></a><br>
+<a href="https://classicgamezone.com/" ><favicon></favicon><span class="link-text">Retro Games</span></a><br>
+<a href="https://zaixianwan.app/" ><img src="https://zaixianwan.app/pwa-192x192.png" class="icon-img"><span class="link-text">老遊戲在線玩</span></a><br>
+<a href="https://gameforge.com" ><favicon></favicon><span class="link-text">Gameforge</span></a><br>
+<a href="https://agargame.io/hot-games"><img src="https://agargame.io/cache/data/image/options/agar-io-logo1-m144x144.png" class="icon-img"><span class="link-text">Agar.io</span></a><br>
+<a href="https://gamebol.com/" ><favicon></favicon><span class="link-text">Gamebol</span></a><br>
+<a href="https://scratch.mit.edu/"><img src="https://upload.wikimedia.org/wikipedia/commons/7/75/Scratch.logo.S.png" class="icon-img"><span class="link-text">Scratch</span></a><br>
+<a href="https://stretch3.github.io/" ><favicon></favicon><span class="link-text">Stretch3</span></a><br>
 </td>
 <td width="33%">
 
-  <b class="section-title">Gun Games</b><br>
-  <a href="https://deadshot.io/" ><favicon></favicon>DEADSHOT</a><br>
-  <a href="https://venge.io" ><favicon></favicon>VENGE.io</a><br>
-  <a href="https://shellshock.io"><img src="https://shellshock.io/favicon192.png" class="icon-img">Shell Shockers</a><br><br>
+  <b class="section-title" data-original-text="Gun Games">Gun Games</b><br>
+  <a href="https://deadshot.io/" ><favicon></favicon><span class="link-text">DEADSHOT</span></a><br>
+  <a href="https://venge.io" ><favicon></favicon><span class="link-text">VENGE.io</span></a><br>
+  <a href="https://shellshock.io"><img src="https://shellshock.io/favicon192.png" class="icon-img"><span class="link-text">Shell Shockers</span></a><br><br>
 
-  <b class="section-title">Single-player game</b><br>
+  <b class="section-title" data-original-text="Single-player game">Single-player game</b><br>
 
-<a href="https://www.google.com/logos/2024/moon/r3/moon.html"><img src="https://www.gstatic.com/marketing-cms/73/c1/bcf7a6274cadb0fd07d2efb588cd/screenshot-2024-10-22-4-50-44-pm.png" class="icon-img">Rise of the Half Moon</a><br>
-<a href="https://quickdraw.withgoogle.com/" ><favicon></favicon>Quick Draw</a><br>
-<a href="https://leveldevil2.io/devil-level-2.embed" ><img src="https://img.gamedistribution.com/3ffc5c0944f54f06afb212ca7d80bb00-512x512.jpg" class="icon-img">Level Devil </a><br>
-<a href="https://paperio.site/" ><favicon></favicon>Paper</a><br>
-<a href="http://www.solitaired.com"><img src="https://solitaired.com/images/logo.png" class="icon-img">Solitaired</a><br>
-<a href="https://www.chess.com/" ><img src="https://www.chess.com/bundles/web/favicons/favicon.5d6cb047.svg" class="icon-img">Chess</a><br>
-<a href="https://hex.frvr.com/" ><favicon></favicon>Hex FRVR</a><br>
+<a href="https://www.google.com/logos/2024/moon/r3/moon.html"><img src="https://www.gstatic.com/marketing-cms/73/c1/bcf7a6274cadb0fd07d2efb588cd/screenshot-2024-10-22-4-50-44-pm.png" class="icon-img"><span class="link-text">Rise of the Half Moon</span></a><br>
+<a href="https://quickdraw.withgoogle.com/" ><favicon></favicon><span class="link-text">Quick Draw</span></a><br>
+<a href="https://leveldevil2.io/devil-level-2.embed" ><img src="https://img.gamedistribution.com/3ffc5c0944f54f06afb212ca7d80bb00-512x512.jpg" class="icon-img"><span class="link-text">Level Devil</span></a><br>
+<a href="https://paperio.site/" ><favicon></favicon><span class="link-text">Paper</span></a><br>
+<a href="http://www.solitaired.com"><img src="https://solitaired.com/images/logo.png" class="icon-img"><span class="link-text">Solitaired</span></a><br>
+<a href="https://www.chess.com/" ><img src="https://www.chess.com/bundles/web/favicons/favicon.5d6cb047.svg" class="icon-img"><span class="link-text">Chess</span></a><br>
+<a href="https://hex.frvr.com/" ><favicon></favicon><span class="link-text">Hex FRVR</span></a><br>
 
-<span style="color: #88FFFF"><b>Sudoku：</b> 
-<a href="https://sudoku.com/">Classic</a> 、
-<a href="https://sudoku.com/killer/">Killer</a></span><br>
+<span style="color: #88FFFF" id="sudoku-links">
+    <b data-original-text="Sudoku">Sudoku</b>：
+    <a href="https://sudoku.com/" data-type="classic" data-original-text="Classic">Classic</a> 、
+    <a href="https://sudoku.com/killer/" data-type="killer" data-original-text="Killer">Killer</a>
+</span><br>
 
 
 <br><br>
@@ -241,48 +449,57 @@
 </td>
 <td width="34%">
 
-  <a href="https://battlecats.club/"><b class="section-title"><img src="https://battlecats.club/wp-content/themes/nyanko/img/common/favicon.ico"
-    width="18" height="18" alt="The Battle Cats icon">The Battle Cats</b></a>
+  <b class="section-title" id="battlecats-title" data-original-text="The Battle Cats"><img src="https://battlecats.club/wp-content/themes/nyanko/img/common/favicon.ico"
+    width="18" height="18" alt="The Battle Cats icon">The Battle Cats</b>
 <button id="toggle-battlecats-btn">
   <img id="battlecats-arrow" src="https://cdn-icons-png.flaticon.com/512/15714/15714566.png" alt=">">
   </button>
 
 <div id="battlecats-details" style="display:none;">
-<a href="https://battlecats-db.com/" ><favicon></favicon>超絕攻略網</a><br>
-<a href="https://battlecatsinfo.github.io" ><favicon></favicon>貓咪大戰爭中文資訊網站</a><br>
-<a href="https://forum.gamer.com.tw/G1.php?bsn=23772&parent=0" ><img src="https://i2.bahamut.com.tw/favicon.svg" class="icon-img">巴哈姆特-根目錄 </a><br>
-<a href="https://battle-cats.fandom.com/" ><favicon></favicon>The Battle Cats Wiki</a><br>
-<a href="https://wikiwiki.jp/bccharadata/" ><favicon></favicon>History</a><br>
-<a href="https://jarjarblink.github.io/INFORMANT/" ><favicon></favicon>更新日誌</a><br>
-<a href="https://jarjarblink.github.io/JAR-Battlecats-Database/" ><img src="https://jarjarblink.github.io/JAR-Battlecats-Database/static/favicon.ico" class="icon-img">JAR角色資料</a><br>
+<a href="https://battlecats-db.com/" ><favicon></favicon><span class="link-text">超絕攻略網</span></a><br>
+<a href="https://battlecatsinfo.github.io" ><favicon></favicon><span class="link-text">貓咪大戰爭中文資訊網站</span></a><br>
+<a href="https://forum.gamer.com.tw/G1.php?bsn=23772&parent=0" ><img src="https://i2.bahamut.com.tw/favicon.svg" class="icon-img"><span class="link-text">巴哈姆特-根目錄</span></a><br>
+<a href="https://battle-cats.fandom.com/" ><favicon></favicon><span class="link-text">The Battle Cats Wiki</span></a><br>
+<a href="https://wikiwiki.jp/bccharadata/" ><favicon></favicon><span class="link-text">History</span></a><br>
+<a href="https://jarjarblink.github.io/INFORMANT/" ><favicon></favicon><span class="link-text">更新日誌</span></a><br>
+<a href="https://jarjarblink.github.io/JAR-Battlecats-Database/" ><img src="https://jarjarblink.github.io/JAR-Battlecats-Database/static/favicon.ico" class="icon-img"><span class="link-text">JAR角色資料</span></a><br>
 
 </div>
 <br>
 
-<a href="https://ff.garena.com/"><b class="section-title">Free Fire</b></a>
+<b class="section-title" id="freefire-title">Free Fire</b>
 <button id="toggle-freefire-btn">
   <img id="freefire-arrow" src="https://cdn-icons-png.flaticon.com/512/15714/15714566.png" alt=">">
   </button>
 <div id="freefire-details" style="display:none;">
 <span style="display: inline-block; margin-bottom: 5px;">
-  <a href="https://garenafreefire.fandom.com/wiki/Free_Fire_Wiki" ><favicon></favicon>Free Fire Wiki</a><br>
-  <a href="https://ff.garena.com/zh/wallpaper"><favicon></favicon> Wallpaper</a><br>
-  <a href="https://rankguide.sea.freefiremobile.com/?lang=" ><favicon></favicon>牌位</a><br>
-  <a href="https://ffcraftland.garena.com/" ><favicon></favicon>我的戰場</a><br>
-  <a href="https://ff.garena.com/universe/en/" ><favicon></favicon>Universe-EN</a> 
-  <a href="https://ff.garena.com/universe/zh/" >-ZH</a><br>
+  <a href="https://garenafreefire.fandom.com/wiki/Free_Fire_Wiki" ><favicon></favicon><span class="link-text">Free Fire Wiki</span></a><br>
+  <a href="#" class="雙語連結" data-base-href="https://ff.garena.com/{lang_code}/wallpaper"><favicon></favicon><span class="link-text">Wallpaper</span></a><br>
+
+  <a href="#"  class="雙語名字"  data-en-href="https://rankguide.sea.freefiremobile.com/?lang=en" data-zh-href="https://rankguide.sea.freefiremobile.com/?lang=zh-tw" data-original-text="排位">
+    <favicon></favicon><span class="link-text">排位</span></a><br>
+
+  <a class="雙語連結" href="https://ffcraftland.garena.com/" data-original-text="我的戰場" ><favicon></favicon><span class="link-text">我的戰場</span></a><br>
+  <a href="#" class="雙語連結" data-base-href="https://ff.garena.com/universe/{lang_code}/" data-original-text="Universe">
+    <favicon></favicon><span class="link-text">Universe</span></a><br>
 </span>
 </div>
-<br> 
-<b class="section-title">Other</b>
+<br>
+<b class="section-title" id="other-title" data-original-text="Other">Other</b>
 <button id="toggle-other-btn">
   <img id="other-arrow" src="https://cdn-icons-png.flaticon.com/512/15714/15714566.png" alt=">">
   </button>
 <div id="other-details" style="display:none;">
 <span style="display: inline-block;">
-  <a href="https://beatsaver.com/" ><favicon></favicon>Beat Saver</a><br>
-  <a href="https://tw.portal-pokemon.com/play/pokedex"><img src="https://png.pngtree.com/png-clipart/20240404/original/pngtree-3d-pokemon-ball-png-image_14754359.png" class="icon-img">Pokedex-TW</a>
-  <a href="https://www.pokemon.com/us/pokedex">-US</a>
+  <a href="https://beatsaver.com/" ><favicon></favicon><span class="link-text">Beat Saver</span></a><br>
+
+     <a href="#" class="雙語名字"
+   data-en-href="https://tw.portal-pokemon.com/play/pokedex"
+   data-zh-href="https://www.pokemon.com/us/pokedex"
+   data-original-text="寶可夢圖鑑">
+   <img src="https://png.pngtree.com/png-clipart/20240404/original/pngtree-3d-pokemon-ball-png-image_14754359.png" class="icon-img">
+   <span class="link-text">Pokedex</span>
+</a><br>
 </span>
 </div>
 <br>
@@ -292,5 +509,34 @@
 
 </tr>
 </table>
+</center>
+<!--公式(請勿刪除)
+<a href="#" class="雙語連結/雙語名字"
+data-en-href="https:////.com"
+data-zh-href="https:////.com"
+data-base-href="https://  .com/{lang_code}/"
+data-original-text="翻譯(要到script新增)">
+<img src="https://  .png" class="icon-img">
+<favicon></favicon>
+<span class="link-text">預設名</span>
+
+<a href="#" class="雙語連結/雙語名字"
+data-en-href="https:////.com"
+data-zh-href="https:////.com"
+data-base-href="https://  .com/{lang_code}/"
+data-original-text="翻譯(要到script新增)">
+<img src="https://  .png" class="icon-img">
+<favicon></favicon>
+<span class="link-text">預設名</span>
+
+<a href="#" class="雙語連結/雙語名字"
+data-en-href="https:////.com"
+data-zh-href="https:////.com"
+data-base-href="https://  .com/{lang_code}/"
+data-original-text="翻譯(要到script新增)">
+<img src="https://  .png" class="icon-img">
+<favicon></favicon>
+<span class="link-text">預設名</span>
+-->
 </body>
 </html>

@@ -218,29 +218,6 @@
                 const linkTextSpan = link.querySelector('.link-text'); // 查找 .link-text span
                 if (originalText && translations[originalText] && linkTextSpan) {
                     linkTextSpan.textContent = translations[originalText][langCode];
-                } else if (originalText && translations[originalText]) {
-                    // 如果沒有 .link-text span，則直接更新 a 標籤的 textContent (適用於沒有圖片的連結)
-                    // 但對於帶圖片的 custom link，建議一定要用 span 包裹文字
-                    // link.textContent = translations[originalText][langCode];
-                    // 為了避免意外覆蓋圖片，如果沒有 linkTextSpan，這裡不做 textContent 替換
-                }
-            });
-
-            // 處理動態連結 (雙語連結)
-            document.querySelectorAll('.雙語連結').forEach(link => {
-                const originalHref = link.getAttribute('data-base-href');
-                if (originalHref && originalHref.includes('{lang_code}')) {
-                    link.href = originalHref.replace('{lang_code}', langCode);
-                }
-                // 處理連結文字的翻譯
-                const originalText = link.getAttribute('data-original-text');
-                const linkTextSpan = link.querySelector('.link-text'); // 查找 .link-text span
-                if (originalText && translations[originalText] && linkTextSpan) {
-                    linkTextSpan.textContent = translations[originalText][langCode];
-                } else if (originalText && translations[originalText]) {
-                    // 這裡預設動態連結可能沒有圖片，直接更新 textContent
-                    // 如果未來動態連結也可能包含圖片，也需為其文字添加 span 包裹
-                    link.textContent = translations[originalText][langCode];
                 }
             });
 
@@ -255,8 +232,9 @@
             // 更新 Sudoku 連結的顯示文字
             const sudokuSpan = document.getElementById('sudoku-links');
             if (sudokuSpan) {
-                const classicLink = sudokuSpan.querySelector('[data-type="classic"]');
-                const killerLink = sudokuSpan.querySelector('[data-type="killer"]');
+                // 改用 data-original-text 來選取連結
+                const classicLink = sudokuSpan.querySelector('a[data-original-text="Classic"]');
+                const killerLink = sudokuSpan.querySelector('a[data-original-text="Killer"]');
 
                 if (classicLink && killerLink) { // 確保連結存在
                     const classicOriginalText = classicLink.getAttribute('data-original-text');
@@ -277,8 +255,8 @@
                         killerLinkText = translations[killerOriginalText][langCode];
                     }
 
-                    // 重新設置 innerHTML 以更新文字內容
-                    sudokuSpan.innerHTML = `<b data-original-text="Sudoku">${sudokuTitleText}</b>： <a href="${classicLink.href}" data-type="classic" data-original-text="Classic">${classicLinkText}</a> 、 <a href="${killerLink.href}" data-type="killer" data-original-text="Killer">${killerLinkText}</a>`;
+                    // 重新設置 innerHTML 以更新文字內容，並移除 data-type 屬性
+                    sudokuSpan.innerHTML = `<b data-original-text="Sudoku">${sudokuTitleText}</b>： <a href="${classicLink.href}" data-original-text="Classic">${classicLinkText}</a> 、 <a href="${killerLink.href}" data-original-text="Killer">${killerLinkText}</a>`;
                 }
             }
         }
@@ -286,53 +264,68 @@
         // 初始化語言
         let currentLang = localStorage.getItem('userLang') || (navigator.language.startsWith('zh') ? 'zh' : 'en');
 
-        // favicon 補圖處理，支援 雙語連結
-        document.querySelectorAll('favicon').forEach(tag => {
-            const parentLink = tag.closest('a');
-            if (parentLink) {
-                parentLink.setAttribute('target', '_blank');
-                let targetUrlForFavicon = null;
-                
-                // 優先從 data-屬性獲取真實URL，因為 href 可能還是 '#'
-                if (parentLink.classList.contains('雙語名字')) {
-                    // 對於雙語名字 (lang-custom-link) 類別的連結，根據當前語言選擇 URL
-                    targetUrlForFavicon = (currentLang === 'zh') ?
-                                            parentLink.getAttribute('data-zh-href') :
-                                            parentLink.getAttribute('data-en-href');
-                } else if (parentLink.classList.contains('雙語連結')) {
-                    // 對於雙語連結 (lang-dynamic-link) 類別的連結，從 data-base-href 生成 URL
-                    const baseHref = parentLink.getAttribute('data-base-href');
-                    if (baseHref && baseHref.includes('{lang_code}')) {
-                        targetUrlForFavicon = baseHref.replace('{lang_code}', currentLang);
+        // Favicon 處理邏輯，獨立成函數方便調用
+        function processFavicons() {
+            document.querySelectorAll('favicon').forEach(tag => {
+                const parentLink = tag.closest('a');
+                if (parentLink) {
+                    parentLink.setAttribute('target', '_blank');
+
+                    // 如果連結有 no-icon 類別，則直接移除 favicon 標籤，不生成任何圖標，並做標記
+                    if (parentLink.classList.contains('no-icon')) {
+                        tag.remove();
+                        parentLink.dataset.hasNoIcon = 'true'; // 標記為明確不想要圖標
+                        return; // 終止這個連結的處理
+                    }
+
+                    // 如果連結內部已經有 "非生成式" 的 img 標籤（即使用者提供的原始圖片），則不生成 favicon
+                    if (parentLink.querySelector('img:not(.generated-favicon)')) {
+                        tag.remove(); // 移除 favicon 佔位符
+                        return; // 終止這個連結的處理
+                    }
+                    
+                    // 標記該連結原本有 favicon 佔位符
+                    parentLink.dataset.hasFaviconPlaceholder = 'true';
+
+                    let targetUrlForFavicon = null;
+                    
+                    // 優先從 data-屬性獲取真實URL (適用於雙語連結)
+                    if (parentLink.classList.contains('雙語名字')) {
+                        targetUrlForFavicon = (currentLang === 'zh') ?
+                                                parentLink.getAttribute('data-zh-href') :
+                                                parentLink.getAttribute('data-en-href');
+                    }
+                    
+                    // 如果上述方法未能獲取到 URL，則嘗試使用 href
+                    if (!targetUrlForFavicon && parentLink.href && parentLink.href !== '#') {
+                         targetUrlForFavicon = parentLink.href;
+                    }
+
+                    let faviconOrigin = null;
+                    if (targetUrlForFavicon) {
+                        try {
+                            faviconOrigin = new URL(targetUrlForFavicon).origin;
+                        } catch (e) {
+                            faviconOrigin = null;
+                        }
+                    }
+
+                    if (faviconOrigin) {
+                        const faviconUrl = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=256&url=${faviconOrigin}`;
+                        const img = document.createElement('img');
+                        img.src = faviconUrl;
+                        img.className = 'icon-img'; // 保留原有樣式類別
+                        img.classList.add('generated-favicon'); // 新增類別以區分自動生成圖片
+                        tag.replaceWith(img);
+                    } else {
+                        tag.remove(); // 無法產生 favicon 就移除
                     }
                 }
-                
-                // 如果上述方法未能獲取到 URL，則嘗試使用 href (適用於非動態連結或已由 JS 更新的連結)
-                if (!targetUrlForFavicon && parentLink.href && parentLink.href !== '#') {
-                     targetUrlForFavicon = parentLink.href;
-                }
+            });
+        }
 
-                let faviconOrigin = null;
-                if (targetUrlForFavicon) {
-                    try {
-                        // 從目標 URL 獲取來源
-                        faviconOrigin = new URL(targetUrlForFavicon).origin;
-                    } catch (e) {
-                        faviconOrigin = null;
-                    }
-                }
-
-                if (faviconOrigin) {
-                    const faviconUrl = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=256&url=${faviconOrigin}`;
-                    const img = document.createElement('img');
-                    img.src = faviconUrl;
-                    img.className = 'icon-img';
-                    tag.replaceWith(img);
-                } else {
-                    tag.remove(); // 無法產生 favicon 就移除
-                }
-            }
-        });
+        // 頁面載入時執行 Favicon 處理
+        processFavicons();
         applyLanguage(currentLang);
 
         // 語言切換按鈕事件監聽
@@ -341,7 +334,36 @@
             langToggleButton.addEventListener('click', function() {
                 currentLang = (currentLang === 'zh') ? 'en' : 'zh';
                 localStorage.setItem('userLang', currentLang); // 儲存語言偏好
-                applyLanguage(currentLang); // 應用新的語言
+                applyLanguage(currentLang); // 應用新的語言，更新連結 href 和文字
+
+                // 針對那些原本有 favicon 佔位符的連結，更新其自動生成的圖標
+                document.querySelectorAll('a[data-has-favicon-placeholder="true"]').forEach(link => {
+                    // 如果這個連結明確設置了 no-icon，則不處理其圖標
+                    if (link.dataset.hasNoIcon) {
+                        return;
+                    }
+
+                    // 移除舊的自動生成圖標（如果有）
+                    const existingGeneratedFavicon = link.querySelector('.generated-favicon');
+                    if (existingGeneratedFavicon) {
+                        existingGeneratedFavicon.remove();
+                    }
+
+                    // 重新插入 <favicon> 佔位符，以便重新觸發生成邏輯
+                    // 僅在該連結沒有使用者提供的原始圖片時才重新插入
+                    if (!link.querySelector('img:not(.generated-favicon)')) {
+                        const faviconTag = document.createElement('favicon');
+                        const linkTextSpan = link.querySelector('.link-text');
+                        if (linkTextSpan) {
+                            linkTextSpan.insertAdjacentElement('beforebegin', faviconTag);
+                        } else {
+                            link.prepend(faviconTag);
+                        }
+                    }
+                });
+                
+                // 重新執行 Favicon 處理邏輯，生成新的圖標
+                processFavicons();
             });
         }
 
@@ -400,7 +422,7 @@
 <td width="33%"> 
 <b class="section-title" data-original-text="Gaming Platform">Gaming Platform</b><br>
 
-<a href="https://www.youtube.com/playables" class="雙語名字" data-type="classic" data-original-text="Playables"><favicon></favicon><span class="link-text">Playables</span></a><br>
+<a href="https://www.youtube.com/playables" class="雙語名字" data-original-text="Playables"><favicon></favicon><span class="link-text">Playables</span></a><br>
 <a href="https://www.facebook.com/gaming/play/ " ><favicon></favicon><span class="link-text">Facebook Gaming</span></a><br>
 
 <a href="#"  class="雙語名字" 
@@ -412,6 +434,7 @@
 <a href="https://sites.google.com/site/populardoodlegames" ><favicon></favicon><span class="link-text">Google Doodles Game</span></a><br>
 <a href="https://www.crazygames.com/"><img src="https://imgs.crazygames.com/favicons/favicon-transparent.png" class="icon-img"><span class="link-text">Crazy Games</span></a><br>
 <a href="https://poki.com/" ><favicon></favicon><span class="link-text">Poki</span></a><br>
+<a href="#"  class="雙語名字"  data-en-href="https://kuioo.com" data-zh-href="https://kuioo.tw/" ><span class="link-text"><favicon></favicon>Kuioo</span></a><br>
 <a href="https://classicgamezone.com/" ><favicon></favicon><span class="link-text">Retro Games</span></a><br>
 <a href="https://zaixianwan.app/" ><img src="https://zaixianwan.app/pwa-192x192.png" class="icon-img"><span class="link-text">老遊戲在線玩</span></a><br>
 <a href="https://gameforge.com" ><favicon></favicon><span class="link-text">Gameforge</span></a><br>
@@ -437,11 +460,12 @@
 <a href="http://www.solitaired.com"><img src="https://solitaired.com/images/logo.png" class="icon-img"><span class="link-text">Solitaired</span></a><br>
 <a href="https://www.chess.com/" ><img src="https://www.chess.com/bundles/web/favicons/favicon.5d6cb047.svg" class="icon-img"><span class="link-text">Chess</span></a><br>
 <a href="https://hex.frvr.com/" ><favicon></favicon><span class="link-text">Hex FRVR</span></a><br>
+<a href="https://garticphone.com/" ><favicon></favicon><span class="link-text">Gartic Phone</span></a><br>
 
 <span style="color: #88FFFF" id="sudoku-links">
     <b data-original-text="Sudoku">Sudoku</b>：
-    <a href="https://sudoku.com/" data-type="classic" data-original-text="Classic">Classic</a> 、
-    <a href="https://sudoku.com/killer/" data-type="killer" data-original-text="Killer">Killer</a>
+    <a href="https://sudoku.com/" data-original-text="Classic">Classic</a> 、
+    <a href="https://sudoku.com/killer/" data-original-text="Killer">Killer</a>
 </span><br>
 
 
@@ -474,8 +498,9 @@
   </button>
 <div id="freefire-details" style="display:none;">
 <span style="display: inline-block; margin-bottom: 5px;">
-  <a href="https://garenafreefire.fandom.com/wiki/Free_Fire_Wiki" ><favicon></favicon><span class="link-text">Free Fire Wiki</span></a><br>
-  <a href="#" class="雙語連結" data-base-href="https://ff.garena.com/{lang_code}/wallpaper"><favicon></favicon><span class="link-text">Wallpaper</span></a><br>
+  <a href="https://garenafreefire.fandom.com/wiki/Free_Fire_Wiki" class="no-icon" ><favicon></favicon><span class="link-text">Free Fire Wiki</span></a><br>
+  
+  <a href="#" class="雙語連結" data-base-href="https://ff.garena.com/{lang_code}/wallpaper" data-original-text="Wallpaper"><favicon></favicon><span class="link-text">Wallpaper</span></a><br>
 
   <a href="#"  class="雙語名字"  data-en-href="https://rankguide.sea.freefiremobile.com/?lang=en" data-zh-href="https://rankguide.sea.freefiremobile.com/?lang=zh-tw" data-original-text="排位">
     <favicon></favicon><span class="link-text">排位</span></a><br>
@@ -495,7 +520,7 @@
   <a href="https://beatsaver.com/" ><favicon></favicon><span class="link-text">Beat Saver</span></a><br>
 
      <a href="#" class="雙語名字"
-   data-en-href="https://www.pokemon.com/us/pokedexhttps://tw.portal-pokemon.com/play/pokedex"
+   data-en-href="https://www.pokemon.com/us/pokedex"
    data-zh-href="https://tw.portal-pokemon.com/play/pokedex"
    data-original-text="寶可夢圖鑑">
    <img src="https://png.pngtree.com/png-clipart/20240404/original/pngtree-3d-pokemon-ball-png-image_14754359.png" class="icon-img">
@@ -511,33 +536,5 @@
 </tr>
 </table>
 </center>
-<!--公式(請勿刪除)
-<a href="#" class="雙語連結/雙語名字"
-data-en-href="https:////.com"
-data-zh-href="https:////.com"
-data-base-href="https://  .com/{lang_code}/"
-data-original-text="翻譯(要到script新增)">
-<img src="https://  .png" class="icon-img">
-<favicon></favicon>
-<span class="link-text">預設名</span>
-
-<a href="#" class="雙語連結/雙語名字"
-data-en-href="https:////.com"
-data-zh-href="https:////.com"
-data-base-href="https://  .com/{lang_code}/"
-data-original-text="翻譯(要到script新增)">
-<img src="https://  .png" class="icon-img">
-<favicon></favicon>
-<span class="link-text">預設名</span>
-
-<a href="#" class="雙語連結/雙語名字"
-data-en-href="https:////.com"
-data-zh-href="https:////.com"
-data-base-href="https://  .com/{lang_code}/"
-data-original-text="翻譯(要到script新增)">
-<img src="https://  .png" class="icon-img">
-<favicon></favicon>
-<span class="link-text">預設名</span>
--->
 </body>
 </html>

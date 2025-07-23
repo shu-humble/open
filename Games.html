@@ -6,6 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="https://static.vecteezy.com/system/resources/thumbnails/017/744/677/small_2x/video-game-icon-png.png">
   <style>
+    /* 全局設置 */
+    * {
+      box-sizing: border-box; /* 所有元素都使用 border-box 模型 */
+    }
+
     /* 全局文字和行高配置 */
     body, table, td, a, span, b {
       font-size: 1.8vw;
@@ -34,7 +39,6 @@
       background-color: rgba(51, 160, 102, 0.37);
       border-collapse: collapse;
       margin: 0.5em auto;
-      box-sizing: border-box;
     }
 
     td {
@@ -44,7 +48,6 @@
       padding: 10px;
       vertical-align: top;
       max-width: 30vw;
-      box-sizing: border-box;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -57,7 +60,6 @@
       display: inline-block;
       margin: 2px 0;
       max-width: 100%;
-      box-sizing: border-box;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -71,12 +73,10 @@
       color: #ffff00;
       font-weight: bold;
       margin-bottom: 10px;
-      box-sizing: border-box;
     }
 
-    /* 图标／图片高度＝文字高度 */
+    /* 图标／圖片高度＝文字高度 */
     .icon-img,
-    img,
     #toggle-battlecats-btn img,
     #toggle-freefire-btn img,
     #toggle-other-btn img {
@@ -84,7 +84,6 @@
       width: auto;
       vertical-align: middle;
       margin: 0 0.2em;
-      box-sizing: border-box;
       border-radius: clamp(2px,.5vw,4px); /*弧角*/
     }
 
@@ -143,7 +142,6 @@
         margin-bottom: 5px;
       }
       .icon-img,
-      img,
       #toggle-battlecats-btn img,
       #toggle-freefire-btn img,
       #toggle-other-btn img {
@@ -196,7 +194,9 @@
             'Universe': { 'zh': '宇宙', 'en': 'Universe' },
             '寶可夢圖鑑': { 'zh': '寶可夢圖鑑', 'en': 'Pokedex' },
             '排位': { 'zh': '排位', 'en': 'Rank' },
+            '壁紙': { 'zh': '壁紙', 'en': 'Wallpaper' },
             '我的戰場': { 'zh': '我的戰場', 'en': 'Craftland' },
+            'Free Fire': { 'zh': 'Free Fire', 'en': 'Free Fire' }, // 新增 Free Fire 的翻譯，儘管目前中英文相同
         };
 
         // 核心的語言應用函數
@@ -256,8 +256,10 @@
                         killerLinkText = translations[killerOriginalText][langCode];
                     }
 
-                    // 重新設置 innerHTML 以更新文字內容，並移除 data-type 屬性
-                    sudokuSpan.innerHTML = `<b data-original-text="Sudoku">${sudokuTitleText}</b>： <a href="${classicLink.href}" data-original-text="Classic">${classicLinkText}</a> 、 <a href="${killerLink.href}" data-original-text="Killer">${killerLinkText}</a>`;
+                    // 直接更新文字內容，而不是重新設置 innerHTML
+                    sudokuSpan.querySelector('b[data-original-text="Sudoku"]').textContent = sudokuTitleText;
+                    classicLink.textContent = classicLinkText;
+                    killerLink.textContent = killerLinkText;
                 }
             }
         }
@@ -391,25 +393,37 @@
         setupToggle('toggle-other-btn', 'other-details', 'other-arrow');
 
         // 標題點一下展開/收合，連續雙擊（dblclick）才跳連結
-        function setupTitleClick(titleId, btnId, linkUrl, dynamicUrl) {
+        function setupTitleClick(titleId, btnId, linkUrl, dynamicUrl) { // linkUrl 和 dynamicUrl 參數現在是備用
             const title = document.getElementById(titleId);
             const btn = document.getElementById(btnId);
             if (!title) return;
+
             title.addEventListener('click', function(e) {
                 btn.click();
             });
-            if (dynamicUrl) {
-                title.addEventListener('dblclick', function(e) {
-                    const url = dynamicUrl.replace('{lang_code}', currentLang);
-                    window.open(url, '_blank');
-                });
-            } else if (linkUrl) {
-                title.addEventListener('dblclick', function(e) {
-                    window.open(linkUrl, '_blank');
-                });
-            }
+
+            title.addEventListener('dblclick', function(e) {
+                let urlToOpen = null;
+                const zhHref = title.getAttribute('data-zh-href');
+                const enHref = title.getAttribute('data-en-href');
+
+                if (currentLang === 'zh' && zhHref) {
+                    urlToOpen = zhHref;
+                } else if (currentLang === 'en' && enHref) {
+                    urlToOpen = enHref;
+                } else if (dynamicUrl) { // Fallback to dynamicUrl if provided in function call
+                    urlToOpen = dynamicUrl.replace('{lang_code}', currentLang);
+                } else if (linkUrl) { // Fallback to static linkUrl if provided in function call
+                    urlToOpen = linkUrl;
+                }
+
+                if (urlToOpen) {
+                    window.open(urlToOpen, '_blank');
+                }
+            });
         }
-        setupTitleClick('battlecats-title', 'toggle-battlecats-btn', 'https://battlecats.club/');
+        // Battle Cats 現在透過 HTML 的 data-en-href / data-zh-href 屬性設定連結
+        setupTitleClick('battlecats-title', 'toggle-battlecats-btn'); 
         setupTitleClick('freefire-title', 'toggle-freefire-btn', null, 'https://ff.garena.com/{lang_code}');
         setupTitleClick('other-title', 'toggle-other-btn', null); // Other 沒有連結
     });
@@ -475,9 +489,10 @@
 
 </td>
 <td width="34%">
+  <img src="https://battlecats.club/wp-content/themes/nyanko/img/common/favicon.ico" class="icon-img" alt="貓咪大戰爭圖示">
+  <b class="section-title" id="battlecats-title" data-original-text="The Battle Cats" data-en-href="https://battlecats.club/en" data-zh-href="https://battlecats.club/tw/">
 
-  <b class="section-title" id="battlecats-title" data-original-text="The Battle Cats"><img src="https://battlecats.club/wp-content/themes/nyanko/img/common/favicon.ico"
-    width="18" height="18" alt="The Battle Cats icon">The Battle Cats</b>
+    The Battle Cats</b>
 <button id="toggle-battlecats-btn">
   <img id="battlecats-arrow" src="https://cdn-icons-png.flaticon.com/512/15714/15714566.png" alt=">">
   </button>
@@ -493,27 +508,37 @@
 
 </div>
 <br>
+<img src="https://play-lh.googleusercontent.com/mzn2bEv9EwLyyVmuogzpawsmxqmpZIHDiIIOfJshNKJqimYpt10tbgb28syX8Hy8yNw=w480-h960-rw" class="icon-img" alt="Free Fire 圖示">
+<b class="section-title" id="freefire-title" data-original-text="Free Fire">
 
-<b class="section-title" id="freefire-title">Free Fire</b>
+  Free Fire</b>
 <button id="toggle-freefire-btn">
+
   <img id="freefire-arrow" src="https://cdn-icons-png.flaticon.com/512/15714/15714566.png" alt=">">
   </button>
 <div id="freefire-details" style="display:none;">
 <span style="display: inline-block; margin-bottom: 5px;">
-  <a href="https://garenafreefire.fandom.com/wiki/Free_Fire_Wiki" class="no-icon" ><favicon></favicon><span class="link-text">Free Fire Wiki</span></a><br>
-  
-  <a href="#" class="雙語連結" data-base-href="https://ff.garena.com/{lang_code}/wallpaper" data-original-text="Wallpaper"><favicon></favicon><span class="link-text">Wallpaper</span></a><br>
+
+  <a href="https://garenafreefire.fandom.com/wiki/Free_Fire_Wiki"><favicon></favicon><span class="link-text">Free Fire Wiki</span></a><br>
+  <a href="#" class="雙語名字"
+  data-en-href="https://ff.garena.com/en/wallpaper"
+  data-zh-href="https://ff.garena.com/zh/wallpaper"
+   data-original-text="壁紙"><favicon></favicon><span class="link-text">Wallpaper</span></a><br>
 
   <a href="#"  class="雙語名字"  data-en-href="https://rankguide.sea.freefiremobile.com/?lang=en" data-zh-href="https://rankguide.sea.freefiremobile.com/?lang=zh-tw" data-original-text="排位">
     <favicon></favicon><span class="link-text">排位</span></a><br>
 
-  <a class="雙語連結" href="https://ffcraftland.garena.com/" data-original-text="我的戰場" ><favicon></favicon><span class="link-text">我的戰場</span></a><br>
-  <a href="#" class="雙語連結" data-base-href="https://ff.garena.com/universe/{lang_code}/" data-original-text="Universe">
+  <a class="雙語名字" href="https://ffcraftland.garena.com/" data-original-text="我的戰場" ><favicon></favicon><span class="link-text">我的戰場</span></a><br>
+  <a class="雙語名字" data-en-href="https://ff.garena.com/universe/en"
+  data-zh-href="https://ff.garena.com/universe/zh"
+ data-original-text="Universe">
     <favicon></favicon><span class="link-text">Universe</span></a><br>
 </span>
 </div>
 <br>
-<b class="section-title" id="other-title" data-original-text="Other">Other</b>
+<b class="section-title" id="other-title" data-original-text="Other">
+  <img src="**請替換為其他遊戲圖片網址.png**" class="icon-img" alt="其他遊戲圖示">
+  Other</b>
 <button id="toggle-other-btn">
   <img id="other-arrow" src="https://cdn-icons-png.flaticon.com/512/15714/15714566.png" alt=">">
   </button>

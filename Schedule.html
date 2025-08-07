@@ -43,8 +43,30 @@
 
         /* 統一的標題樣式 */
         .section-title {
-            font-size: clamp(24px, 6vw, 48px);/*標題大小*/
+            font-size: clamp(28px, 7vw, 56px);/*標題大小*/
             font-weight: bold;/*粗體*/
+        }
+
+        /* 自定義 tooltip 樣式 */
+        .custom-tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: normal;
+            white-space: nowrap;
+            z-index: 10000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .custom-tooltip.show {
+            opacity: 1;
         }
 
         /* 統一的圖片樣式 */
@@ -146,24 +168,24 @@
             line-height: 1.2;
         }
         .social-sidebar {
-  position: fixed;
-  top: 50%;
-  left: 10px;
-  transform: translateY(-50%);
-  background-color: rgba(255,255,255,0.8);
-  border-radius: clamp(8px, 1vw, 16px);
-  box-shadow: 0 4px 8px rgba(0,0,0,1);
-  
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: fit-content;
+        position: fixed;
+        top: 50%;
+        left: 10px;
+        transform: translateY(-50%);
+        background-color: rgba(255,255,255,0.8);
+        border-radius: clamp(8px, 1vw, 16px);
+        box-shadow: 0 4px 8px rgba(0,0,0,1);
+        
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: fit-content;
 
-  /* 下面这行按方案 1/2/3 选一个替换 */
-  padding: 4px 4px;
-  gap: 4px;
+        /* 下面这行按方案 1/2/3 选一个替换 */
+        padding: 4px 4px;
+        gap: 4px;
 
-  z-index: 1000;
+        z-index: 1000;
 }
 
 .social-sidebar a img {
@@ -202,11 +224,34 @@
   padding: 0.3em 0.6em;/*內邊距*/
   border-radius: 8px; /* 加一點圓角更自然 */
 }
-
 /* 滑鼠滑過時變色 */
 .music-button:hover {
   background-color: rgba(200, 200, 200, 0.5);  /* 半透明灰底 */
   /* color: rgb(0, 77, 100); /* 你也可以改成別的顏色 */
+}/* 滑鼠滑過時變色 */
+
+.AI {
+  display: inline-block;
+ /* padding: 4px 8px;*/
+  border-radius: 8px;
+  /*transition: color 0.2s ease, background-color 0.2s ease;*/
+}
+
+.AI:hover {
+    display: inline-block;
+    border-radius: 8px;
+  background-color: rgba(180, 0, 255, 0.3);  /* 半透明紫色背景 */
+}
+
+.Games {
+  display: inline-block;
+ /* padding: 4px 8px;*/
+  border-radius: 8px;
+  /*transition: color 0.2s ease, background-color 0.2s ease;*/
+}
+
+.Games:hover {
+  background-color: rgba(0, 145, 255, 0.3);  /* 半透明藍色背景 */
 }
 
 /* 霓虹燈光圈效果的 CSS */
@@ -272,6 +317,9 @@
 
 <body background="33.jpg">
     <base target="_blank">
+
+    <!-- 自定義 tooltip 元素 -->
+    <div id="custom-tooltip" class="custom-tooltip"></div>
 
     <div id="launcher-container"></div> 
 
@@ -357,6 +405,57 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
+            // 自定義 tooltip 功能
+            const tooltip = document.getElementById("custom-tooltip");
+            const allLinks = document.querySelectorAll("a[title], a[data-tooltip]");
+
+            allLinks.forEach(link => {
+                let tooltipTimeout;
+                
+                link.addEventListener("mouseenter", (e) => {
+                    const title = link.getAttribute("title") || link.getAttribute("data-tooltip");
+                    if (title) {
+                        // 延遲 500ms 顯示 tooltip，避免過於敏感
+                        tooltipTimeout = setTimeout(() => {
+                            tooltip.textContent = title;
+                            tooltip.classList.add("show");
+                            
+                            // 計算位置
+                            const rect = link.getBoundingClientRect();
+                            const tooltipRect = tooltip.getBoundingClientRect();
+                            
+                            // 預設顯示在元素下方
+                            let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+                            let top = rect.bottom + 8;
+                            
+                            // 如果 tooltip 超出右邊界，調整位置
+                            if (left + tooltipRect.width > window.innerWidth) {
+                                left = window.innerWidth - tooltipRect.width - 10;
+                            }
+                            
+                            // 如果 tooltip 超出左邊界，調整位置
+                            if (left < 10) {
+                                left = 10;
+                            }
+                            
+                            // 如果 tooltip 超出下邊界，顯示在元素上方
+                            if (top + tooltipRect.height > window.innerHeight) {
+                                top = rect.top - tooltipRect.height - 8;
+                            }
+                            
+                            tooltip.style.left = left + "px";
+                            tooltip.style.top = top + "px";
+                        }, 500);
+                    }
+                });
+
+                link.addEventListener("mouseleave", () => {
+                    clearTimeout(tooltipTimeout);
+                    tooltip.classList.remove("show");
+                });
+            });
+
+            // Favicon 功能
             const links = document.querySelectorAll(".link-logo");
 
             links.forEach(async (link) => {
@@ -392,25 +491,23 @@
         });
     </script>
     <div class="social-sidebar">
-        <a href="https://www.youtube.com" target="_blank"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-youtube-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-v1-pack-logos-icons-12257595.png?f=webp" alt="YouTube"></a>
-        <a href="https://www.facebook.com" target="_blank"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-facebook-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-v1-pack-logos-icons-12257579.png?f=webp"></a>
-        <a href="https://www.instagram.com" target="_blank"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-instagram-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-v1-pack-logos-icons-12257577.png?f=webp" alt="Instagram"></a>
-        <a href="https://twitter.com" target="_blank"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-x-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-pack-logos-icons-11441454.png?f=webp" alt="X"></a>
-        <a href="https://www.reddit.com" target="_blank"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-reddit-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-v1-pack-logos-icons-12257585.png?f=webp" alt="Reddit"></a>
-        <a href="https://discord.com/app" target="_blank"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-discord-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-v1-pack-logos-icons-12257581.png?f=webp" alt="Discord"></a>
-        <a href="https://web.whatsapp.com" target="_blank"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-whatsapp-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-technology-brand-v1-pack-logos-icons-12257594.png?f=webp" alt="WhatsApp"></a>
+        <a href="https://www.facebook.com" target="_blank" title="Facebook"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-facebook-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-v1-pack-logos-icons-12257579.png?f=webp"></a>
+        <a href="https://www.instagram.com" target="_blank" title="Instagram"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-instagram-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-v1-pack-logos-icons-12257577.png?f=webp" alt="Instagram"></a>
+        <a href="https://twitter.com" target="_blank" title="X (Twitter)"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-x-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-pack-logos-icons-11441454.png?f=webp" alt="X"></a>
+        <a href="https://www.reddit.com" target="_blank" title="Reddit"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-reddit-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-v1-pack-logos-icons-12257585.png?f=webp" alt="Reddit"></a>
+        <a href="https://discord.com/app" target="_blank" title="Discord"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-discord-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-v1-pack-logos-icons-12257581.png?f=webp" alt="Discord"></a>
+        <a href="https://web.whatsapp.com" target="_blank" title="WhatsApp"><img src="https://cdn3d.iconscout.com/3d/free/thumb/free-whatsapp-3d-icon-download-in-png-blend-fbx-gltf-file-formats--social-media-logo-technology-brand-v1-pack-logos-icons-12257594.png?f=webp" alt="WhatsApp"></a>
     </div>
 
     <div class="table-wrapper">
-        <table class="scale-table">
+        <table cellpadding="8" class="scale-table">
             <tr>
                 <td class="no-right-border">
                     <span class="section-title">APP</span><br>
-                    <a href="https://mail.google.com/" class="link-logo">Gmail</a><br>
-                    <a href="https://chatgpt.com/"><img src="https://cdn.oaistatic.com/assets/favicon-180x180-od45eci6.webp" class="icon-img">ChatGPT</a><br>
-                    <a href="https://translate.google.com" class="link-logo">Translate</a><br>
-                    <a href="https://open.spotify.com/" class="link-logo">Spotify</a><br>
-
+                    <a href="https://mail.google.com/" class="link-logo" data-tooltip="Gmail - Email Service">Gmail</a><br>
+                    <a href="https://translate.google.com" class="link-logo" data-tooltip="Google Translate - Translation Tool">Translate</a><br>
+                    <a href="https://open.spotify.com/" class="link-logo" data-tooltip="Spotify - Music Streaming Service">Spotify</a><br>
+                    <a href="單字卡.html" data-tooltip="Flashcard - Vocabulary Learning Cards"><img src="https://www.svgrepo.com/show/335618/quiz-submissions.svg" class="icon-img">Flashcard</a><br>
                     <button class="music-button" onclick="togglePlay()">
                         <img id="playPauseImage"
                              src="https://cdn-icons-png.flaticon.com/512/120/120625.png"
@@ -482,44 +579,56 @@
                         }
                     </script>
                 </td>
+
                 <td class="no-left-border">
-                    <span class="section-title">🏫School</span><br>
+                    <span class="section-title">School</span><br>
 
-
-                    <a href="https://gbn.glenbrook225.org/" class="link-logo">GBN</a> /<a href="https://gbs.glenbrook225.org/" class="link-logo">GBS</a>  <br>
-                    <a href="https://glenbrook225.powerschool.com" class="link-logo">PowerSchool</a><br>
-                    <a href="https://glenbrook.mywconline.com/" class="link-logo">ARC</a><br>
-                    <a href="單字卡.html" ><img src="https://www.svgrepo.com/show/335618/quiz-submissions.svg" class="icon-img">Flashcard</a><br>
+                    <a href="https://gbn.glenbrook225.org/" class="link-logo" data-tooltip="Glenbrook North High School">GBN</a> /<a href="https://gbs.glenbrook225.org/" class="link-logo" data-tooltip="Glenbrook South High School">GBS</a>  <br>
+                    <a href="https://glenbrook225.powerschool.com" class="link-logo" data-tooltip="PowerSchool - Student Information System">PowerSchool</a><br>
+                    <a href="https://glenbrook.mywconline.com/" class="link-logo" data-tooltip="ARC - Writing Center Booking System">ARC</a><br>
+                    
+                    <div class="AI">
+                    <a  style="color: rgb(180, 0, 255); font-weight: normal; text-decoration: none; vertical-align: sub;">AI：</a>
+                    <a href="https://chatgpt.com/" data-tooltip="ChatGPT - OpenAI AI Assistant"><img src="https://cdn.oaistatic.com/assets/favicon-180x180-od45eci6.webp" class="icon-img"></a>
+                    <a href="https://copilot.microsoft.com/" class="link-logo" data-tooltip="Microsoft Copilot - AI Assistant"></a>
+                    <a href="https://gemini.google.com/" class="link-logo" data-tooltip="Google Gemini - AI Assistant"></a>
+                    <a href="https://grok.com/" class="link-logo" data-tooltip="Grok - xAI AI Assistant"></a>
+                    <a href="https://www.meta.ai/" class="link-logo" data-tooltip="Meta AI - Meta AI Assistant"></a>
+                    <a href="https://chat.qwen.ai/" class="link-logo" data-tooltip="Qwen - Alibaba Cloud AI Assistant"></a>
+                </div>
+                <br>
+                    <div class="Games">
                     <a style="color: rgb(0, 145, 255); font-weight: normal; text-decoration: none; vertical-align: sub;">Games：</a>
-                    <a href="https://app.classkick.com/" class="link-logo"></a>
-                    <a href="https://quizizz.com/join"><img src="https://cf.quizizz.com/img/favicon/apple-touch-icon.png" class="icon-img"></a>
-                    <a href="https://quizlet.com/live" class="link-logo"></a>
-                    <a href="https://kahoot.it/"><img src="https://play-lh.googleusercontent.com/AyJnaQ0JfEu-F_4bop5hH4qpJwYJ1blePyer6VVUUm4Al80uWJBje4UZHirrf39wI7uI" class="icon-img"></a>
-                    <a href="https://gimkit.com/join"><img src="https://tiermaker.com/images/media/hero_images/2024/17210749/gimkit-skins-obtainable-17210749/172107491717723001.png" class="icon-img"></a><br>
+                    <a href="https://app.classkick.com/" class="link-logo" data-tooltip="Classkick - Interactive Learning Platform"></a>
+                    <a href="https://quizizz.com/join" data-tooltip="Quizizz - Interactive Quiz Game"><img src="https://cf.quizizz.com/img/favicon/apple-touch-icon.png" class="icon-img"></a>
+                    <a href="https://quizlet.com/live" class="link-logo" data-tooltip="Quizlet Live - Learning Game"></a>
+                    <a href="https://kahoot.it/" data-tooltip="Kahoot - Gamified Learning Platform"><img src="https://play-lh.googleusercontent.com/AyJnaQ0JfEu-F_4bop5hH4qpJwYJ1blePyer6VVUUm4Al80uWJBje4UZHirrf39wI7uI" class="icon-img"></a>
+                    <a href="https://gimkit.com/join" data-tooltip="Gimkit - Educational Gaming Platform"><img src="https://tiermaker.com/images/media/hero_images/2024/17210749/gimkit-skins-obtainable-17210749/172107491717723001.png" class="icon-img"></a><br>
+                </div>
 
                 </td>
             </tr>
             <tr>
                 <td class="green-day">
                     <span class="section-title">GREEN DAY</span><br>
-                    <a href="https://classroom.google.com">--</a><br>
-                    <a href="https://classroom.google.com">--</a><br>
-                    <a href="https://classroom.google.com/c/NjkxODA3NTE3NzE0">ALGEBRA 2 -classroom</a>
-                    <a href="https://www.geogebra.org/calculator"><img src="https://www.geogebra.org/sp-assets/assets/images/ogImage.c3863704.png" class="icon-img"></a>
-                    <a href="https://www.ixl.com/dashboard" class="link-logo"></a><br>
-                    <a href="https://classroom.google.com/c/NzAzMTYyMzk1Mzc4">ESL163-classroom</a>
-                    <a href="https://soraapp.com/home" class="link-logo"></a>
+                    <a href="https://classroom.google.com" data-tooltip="Google Classroom - Course Management">--</a><br>
+                    <a href="https://classroom.google.com" data-tooltip="Google Classroom - Course Management">--</a><br>
+                    <a href="https://classroom.google.com/c/NjkxODA3NTE3NzE0" data-tooltip="ALGEBRA 2 - Google Classroom">ALGEBRA 2 -classroom</a>
+                    <a href="https://www.geogebra.org/calculator" data-tooltip="GeoGebra - Math Calculator"><img src="https://www.geogebra.org/sp-assets/assets/images/ogImage.c3863704.png" class="icon-img"></a>
+                    <a href="https://www.ixl.com/dashboard" class="link-logo" data-tooltip="IXL - Math Practice Platform"></a><br>
+                    <a href="https://classroom.google.com/c/NzAzMTYyMzk1Mzc4" data-tooltip="ESL163 - Google Classroom">ESL163-classroom</a>
+                    <a href="https://soraapp.com/home" class="link-logo" data-tooltip="Sora - E-book Reading Platform"></a>
                 </td>
                 <td class="gold-day">
                     <span class="section-title">GOLD DAY</span><br>
-                    <a href="https://docs.google.com/document/d/1w9gzjoaLieXM7JvO1iAbnzfTXVGrPGwSoUblVi5r6lc/">Reading & Writing</a>
-                    <a href="https://classroom.google.com/c/NzA0MTg1NjkzNTc1">|classroom</a><br>
-                    <a href="https://docs.google.com/document/d/14DuYmalnerRcQ55mmkLcNA0KO1oYTQojIiOvv-6QaJY/">Earth Science</a>
-                    <a href="https://classroom.google.com/c/NzA3ODQ4NTY0MTI1">|classroom</a><br>
-                    <a href="https://docs.google.com/document/d/1sseNHA_HuV1G_5SnsjKjYcg257Yq17ezFIo-UVgowP8">World History</a>
-                    <a href="https://classroom.google.com/c/NzA3NDQwMzY3OTEz">|classroom</a>
-                    <a href="https://www.ilovepdf.com" class="link-logo"></a><br>
-                    <a href="https://classroom.google.com">--</a><br>
+                    <a href="https://docs.google.com/document/d/1w9gzjoaLieXM7JvO1iAbnzfTXVGrPGwSoUblVi5r6lc/" title="Reading & Writing - Google Docs">Reading & Writing</a>
+                    <a href="https://classroom.google.com/c/NzA0MTg1NjkzNTc1" title="Reading & Writing - Google Classroom">|classroom</a><br>
+                    <a href="https://docs.google.com/document/d/14DuYmalnerRcQ55mmkLcNA0KO1oYTQojIiOvv-6QaJY/" title="Earth Science - Google Docs">Earth Science</a>
+                    <a href="https://classroom.google.com/c/NzA3ODQ4NTY0MTI1" title="Earth Science - Google Classroom">|classroom</a><br>
+                    <a href="https://docs.google.com/document/d/1sseNHA_HuV1G_5SnsjKjYcg257Yq17ezFIo-UVgowP8" title="World History - Google Docs">World History</a>
+                    <a href="https://classroom.google.com/c/NzA3NDQwMzY3OTEz" title="World History - Google Classroom">|classroom</a>
+                    <a href="https://www.ilovepdf.com" class="link-logo" title="iLovePDF - PDF Tools"></a><br>
+                    <a href="https://classroom.google.com" title="Google Classroom - Course Management">--</a><br>
 
                     <br><br><br><br><br>
 
@@ -528,7 +637,8 @@
         </table>
         <p align="right">
             <a href="Games.html"
-               style="position: fixed; bottom: 20px; right: 20px;">
+               style="position: fixed; bottom: 20px; right: 20px;"
+               title="Games - Gaming Page">
                 <img src="https://static.vecteezy.com/system/resources/thumbnails/017/744/677/small_2x/video-game-icon-png.png"
                      style="width: clamp(100px, 20vw, 200px); height: auto; display: block;">
             </a>

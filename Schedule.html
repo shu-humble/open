@@ -101,6 +101,8 @@
             overflow-x: auto;/*水平滾動*/
         }
 
+
+
         @media (max-width: 600px) {
             td, a, span {
                 font-size: 18px;/*字體大小*/
@@ -547,7 +549,7 @@
 
                     
                     <div class="AI">
-                    <a  style="color: rgb(180, 0, 255); font-weight: normal; text-decoration: none; vertical-align: sub;">AI：</a>
+                    <a  style="color: rgb(180, 0, 255); font-weight: normal; text-decoration: none; vertical-align: sub;">AI:</a>
                     <a href="https://chatgpt.com/" title="ChatGPT - OpenAI AI Assistant"><img src="https://cdn.oaistatic.com/assets/favicon-180x180-od45eci6.webp" class="icon-img"></a>
                     <a href="https://copilot.microsoft.com/" class="link-logo" title="Microsoft Copilot - AI Assistant"></a>
                     <a href="https://gemini.google.com/" class="link-logo" title="Google Gemini - AI Assistant"></a>
@@ -557,7 +559,7 @@
                 </div>
                 <br>
                     <div class="Games">
-                    <a style="color: rgb(0, 145, 255); font-weight: normal; text-decoration: none; vertical-align: sub;">Tools：</a>
+                    <a style="color: rgb(0, 145, 255); font-weight: normal; text-decoration: none; vertical-align: sub;">Tools:</a>
                     <a href="https://www.photopea.com" class="link-logo" title="Photopea"></a>
                     <a href="https://www.wevideo.com" class="link-logo" title="Wevideo"></a>
                     <a href="https://www.canva.com/" class="link-logo" title="Canva"></a>
@@ -574,8 +576,10 @@
                     <span class="section-title">GREEN DAY</span><br>
                     <a href="https://classroom.google.com/c/NzgxNjE3NDUzNDU4" title="Google Classroom">Geometry EH </a>|
                     <a href="https://glenbrook225org-my.sharepoint.com/:o:/r/personal/bbenson_glenbrook225_org/Documents/Class Notebooks/25-26 Geometry Enriched Honors Green 1" title= "OneNote"> OneNote</a>
-                    <a href="Geometry.pdf" title="text book">
-                        <img src="https://cdn-icons-png.flaticon.com/512/5402/5402751.png" class="icon-img"></a>
+                   
+                    <a href="/幾何課本/Geometry-01.pdf" title="Geometry Textbook" id="pdfLink" data-current-pdf="/幾何課本/Geometry-01.pdf">
+                        <img src="https://cdn-icons-png.flaticon.com/512/5402/5402751.png" class="icon-img" id="pdfIcon"></a>
+
                         <a href="https://www.geogebra.org/calculator" title="GeoGebra - Math Calculator">
                             <img src="https://www.geogebra.org/sp-assets/assets/images/ogImage.c3863704.png" class="icon-img"></a><br>
 
@@ -608,6 +612,149 @@
             </a>
         </p>
 
+
+
     </div>
+
+    <script>
+        // 簡化的數字輸入選擇PDF功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const pdfLink = document.getElementById('pdfLink');
+            const pdfIcon = document.getElementById('pdfIcon');
+
+
+
+            // 載入儲存的設定
+            loadSavedSettings();
+            
+            // 右鍵點擊事件
+            pdfIcon.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                
+                // 直接彈出輸入框
+                const chapterNumber = prompt('Enter chapter number (1-16):');
+                
+                if (chapterNumber !== null) { // 用戶沒有點取消
+                    const num = parseInt(chapterNumber);
+                    
+                    if (!isNaN(num) && num > 0 && num <= 16) { // 限制在合理範圍內
+                        // 直接生成檔名
+                        const pdfPath = `/幾何課本/Geometry-${String(num).padStart(2, '0')}.pdf`;
+                        const chapterName = `Geometry Chapter ${num}`;
+                        
+                        // 檢查檔案是否存在
+                        checkFileExists(pdfPath).then(exists => {
+                            console.log('Checking file:', pdfPath, 'Exists:', exists);
+                            if (exists) {
+                                // 更新連結
+                                pdfLink.href = pdfPath;
+                                pdfLink.setAttribute('data-current-pdf', pdfPath);
+                                pdfLink.title = chapterName;
+                                
+                                // 儲存設定到本地
+                                localStorage.setItem('selectedPdfPath', pdfPath);
+                                localStorage.setItem('selectedPdfName', chapterName);
+                                
+                                // 顯示成功訊息
+                                showNotification('Success: ' + chapterName, 'success');
+                            } else {
+                                // 顯示失敗訊息
+                                showNotification('Failed - File not found: ' + pdfPath, 'error');
+                            }
+                        }).catch(error => {
+                            console.log('Error checking file:', error);
+                            showNotification('Failed - Error checking file', 'error');
+                        });
+                    } else {
+                        // 顯示失敗訊息
+                        showNotification('Failed - Please enter a number between 1-20', 'error');
+                    }
+                }
+            });
+
+            // 檢查檔案是否存在 - 使用fetch檢查PDF
+            function checkFileExists(url) {
+                return fetch(url, { 
+                    method: 'HEAD',
+                    mode: 'no-cors' // 嘗試繞過CORS限制
+                })
+                .then(response => {
+                    console.log('File check result:', url, response.status, response.ok);
+                    // 如果沒有CORS錯誤，檢查狀態碼
+                    if (response.status === 200) {
+                        return true;
+                    } else if (response.status === 404) {
+                        return false;
+                    } else {
+                        // 其他狀態碼，我們假設檔案存在（因為沒有404錯誤）
+                        console.log('Assuming file exists due to status:', response.status);
+                        return true;
+                    }
+                })
+                .catch(error => {
+                    console.log('File check error:', url, error);
+                    // 如果是CORS錯誤，我們無法確定檔案是否存在
+                    // 為了安全起見，我們假設檔案不存在
+                    return false;
+                });
+            }
+            
+            // 載入儲存的設定
+            function loadSavedSettings() {
+                const savedPath = localStorage.getItem('selectedPdfPath');
+                const savedName = localStorage.getItem('selectedPdfName');
+                
+                if (savedPath && savedName) {
+                    // 檢查儲存的檔案是否仍然存在
+                    checkFileExists(savedPath).then(exists => {
+                        if (exists) {
+                            pdfLink.href = savedPath;
+                            pdfLink.setAttribute('data-current-pdf', savedPath);
+                            pdfLink.title = savedName;
+                        } else {
+                            // 如果儲存的檔案不存在，清除儲存
+                            localStorage.removeItem('selectedPdfPath');
+                            localStorage.removeItem('selectedPdfName');
+                        }
+                    });
+                }
+            }
+            
+            // 顯示通知訊息
+            function showNotification(message, type) {
+                const notification = document.createElement('div');
+                const backgroundColor = type === 'error' ? '#f44336' : '#4CAF50';
+                
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: ${backgroundColor};
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 6px;
+                    z-index: 10001;
+                    font-size: 14px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                    animation: slideIn 0.3s ease;
+                `;
+                notification.textContent = message;
+                
+                // 添加動畫樣式
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                document.body.appendChild(notification);
+                
+
+            }
+        });
+    </script>
 </body>
 </html>

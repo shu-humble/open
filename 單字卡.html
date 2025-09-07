@@ -319,13 +319,31 @@
                 wrongCount: wordItem.wrongCount !== undefined ? wordItem.wrongCount : 0,
                 correctCount: wordItem.correctCount !== undefined ? wordItem.correctCount : 0,
                 hasBeenTested: wordItem.hasBeenTested !== undefined ? wordItem.hasBeenTested : false,
-                streakCount: wordItem.streakCount !== undefined ? wordItem.streakCount : 0
+                streakCount: wordItem.streakCount !== undefined ? wordItem.streakCount : 0,
+                score: wordItem.score !== undefined ? wordItem.score : 0 // 添加分數字段
             };
         });
     }
 
     function shuffle(array) {
         return array.sort(() => Math.random() - 0.5);
+    }
+
+    // 單字分數計算函數
+    function calculateWordScore(wordObj, isCorrect) {
+        let points = 0;
+        
+        if (isCorrect) {
+            // 答對：基礎分數 + 連勝獎勵
+            // 注意：這裡的streakCount是答對後的值，所以連勝獎勵是 (streakCount - 1) * 10
+            const streakReward = wordObj.streakCount > 1 ? (wordObj.streakCount - 1) * 10 : 0;
+            points = 10 + streakReward;
+        } else {
+            // 答錯：扣基礎分數，但連勝獎勵分數不清零
+            points = -10;
+        }
+        
+        return points;
     }
 
     function createGame() {
@@ -381,7 +399,8 @@
                 let selectedNewWords = shuffle(newWords).slice(0, numNew);
 
                 let numWeighted = numWordsForRound - selectedNewWords.length;
-                let weightedWords = testedWords.sort((a, b) => b.wrongCount - a.wrongCount);
+                // 修改權重系統：優先選擇分數最低的單字
+                let weightedWords = testedWords.sort((a, b) => a.score - b.score);
                 let selectedWeightedWords = shuffle(weightedWords).slice(0, numWeighted);
 
                 currentRoundWords = shuffle([...selectedNewWords, ...selectedWeightedWords]);
@@ -390,7 +409,8 @@
                 let numWeighted = Math.min(Math.ceil(numWordsForRound * (3 / 4)), testedWords.length);
                 let numRandom = numWordsForRound - numWeighted;
 
-                let weightedWords = testedWords.sort((a, b) => b.wrongCount - a.wrongCount);
+                // 修改權重系統：優先選擇分數最低的單字
+                let weightedWords = testedWords.sort((a, b) => a.score - b.score);
                 let selectedWeightedWords = shuffle(weightedWords).slice(0, numWeighted);
 
                 let remainingRandomWords = testedWords.filter(word => !selectedWeightedWords.some(sw => sw.word === word.word));
@@ -672,11 +692,19 @@
                         originalWordObj.correctCount++;
                         originalWordObj.streakCount++;
                         originalWordObj.wrongCount = Math.max(0, originalWordObj.wrongCount - 1);
+                        
+                        // 更新單字分數：答對 +10 + 連勝獎勵
+                        const points = calculateWordScore(originalWordObj, true);
+                        originalWordObj.score = Math.max(0, originalWordObj.score + points); // 確保分數不小於0
                     } else {
                         target.classList.add('incorrect');
                         wrongAnswers.push(droppedWord);
                         originalWordObj.wrongCount++;
                         originalWordObj.streakCount = 0;
+                        
+                        // 更新單字分數：答錯 -10
+                        const points = calculateWordScore(originalWordObj, false);
+                        originalWordObj.score = Math.max(0, originalWordObj.score + points); // 確保分數不小於0
                     }
                 }
             } else {
@@ -691,11 +719,18 @@
                 const wordObj = words[originalWordIndex];
                 wordObj.wrongCount++;
                 wordObj.streakCount = 0;
+                // 未使用的單字也扣分
+                wordObj.score = Math.max(0, wordObj.score - 10); // 確保分數不小於0
             }
         });
 
 
         localStorage.setItem('words', JSON.stringify(words));
+        
+        // 通知單字庫頁面更新
+        if (window.opener && !window.opener.closed) {
+            window.opener.postMessage({ type: 'wordsUpdated' }, '*');
+        }
 
         const resultDiv = document.getElementById('result');
         const answersDiv = document.getElementById('answers');
@@ -703,7 +738,7 @@
 
         resultDiv.style.display = 'block';
         answersDiv.style.display = 'block';
-        document.getElementById('submit-btn').disabled = true;
+        document.getElementById('submit-btn').style.display = 'none'; // 隱藏提交按鈕
 
         document.querySelectorAll('.word').forEach(wordDiv => {
             wordDiv.removeEventListener('click', selectWord);
@@ -821,6 +856,14 @@
             if (modal.style.display === 'block') {
                 modal.style.display = 'none';
             }
+        }
+    });
+
+    // 監聽來自單字庫的消息
+    window.addEventListener('message', function(event) {
+        if (event.data.type === 'wordsUpdated') {
+            // 當單字庫更新時，重新創建遊戲
+            createGame();
         }
     });
 

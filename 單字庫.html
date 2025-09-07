@@ -209,11 +209,13 @@
       <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
           <label for="sortOrder" id="sortOrderLabel"></label>
           <select id="sortOrder" onchange="renderWords()">
-            <option value="accuracy" id="sortProficiencyOption"></option>
+            <option value="accuracy" id="proficiencyRateLabelOption"></option>
+            <option value="score" id="sortScoreOption"></option>
             <option value="alphabetical" id="sortAlphabeticalOption"></option>
             <option value="added_order" id="sortAddedOrderOption"></option>
           </select>
           <button id="sortDirectionBtn" onclick="toggleSortDirection()" style="font-size: 16px; padding: 2px 8px; cursor: pointer;">▼</button>
+          <div id="totalScoreDisplay" style="margin-left: auto; font-weight: bold; color: #007bff;"></div>
       </div>
       <div class="word-list" id="wordList"></div>
       <div id="noWordsInWordBankMessage" style="display: none; text-align: center; padding: 20px; color: #666; font-size: 1.1em;">
@@ -235,7 +237,8 @@
             correctCount: wordItem.correctCount !== undefined ? wordItem.correctCount : 0,
             hasBeenTested: wordItem.hasBeenTested !== undefined ? wordItem.hasBeenTested : false,
             streakCount: wordItem.streakCount !== undefined ? wordItem.streakCount : 0,
-            addedOrder: wordItem.addedOrder !== undefined ? wordItem.addedOrder : Date.now()
+            addedOrder: wordItem.addedOrder !== undefined ? wordItem.addedOrder : Date.now(),
+            score: wordItem.score !== undefined ? wordItem.score : 0 // 添加分數字段
         };
     });
 
@@ -259,6 +262,14 @@
         sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
         document.getElementById('sortDirectionBtn').textContent = sortDirection === 'asc' ? '▲' : '▼';
         renderWords(); // 使用新方向重新渲染
+    }
+
+    // 計算並顯示總分數
+    function updateTotalScore() {
+        const totalScore = words.reduce((sum, word) => sum + (word.score || 0), 0);
+        const totalScoreDisplay = document.getElementById('totalScoreDisplay');
+        const t = translations[currentLanguage];
+        totalScoreDisplay.textContent = `${t.totalScoreLabel || '總分數'}: ${totalScore}`;
     }
 
 
@@ -305,23 +316,27 @@
         if (sortOption === 'accuracy_desc') {
             words.sort((a, b) => {
                 const totalA = a.correctCount + a.wrongCount;
-                const proficiencyA = totalA > 0 ? (a.correctCount + (a.streakCount > 0 ? (a.streakCount - 1) * 0.2 : 0)) / (totalA * (a.wrongCount + 1)) : 0;
+                const proficiencyA = totalA > 0 ? a.correctCount / totalA : 0;
                 const totalB = b.correctCount + b.wrongCount;
-                const proficiencyB = totalB > 0 ? (b.correctCount + (b.streakCount > 0 ? (b.streakCount - 1) * 0.2 : 0)) / (totalB * (b.wrongCount + 1)) : 0;
+                const proficiencyB = totalB > 0 ? b.correctCount / totalB : 0;
                 return proficiencyB - proficiencyA;
             });
         } else if (sortOption === 'accuracy_asc') {
             words.sort((a, b) => {
                 const totalA = a.correctCount + a.wrongCount;
-                const proficiencyA = totalA > 0 ? (a.correctCount + (a.streakCount > 0 ? (a.streakCount - 1) * 0.2 : 0)) / (totalA * (a.wrongCount + 1)) : 0;
+                const proficiencyA = totalA > 0 ? a.correctCount / totalA : 0;
                 const totalB = b.correctCount + b.wrongCount;
-                const proficiencyB = totalB > 0 ? (b.correctCount + (b.streakCount > 0 ? (b.streakCount - 1) * 0.2 : 0)) / (totalB * (b.wrongCount + 1)) : 0;
+                const proficiencyB = totalB > 0 ? b.correctCount / totalB : 0;
                 return proficiencyA - proficiencyB;
             });
         } else if (sortOption === 'alphabetical_asc') {
             words.sort((a, b) => a.word.localeCompare(b.word));
         } else if (sortOption === 'alphabetical_desc') {
             words.sort((a, b) => b.word.localeCompare(a.word));
+        } else if (sortOption === 'score_desc') {
+            words.sort((a, b) => b.score - a.score);
+        } else if (sortOption === 'score_asc') {
+            words.sort((a, b) => a.score - b.score);
         } else if (sortOption === 'added_order_desc') {
             words.sort((a, b) => b.addedOrder - a.addedOrder);
         } else if (sortOption === 'added_order_asc') {
@@ -352,15 +367,18 @@
             noWordsMessageDiv.style.display = 'none';
             wordList.style.display = 'block';
             wordList.innerHTML = '';
+            
+            // 更新總分數顯示
+            updateTotalScore();
 
             words.forEach((item, index) => { // <-- 這個是正確的 forEach 循環
                 const div = document.createElement('div');
                 div.className = 'word-item';
 
                 const totalAttempts = item.correctCount + item.wrongCount;
-                // 熟練度計算公式
+                // 答對率計算公式
                 const proficiencyRate = totalAttempts > 0 ?
-                    ((item.correctCount + (item.streakCount > 0 ? (item.streakCount - 1) * 0.2 : 0)) / (totalAttempts * (item.wrongCount + 1)) * 100).toFixed(0) : 0;
+                    (item.correctCount / totalAttempts * 100).toFixed(0) : 0;
 
                 const infoSpan = document.createElement('span');
                 infoSpan.className = 'word-item-info';
@@ -374,7 +392,7 @@
                         ${t.streakCountLabel}: ${item.streakCount}
                     </div>
                     <span class="word-info-text">
-                        ${item.word} - ${item.translation} (${t.proficiencyRateLabel} ${proficiencyRate}%)
+                        ${item.word} - ${item.translation} (${t.proficiencyRateLabel} ${proficiencyRate}%, 分數: ${item.score})
                     </span>
                 `;
 
@@ -455,11 +473,13 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
         if (existingIndex !== -1) {
             words[existingIndex].translation = newWordObj.translation;
             words[existingIndex].streakCount = words[existingIndex].streakCount !== undefined ? words[existingIndex].streakCount : 0;
+            words[existingIndex].score = words[existingIndex].score !== undefined ? words[existingIndex].score : 0;
             return 'updated';
         } else {
             words.push({ 
                 ...newWordObj, 
                 streakCount: 0,
+                score: 0,
                 addedOrder: Date.now() // 添加当前时间戳作为加入顺序
             });
             return 'added';
@@ -494,7 +514,7 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
             if (parts.length >= 2 && parts[0] && parts[1]) {
                 const word = parts[0];
                 const translation = parts[1];
-                const newWordObj = { word, translation, wrongCount: 0, correctCount: 0, hasBeenTested: false, streakCount: 0 }; // 確保新建時有 streakCount
+                const newWordObj = { word, translation, wrongCount: 0, correctCount: 0, hasBeenTested: false, streakCount: 0, score: 0 }; // 確保新建時有 streakCount 和 score
                 const status = updateOrCreateWord(newWordObj);
                 if (status === 'added') addedCount++;
                 else updatedCount++;
@@ -561,6 +581,7 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
                 item.correctCount = 0;
                 item.hasBeenTested = false;
                 item.streakCount = 0; // ***** 修改點 6: 重設權重時清空連勝數 *****
+                item.score = 0; // 重設分數
             });
             renderWords();
             markAsNeedsSave();
@@ -583,6 +604,25 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
       needsSave = false;
       updateSaveButtonState();
       console.log(translations[currentLanguage].alertSaveDone);
+      
+      // 通知單字卡頁面更新
+      const wordCardWindows = [];
+      for (let i = 0; i < window.length; i++) {
+        try {
+          if (window[i] && window[i].location && window[i].location.href.includes('單字卡.html')) {
+            wordCardWindows.push(window[i]);
+          }
+        } catch (e) {
+          // 忽略跨域錯誤
+        }
+      }
+      wordCardWindows.forEach(win => {
+        try {
+          win.postMessage({ type: 'wordsUpdated' }, '*');
+        } catch (e) {
+          // 忽略通信錯誤
+        }
+      });
     }
 
     // --- 數據匯出/匯入功能 (純文字版) ---
@@ -662,6 +702,7 @@ function fallbackToTextarea(jsonString, t) {
                     existingWord.correctCount = importedWord.correctCount !== undefined ? importedWord.correctCount : 0;
                     existingWord.hasBeenTested = importedWord.hasBeenTested !== undefined ? importedWord.hasBeenTested : false;
                     existingWord.streakCount = importedWord.streakCount !== undefined ? importedWord.streakCount : 0;
+                    existingWord.score = importedWord.score !== undefined ? importedWord.score : 0;
                     existingWord.addedOrder = importedWord.addedOrder !== undefined ? importedWord.addedOrder : Date.now();
                 } else {
                     currentWordsMap.set(importedWord.word, {
@@ -671,6 +712,7 @@ function fallbackToTextarea(jsonString, t) {
                         correctCount: importedWord.correctCount !== undefined ? importedWord.correctCount : 0,
                         hasBeenTested: importedWord.hasBeenTested !== undefined ? importedWord.hasBeenTested : false,
                         streakCount: importedWord.streakCount !== undefined ? importedWord.streakCount : 0,
+                        score: importedWord.score !== undefined ? importedWord.score : 0,
                         addedOrder: importedWord.addedOrder !== undefined ? importedWord.addedOrder : Date.now()
                     });
                 }
@@ -741,13 +783,14 @@ function fallbackToTextarea(jsonString, t) {
             promptToAddWordsInBankDynamic: '請使用上方「{0}」功能新增單字。',
             sortOrderLabel: '排序方式:',
             // ===== 修改點 4: 更新翻譯文本 =====
-            sortProficiency: '熟練度',
+            proficiencyRateLabel: '答對率',
+            sortScore: '分數',
             sortAlphabetical: '字母順序',
             sortAddedOrder: '加入順序',
-            proficiencyRateLabel: '熟練度:',
             correctCountLabel: '答對次數',
             wrongCountLabel: '答錯次數',
             streakCountLabel: '當前連勝',
+            totalScoreLabel: '總分數',
         },
         en: {
             title: 'Word Management',
@@ -788,13 +831,14 @@ function fallbackToTextarea(jsonString, t) {
             promptToAddWordsInBankDynamic: 'Please use the "{0}" function above to add words.',
             sortOrderLabel: 'Sort by:',
             // ===== 修改點 4: 更新翻譯文本 =====
-            sortProficiency: 'Proficiency',
+            sortScore: 'Score',
             sortAlphabetical: 'Alphabetical',
             sortAddedOrder: 'Added Order',
-            proficiencyRateLabel: 'Proficiency:',
+            proficiencyRateLabel: 'Accuracy Rate:',
             correctCountLabel: 'Correct',
             wrongCountLabel: 'Wrong',
             streakCountLabel: 'Current Streak',
+            totalScoreLabel: 'Total Score',
         }
     };
 
@@ -835,7 +879,8 @@ function fallbackToTextarea(jsonString, t) {
 
         // ===== 修改點 5: 更新設定選項文字的邏輯 =====
         document.getElementById('sortOrderLabel').textContent = t.sortOrderLabel;
-        document.getElementById('sortProficiencyOption').textContent = t.sortProficiency;
+        document.getElementById('proficiencyRateLabelOption').textContent = t.proficiencyRateLabel;
+        document.getElementById('sortScoreOption').textContent = t.sortScore;
         document.getElementById('sortAlphabeticalOption').textContent = t.sortAlphabetical;
         document.getElementById('sortAddedOrderOption').textContent = t.sortAddedOrder;
 
@@ -860,6 +905,23 @@ function fallbackToTextarea(jsonString, t) {
             } else {
                 document.body.classList.remove('dark-mode');
             }
+        }
+        if (event.data.type === 'wordsUpdated') {
+            // 當單字卡更新時，重新載入單字數據並更新顯示
+            words = JSON.parse(localStorage.getItem('words')) || [];
+            words = words.map(wordItem => {
+                return {
+                    word: wordItem.word,
+                    translation: wordItem.translation,
+                    wrongCount: wordItem.wrongCount !== undefined ? wordItem.wrongCount : 0,
+                    correctCount: wordItem.correctCount !== undefined ? wordItem.correctCount : 0,
+                    hasBeenTested: wordItem.hasBeenTested !== undefined ? wordItem.hasBeenTested : false,
+                    streakCount: wordItem.streakCount !== undefined ? wordItem.streakCount : 0,
+                    addedOrder: wordItem.addedOrder !== undefined ? wordItem.addedOrder : Date.now(),
+                    score: wordItem.score !== undefined ? wordItem.score : 0
+                };
+            });
+            renderWords();
         }
     });
 

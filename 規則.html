@@ -85,17 +85,18 @@ body {
                     "您可以點擊單字後再點擊目標位置，或直接拖放單字到目標位置。",
                     "填完所有空格後，點擊「提交」按鈕檢查答案。"
                 ],
-                proficiencySystemTitle: "熟練度系統",
+                proficiencySystemTitle: "答對率系統",
                 proficiencySystem: [
-                    '每個單字都有熟練度評分，計算公式為：<br><span class="highlight">熟練度 = (答對數 + 連勝數 × 0.2) / (挑戰數 × (答錯+1))</span>',
+                    '每個單字都有答對率評分，計算公式為：<br><span class="highlight">答對率 = 答對次數 / 總答題次數</span>',
                     "答對單字時，連勝數會增加。",
                     "答錯或未使用單字時，連勝數會重置為 0。",
                     "在單字庫中，可以點擊「i」按鈕查看每個單字的詳細統計信息。"
                 ],
                 weightSystemTitle: "權重系統",
                 weightSystem: [
-                    "系統會優先選擇您較不熟悉的單字進行測驗。",
-                    "答錯次數越多的單字，出現的機率越高。",
+                    "系統會優先選擇分數最低的單字進行測驗。",
+                    "分數越低的單字，出現的機率越高，幫助您加強練習較弱的單字。",
+                    "若多個單字分數相同，系統會隨機選擇。",
                     "您可以在設定中開啟或關閉權重系統。"
                 ],
                 otherFeaturesTitle: "其他功能",
@@ -115,17 +116,18 @@ body {
                     "You can click a word then click the target position, or simply drag and drop the word to the target.",
                     "After filling all blanks, click the 'Submit' button to check your answers."
                 ],
-                proficiencySystemTitle: "Proficiency System",
+                proficiencySystemTitle: "Accuracy Rate System",
                 proficiencySystem: [
-                    'Each word has a proficiency score, calculated by the formula:<br><span class="highlight">Proficiency = (Correct Count + Streak Count  × 0.2) / (Challenge Count × (Wrong Count + 1))</span>',
+                    'Each word has an accuracy rate score, calculated by the formula:<br><span class="highlight">Accuracy Rate = Correct Count / Total Attempts</span>',
                     "When a word is answered correctly, the streak count increases.",
                     "When a word is answered incorrectly or left unused, the streak count resets to 0.",
                     "In the word bank, you can click the 'i' button to view detailed statistics for each word."
                 ],
                 weightSystemTitle: "Weight System",
                 weightSystem: [
-                    "The system prioritizes selecting words you are less familiar with for testing.",
-                    "Words with more incorrect attempts have a higher probability of appearing.",
+                    "The system prioritizes selecting words with the lowest scores for testing.",
+                    "Words with lower scores have a higher probability of appearing, helping you practice weaker words.",
+                    "If multiple words have the same score, the system will randomly select among them.",
                     "You can enable or disable the weight system in the settings."
                 ],
                 otherFeaturesTitle: "Other Features",

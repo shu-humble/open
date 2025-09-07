@@ -380,7 +380,13 @@
     }
 
     function markAsNeedsSave() {
-      const currentWordsString = JSON.stringify(words);
+      // 在進行比較前，先複製並排序單字陣列，以忽略順序變化
+      const sortedWords = JSON.parse(JSON.stringify(words)).sort((a, b) => a.word.localeCompare(b.word));
+      const sortedOriginalWords = JSON.parse(JSON.stringify(originalWords)).sort((a, b) => a.word.localeCompare(b.word));
+      
+      const currentWordsString = JSON.stringify(sortedWords);
+      const originalWordsString = JSON.stringify(sortedOriginalWords);
+      
       const currentWordsPerRound = parseInt(document.getElementById('wordsPerRound').value);
       const currentEnableWeightSystem = document.getElementById('enableWeightSystem').checked;
 
@@ -390,16 +396,13 @@
       };
       const currentSettingsString = JSON.stringify(currentSettings);
 
-      const originalWordsString = JSON.stringify(originalWords);
       const originalSettingsString = JSON.stringify(originalSettings);
 
       const hasChanges = (currentWordsString !== originalWordsString) || (currentSettingsString !== originalSettingsString);
 
-      // 強制更新狀態
       needsSave = hasChanges;
       updateSaveButtonState();
     }
-
     // New function to sort words
     function sortWords(sortOption) {
         if (sortOption === 'accuracy_desc') {

@@ -198,6 +198,8 @@
       </div>
 
       <div class="save-buttons">
+        <button id="undoBtn" onclick="undoAction()" disabled></button>
+        <button id="redoBtn" onclick="redoAction()" disabled></button>
         <button id="saveAllButton" onclick="saveAll()"></button>
         <button class="danger-button" id="clearAllWordsButton" onclick="clearAllWords()"></button>
       </div>
@@ -248,18 +250,25 @@
     };
     
     // ===== 新增點 1: 排序方向的全域變數 =====
-    let sortDirection = 'desc'; // asc 為升序, desc 為降序
+    let sortDirection = localStorage.getItem('sortDirection') || 'desc'; // asc 為升序, desc 為降序
+    let sortOrder = localStorage.getItem('sortOrder') || 'accuracy'; // 儲存排序選項
 
     let originalWords;
     let originalSettings;
 
     let needsSave = false;
+    
+    // 撤銷/反撤銷功能
+    let undoStack = []; // 撤銷堆疊
+    let redoStack = []; // 反撤銷堆疊
+    let maxUndoSteps = 20; // 最大撤銷步數
     const saveAllButton = document.getElementById('saveAllButton');
     const saveReminderElement = document.getElementById('saveReminder');
 
     // ===== 新增點 2: 切換排序方向的函數 =====
     function toggleSortDirection() {
         sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+        localStorage.setItem('sortDirection', sortDirection); // 儲存排序方向
         document.getElementById('sortDirectionBtn').textContent = sortDirection === 'asc' ? '▲' : '▼';
         renderWords(); // 使用新方向重新渲染
     }
@@ -270,6 +279,89 @@
         const totalScoreDisplay = document.getElementById('totalScoreDisplay');
         const t = translations[currentLanguage];
         totalScoreDisplay.textContent = `${t.totalScoreLabel || '總分數'}: ${totalScore}`;
+    }
+
+    // 保存當前狀態到撤銷堆疊
+    function saveToUndoStack() {
+        const currentState = {
+            words: JSON.parse(JSON.stringify(words)),
+            settings: JSON.parse(JSON.stringify(settings))
+        };
+        
+        undoStack.push(currentState);
+        
+        // 限制撤銷步數
+        if (undoStack.length > maxUndoSteps) {
+            undoStack.shift();
+        }
+        
+        // 清空反撤銷堆疊
+        redoStack = [];
+        
+        updateUndoRedoButtons();
+    }
+
+    // 撤銷操作
+    function undoAction() {
+        if (undoStack.length === 0) return;
+        
+        // 保存當前狀態到反撤銷堆疊
+        const currentState = {
+            words: JSON.parse(JSON.stringify(words)),
+            settings: JSON.parse(JSON.stringify(settings))
+        };
+        redoStack.push(currentState);
+        
+        // 恢復上一個狀態
+        const previousState = undoStack.pop();
+        words = previousState.words;
+        settings = previousState.settings;
+        
+        // 更新UI
+        document.getElementById('wordsPerRound').value = settings.wordsPerRound;
+        document.getElementById('enableWeightSystem').checked = settings.enableWeightSystem;
+        
+        renderWords();
+        markAsNeedsSave();
+        updateUndoRedoButtons();
+    }
+
+    // 反撤銷操作
+    function redoAction() {
+        if (redoStack.length === 0) return;
+        
+        // 保存當前狀態到撤銷堆疊
+        const currentState = {
+            words: JSON.parse(JSON.stringify(words)),
+            settings: JSON.parse(JSON.stringify(settings))
+        };
+        undoStack.push(currentState);
+        
+        // 恢復下一個狀態
+        const nextState = redoStack.pop();
+        words = nextState.words;
+        settings = nextState.settings;
+        
+        // 更新UI
+        document.getElementById('wordsPerRound').value = settings.wordsPerRound;
+        document.getElementById('enableWeightSystem').checked = settings.enableWeightSystem;
+        
+        renderWords();
+        markAsNeedsSave();
+        updateUndoRedoButtons();
+    }
+
+    // 更新撤銷/反撤銷按鈕狀態
+    function updateUndoRedoButtons() {
+        const undoBtn = document.getElementById('undoBtn');
+        const redoBtn = document.getElementById('redoBtn');
+        
+        if (undoBtn) {
+            undoBtn.disabled = undoStack.length === 0;
+        }
+        if (redoBtn) {
+            redoBtn.disabled = redoStack.length === 0;
+        }
     }
 
 
@@ -302,13 +394,9 @@
 
       const hasChanges = (currentWordsString !== originalWordsString) || (currentSettingsString !== originalSettingsString);
 
-      if (hasChanges && !needsSave) {
-        needsSave = true;
-        updateSaveButtonState();
-      } else if (!hasChanges && needsSave) {
-        needsSave = false;
-        updateSaveButtonState();
-      }
+      // 強制更新狀態
+      needsSave = hasChanges;
+      updateSaveButtonState();
     }
 
     // New function to sort words
@@ -354,6 +442,8 @@
 
         // ===== 修改點 3: 組合排序選項 =====
         const sortCategory = document.getElementById('sortOrder').value; // e.g., 'accuracy'
+        sortOrder = sortCategory; // 更新全域變數
+        localStorage.setItem('sortOrder', sortOrder); // 儲存排序選項
         const sortOption = `${sortCategory}_${sortDirection}`; // e.g., 'accuracy_desc'
         sortWords(sortOption);
 
@@ -455,6 +545,7 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
                 const deleteBtn = document.createElement('button');
                 deleteBtn.textContent = t.delete;
                 deleteBtn.onclick = () => {
+                    saveToUndoStack(); // 保存當前狀態
                     words.splice(index, 1);
                     renderWords();
                     markAsNeedsSave();
@@ -507,6 +598,9 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
 
         let addedCount = 0;
         let updatedCount = 0;
+
+        // 保存當前狀態到撤銷堆疊
+        saveToUndoStack();
 
         const lines = inputText.split('\n');
         for (const line of lines) {
@@ -565,6 +659,7 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
     function clearAllWords() {
         const t = translations[currentLanguage];
         if (confirm(t.confirmDeleteAll)) {
+            saveToUndoStack(); // 保存當前狀態
             words = [];
             localStorage.removeItem('words');
             renderWords();
@@ -576,6 +671,7 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
     function resetAllWrongCounts() {
         const t = translations[currentLanguage];
         if (confirm(t.confirmResetWeights)) {
+            saveToUndoStack(); // 保存當前狀態
             words.forEach(item => {
                 item.wrongCount = 0;
                 item.correctCount = 0;
@@ -605,24 +701,14 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
       updateSaveButtonState();
       console.log(translations[currentLanguage].alertSaveDone);
       
+      // 儲存後清空撤銷堆疊
+      undoStack = [];
+      redoStack = [];
+      updateUndoRedoButtons();
+      
       // 通知單字卡頁面更新
-      const wordCardWindows = [];
-      for (let i = 0; i < window.length; i++) {
-        try {
-          if (window[i] && window[i].location && window[i].location.href.includes('單字卡.html')) {
-            wordCardWindows.push(window[i]);
-          }
-        } catch (e) {
-          // 忽略跨域錯誤
-        }
-      }
-      wordCardWindows.forEach(win => {
-        try {
-          win.postMessage({ type: 'wordsUpdated' }, '*');
-        } catch (e) {
-          // 忽略通信錯誤
-        }
-      });
+      // 使用 localStorage 事件來通知其他頁面
+      localStorage.setItem('wordBankUpdated', Date.now().toString());
     }
 
     // --- 數據匯出/匯入功能 (純文字版) ---
@@ -791,6 +877,8 @@ function fallbackToTextarea(jsonString, t) {
             wrongCountLabel: '答錯次數',
             streakCountLabel: '當前連勝',
             totalScoreLabel: '總分數',
+            undo: '↶ 撤銷',
+            redo: '↷ 下一步',
         },
         en: {
             title: 'Word Management',
@@ -839,6 +927,8 @@ function fallbackToTextarea(jsonString, t) {
             wrongCountLabel: 'Wrong',
             streakCountLabel: 'Current Streak',
             totalScoreLabel: 'Total Score',
+            undo: '↶ Undo',
+            redo: '↷ Redo',
         }
     };
 
@@ -886,6 +976,8 @@ function fallbackToTextarea(jsonString, t) {
 
         document.getElementById('saveAllButton').textContent = t.save;
         document.getElementById('clearAllWordsButton').textContent = t.clear;
+        document.getElementById('undoBtn').textContent = t.undo;
+        document.getElementById('redoBtn').textContent = t.redo;
 
         document.getElementById('langToggleBtn').textContent = '🌐 ' + (currentLanguage === 'zh' ? 'English' : '中文');
 
@@ -925,6 +1017,27 @@ function fallbackToTextarea(jsonString, t) {
         }
     });
 
+    // 監聽 localStorage 變化事件
+    window.addEventListener('storage', function(event) {
+        if (event.key === 'wordCardUpdated') {
+            // 當單字卡更新時，重新載入單字數據並更新顯示
+            words = JSON.parse(localStorage.getItem('words')) || [];
+            words = words.map(wordItem => {
+                return {
+                    word: wordItem.word,
+                    translation: wordItem.translation,
+                    wrongCount: wordItem.wrongCount !== undefined ? wordItem.wrongCount : 0,
+                    correctCount: wordItem.correctCount !== undefined ? wordItem.correctCount : 0,
+                    hasBeenTested: wordItem.hasBeenTested !== undefined ? wordItem.hasBeenTested : false,
+                    streakCount: wordItem.streakCount !== undefined ? wordItem.streakCount : 0,
+                    addedOrder: wordItem.addedOrder !== undefined ? wordItem.addedOrder : Date.now(),
+                    score: wordItem.score !== undefined ? wordItem.score : 0
+                };
+            });
+            renderWords();
+        }
+    });
+
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('wordsPerRound').value = settings.wordsPerRound;
         document.getElementById('enableWeightSystem').checked = settings.enableWeightSystem;
@@ -934,14 +1047,20 @@ function fallbackToTextarea(jsonString, t) {
 
         document.getElementById('dataTextarea').addEventListener('input', markAsNeedsSave);
         document.getElementById('wordsPerRound').addEventListener('input', markAsNeedsSave);
+        document.getElementById('wordsPerRound').addEventListener('change', markAsNeedsSave);
         document.getElementById('enableWeightSystem').addEventListener('change', markAsNeedsSave);
 
         needsSave = false;
         
         // ===== 修改點 6: 初始化預設排序 =====
-        document.getElementById('sortOrder').value = 'accuracy'; // 預設類別
-        sortDirection = 'desc'; // 預設方向
-        document.getElementById('sortDirectionBtn').textContent = '▼'; // 更新按鈕圖示
+        document.getElementById('sortOrder').value = sortOrder; // 使用儲存的排序選項
+        document.getElementById('sortDirectionBtn').textContent = sortDirection === 'asc' ? '▲' : '▼'; // 更新按鈕圖示
+        
+        // 初始化撤銷/反撤銷按鈕
+        updateUndoRedoButtons();
+        
+        // 添加定時檢查儲存狀態
+        setInterval(markAsNeedsSave, 1000);
         
         updateLanguage(); // 這會觸發第一次 renderWords()
     });

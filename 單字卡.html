@@ -728,9 +728,7 @@
         localStorage.setItem('words', JSON.stringify(words));
         
         // 通知單字庫頁面更新
-        if (window.opener && !window.opener.closed) {
-            window.opener.postMessage({ type: 'wordsUpdated' }, '*');
-        }
+        localStorage.setItem('wordCardUpdated', Date.now().toString());
 
         const resultDiv = document.getElementById('result');
         const answersDiv = document.getElementById('answers');
@@ -862,6 +860,14 @@
     // 監聽來自單字庫的消息
     window.addEventListener('message', function(event) {
         if (event.data.type === 'wordsUpdated') {
+            // 當單字庫更新時，重新創建遊戲
+            createGame();
+        }
+    });
+
+    // 監聽 localStorage 變化事件
+    window.addEventListener('storage', function(event) {
+        if (event.key === 'wordBankUpdated') {
             // 當單字庫更新時，重新創建遊戲
             createGame();
         }

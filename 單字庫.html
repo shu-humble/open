@@ -198,10 +198,11 @@
       </div>
 
       <div class="save-buttons">
-        <button id="undoBtn" onclick="undoAction()" disabled></button>
-        <button id="redoBtn" onclick="redoAction()" disabled></button>
+
         <button id="saveAllButton" onclick="saveAll()"></button>
         <button class="danger-button" id="clearAllWordsButton" onclick="clearAllWords()"></button>
+        <button id="undoBtn" onclick="undoAction()" disabled></button>
+        <button id="redoBtn" onclick="redoAction()" disabled></button>
       </div>
 
     </div>
@@ -482,7 +483,7 @@
                         ${t.streakCountLabel}: ${item.streakCount}
                     </div>
                     <span class="word-info-text">
-                        ${item.word} - ${item.translation} (${t.proficiencyRateLabel} ${proficiencyRate}%, 分數: ${item.score})
+                        ${item.word} - ${item.translation} (${t.proficiencyRateLabel} ${proficiencyRate}%, ${t.sortScore} : ${item.score})
                     </span>
                 `;
 

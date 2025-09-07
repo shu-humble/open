@@ -259,7 +259,7 @@
         const translations = {
           zh: {
             title: "單字配對",
-            instructions: "點擊或拖放單詞到對應的意思或翻譯區域。", // ===== 恢復說明文字 =====
+            instructions: "點擊或拖放單詞到對應的意思或翻譯區域。",
             submit: "提交",
             undo: "撤銷",
             darkMode: "切換深色/淡色模式",
@@ -278,7 +278,7 @@
           },
           en: {
             title: "Word Matching Game",
-            instructions: "Click or drag the words to match their meanings or translations.", // ===== 恢復說明文字 =====
+            instructions: "Click or drag the words to match their meanings or translations.",
             submit: "Submit",
             undo: "Undo",
             darkMode: "Toggle Dark/Light Mode",
@@ -308,7 +308,7 @@
     let totalUniqueWords = 0;
 
     let currentRoundWords = [];
-    let selectedWord = null; // ===== 恢復 selectedWord 變數 =====
+    let selectedWord = null;
     const actionHistory = [];
 
     function initializeOrUpdateWords(wordsArray) {
@@ -320,7 +320,7 @@
                 correctCount: wordItem.correctCount !== undefined ? wordItem.correctCount : 0,
                 hasBeenTested: wordItem.hasBeenTested !== undefined ? wordItem.hasBeenTested : false,
                 streakCount: wordItem.streakCount !== undefined ? wordItem.streakCount : 0,
-                score: wordItem.score !== undefined ? wordItem.score : 0 // 添加分數字段
+                score: wordItem.score !== undefined ? wordItem.score : 0
             };
         });
     }
@@ -329,20 +329,16 @@
         return array.sort(() => Math.random() - 0.5);
     }
 
-    // 單字分數計算函數
     function calculateWordScore(wordObj, isCorrect) {
         let points = 0;
-        
+
         if (isCorrect) {
-            // 答對：基礎分數 + 連勝獎勵
-            // 注意：這裡的streakCount是答對後的值，所以連勝獎勵是 (streakCount - 1) * 10
             const streakReward = wordObj.streakCount > 1 ? (wordObj.streakCount - 1) * 10 : 0;
             points = 10 + streakReward;
         } else {
-            // 答錯：扣基礎分數，但連勝獎勵分數不清零
             points = -10;
         }
-        
+
         return points;
     }
 
@@ -356,8 +352,10 @@
 
         wordContainer.innerHTML = "";
         targetContainer.innerHTML = "";
-        
-        submitButton.disabled = false; 
+        selectedWord = null;
+        actionHistory.length = 0;
+
+        submitButton.disabled = false;
 
         totalUniqueWords = new Set(words.map(w => w.word)).size;
 
@@ -399,7 +397,6 @@
                 let selectedNewWords = shuffle(newWords).slice(0, numNew);
 
                 let numWeighted = numWordsForRound - selectedNewWords.length;
-                // 修改權重系統：優先選擇分數最低的單字
                 let weightedWords = testedWords.sort((a, b) => a.score - b.score);
                 let selectedWeightedWords = shuffle(weightedWords).slice(0, numWeighted);
 
@@ -409,7 +406,6 @@
                 let numWeighted = Math.min(Math.ceil(numWordsForRound * (3 / 4)), testedWords.length);
                 let numRandom = numWordsForRound - numWeighted;
 
-                // 修改權重系統：優先選擇分數最低的單字
                 let weightedWords = testedWords.sort((a, b) => a.score - b.score);
                 let selectedWeightedWords = shuffle(weightedWords).slice(0, numWeighted);
 
@@ -453,7 +449,7 @@
 
             wordDiv.addEventListener('dragstart', dragStart);
             wordDiv.addEventListener('dragend', dragEnd);
-            wordDiv.addEventListener('click', () => selectWord(wordDiv)); // ===== 恢復單字點擊事件 =====
+            wordDiv.addEventListener('click', () => selectWord(wordDiv));
 
             wordContainer.appendChild(wordDiv);
         });
@@ -469,7 +465,7 @@
             `;
             targetDiv.addEventListener('dragover', allowDrop);
             targetDiv.addEventListener('drop', drop);
-            targetDiv.addEventListener('click', () => matchWord(targetDiv)); // ===== 恢復目標點擊事件 =====
+            targetDiv.addEventListener('click', () => matchWord(targetDiv));
 
             targetContainer.appendChild(targetDiv);
         });
@@ -526,7 +522,6 @@
         handleAction(e.target, word);
     }
 
-    // ===== 恢復 selectWord 和 matchWord 函式 =====
     function selectWord(wordElement) {
         if (wordElement.classList.contains('used')) return;
         if (selectedWord) {
@@ -552,18 +547,19 @@
 
         const movedWordDiv = actualTarget.querySelector('.moved-word');
         const oldWord = actualTarget.dataset.droppedWord || null;
+
+        // 紀錄舊的狀態
+        actionHistory.push({ target: actualTarget, oldWord: oldWord, newWord: word });
+
         if (oldWord) {
             enableWord(oldWord);
         }
-        actionHistory.push({ target: actualTarget, word: oldWord });
-
         movedWordDiv.textContent = word;
         disableWord(word);
 
         actualTarget.dataset.droppedWord = word;
         toggleDeleteButton(actualTarget);
 
-        // 如果是透過點擊操作，取消高亮
         if (selectedWord) {
             selectedWord.classList.remove('selected');
             selectedWord = null;
@@ -581,16 +577,17 @@
 
     function undoLastAction() {
         if (actionHistory.length === 0) return;
-        const { target, word } = actionHistory.pop();
+        const lastAction = actionHistory.pop();
+        const { target, oldWord, newWord } = lastAction;
+
         const movedWordDiv = target.querySelector('.moved-word');
-        const currentWord = target.dataset.droppedWord;
-        if (currentWord) {
-            enableWord(currentWord);
+        if (newWord) {
+            enableWord(newWord);
         }
-        if (word) {
-            disableWord(word);
-            target.dataset.droppedWord = word;
-            movedWordDiv.textContent = word;
+        if (oldWord) {
+            disableWord(oldWord);
+            target.dataset.droppedWord = oldWord;
+            movedWordDiv.textContent = oldWord;
         } else {
             delete target.dataset.droppedWord;
             movedWordDiv.textContent = "";
@@ -598,13 +595,17 @@
         toggleDeleteButton(target);
     }
 
-    function enableWord(word) {
+    function resetWordState(word) {
         const wordDiv = document.querySelector(`.word[data-word="${word}"]`);
         if (wordDiv) {
             wordDiv.classList.remove('used');
-            wordDiv.addEventListener('click', () => selectWord(wordDiv));
             wordDiv.draggable = true;
+            wordDiv.addEventListener('click', () => selectWord(wordDiv));
         }
+    }
+
+    function enableWord(word) {
+        resetWordState(word);
     }
 
     function disableWord(word) {
@@ -621,7 +622,7 @@
         const target = button.closest('.target');
         const currentWord = target.dataset.droppedWord;
         if (currentWord) {
-            enableWord(currentWord);
+            resetWordState(currentWord);
         }
         delete target.dataset.droppedWord;
         target.querySelector('.moved-word').textContent = "";
@@ -692,19 +693,17 @@
                         originalWordObj.correctCount++;
                         originalWordObj.streakCount++;
                         originalWordObj.wrongCount = Math.max(0, originalWordObj.wrongCount - 1);
-                        
-                        // 更新單字分數：答對 +10 + 連勝獎勵
+
                         const points = calculateWordScore(originalWordObj, true);
-                        originalWordObj.score = Math.max(0, originalWordObj.score + points); // 確保分數不小於0
+                        originalWordObj.score = Math.max(0, originalWordObj.score + points);
                     } else {
                         target.classList.add('incorrect');
                         wrongAnswers.push(droppedWord);
                         originalWordObj.wrongCount++;
                         originalWordObj.streakCount = 0;
-                        
-                        // 更新單字分數：答錯 -10
+
                         const points = calculateWordScore(originalWordObj, false);
-                        originalWordObj.score = Math.max(0, originalWordObj.score + points); // 確保分數不小於0
+                        originalWordObj.score = Math.max(0, originalWordObj.score + points);
                     }
                 }
             } else {
@@ -719,15 +718,13 @@
                 const wordObj = words[originalWordIndex];
                 wordObj.wrongCount++;
                 wordObj.streakCount = 0;
-                // 未使用的單字也扣分
-                wordObj.score = Math.max(0, wordObj.score - 10); // 確保分數不小於0
+                wordObj.score = Math.max(0, wordObj.score - 10);
             }
         });
 
 
         localStorage.setItem('words', JSON.stringify(words));
-        
-        // 通知單字庫頁面更新
+
         localStorage.setItem('wordCardUpdated', Date.now().toString());
 
         const resultDiv = document.getElementById('result');
@@ -736,7 +733,7 @@
 
         resultDiv.style.display = 'block';
         answersDiv.style.display = 'block';
-        document.getElementById('submit-btn').style.display = 'none'; // 隱藏提交按鈕
+        document.getElementById('submit-btn').style.display = 'none';
 
         document.querySelectorAll('.word').forEach(wordDiv => {
             wordDiv.removeEventListener('click', selectWord);
@@ -762,7 +759,6 @@
         if (wrongAnswers.length > 0 || unfilledTargets.length > 0) {
             answersHTML += `<p><b>${t.correctAnswersTitle}</b></p>`;
 
-            // Section 1: Incorrectly Answered
             if (wrongAnswers.length > 0) {
                 answersHTML += `<h4>${t.incorrectlyAnsweredTitle}</h4><ul>`;
                 wrongAnswers.forEach(word => {
@@ -775,7 +771,6 @@
                 answersHTML += '</ul>';
             }
 
-            // Section 2: Unanswered
             if (unfilledTargets.length > 0) {
                 answersHTML += `<h4>${t.unansweredTitle}</h4><ul>`;
                 unfilledTargets.forEach(target => {
@@ -857,18 +852,14 @@
         }
     });
 
-    // 監聽來自單字庫的消息
     window.addEventListener('message', function(event) {
         if (event.data.type === 'wordsUpdated') {
-            // 當單字庫更新時，重新創建遊戲
             createGame();
         }
     });
 
-    // 監聽 localStorage 變化事件
     window.addEventListener('storage', function(event) {
         if (event.key === 'wordBankUpdated') {
-            // 當單字庫更新時，重新創建遊戲
             createGame();
         }
     });

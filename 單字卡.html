@@ -48,7 +48,7 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             background: #e0e0e0;
-            cursor: pointer; /* ===== 恢復鼠標樣式為 pointer ===== */
+            cursor: pointer;
             user-select: none;
             text-align: center;
             width: 120px;
@@ -112,7 +112,6 @@
         .target.incorrect {
             border-color: red;
         }
-        /* ===== 恢復 .selected 高亮樣式 ===== */
         .selected {
             background: #add8e6;
             border-color: #007bff;
@@ -297,584 +296,583 @@
           }
         };
 
-    let isFirstRound = true;
+        let isFirstRound = true;
 
-    let settings = JSON.parse(localStorage.getItem('wordGameSettings')) || {
-        wordsPerRound: 10,
-        enableWeightSystem: true
-    };
+        let settings = JSON.parse(localStorage.getItem('wordGameSettings')) || {
+            wordsPerRound: 10,
+            enableWeightSystem: true
+        };
 
-    let wordsTestedInSession = new Set();
-    let totalUniqueWords = 0;
+        let wordsTestedInSession = new Set();
+        let totalUniqueWords = 0;
 
-    let currentRoundWords = [];
-    let selectedWord = null;
-    const actionHistory = [];
+        let currentRoundWords = [];
+        let selectedWord = null;
+        const actionHistory = [];
 
-    function initializeOrUpdateWords(wordsArray) {
-        return wordsArray.map(wordItem => {
-            return {
-                word: wordItem.word,
-                translation: wordItem.translation,
-                wrongCount: wordItem.wrongCount !== undefined ? wordItem.wrongCount : 0,
-                correctCount: wordItem.correctCount !== undefined ? wordItem.correctCount : 0,
-                hasBeenTested: wordItem.hasBeenTested !== undefined ? wordItem.hasBeenTested : false,
-                streakCount: wordItem.streakCount !== undefined ? wordItem.streakCount : 0,
-                score: wordItem.score !== undefined ? wordItem.score : 0
-            };
-        });
-    }
-
-    function shuffle(array) {
-        return array.sort(() => Math.random() - 0.5);
-    }
-
-    function calculateWordScore(wordObj, isCorrect) {
-        let points = 0;
-
-        if (isCorrect) {
-            const streakReward = wordObj.streakCount > 1 ? (wordObj.streakCount - 1) * 10 : 0;
-            points = 10 + streakReward;
-        } else {
-            points = -10;
+        function initializeOrUpdateWords(wordsArray) {
+            return wordsArray.map(wordItem => {
+                return {
+                    word: wordItem.word,
+                    translation: wordItem.translation,
+                    wrongCount: wordItem.wrongCount !== undefined ? wordItem.wrongCount : 0,
+                    correctCount: wordItem.correctCount !== undefined ? wordItem.correctCount : 0,
+                    hasBeenTested: wordItem.hasBeenTested !== undefined ? wordItem.hasBeenTested : false,
+                    streakCount: wordItem.streakCount !== undefined ? wordItem.streakCount : 0,
+                    score: wordItem.score !== undefined ? wordItem.score : 0
+                };
+            });
         }
 
-        return points;
-    }
-
-    function createGame() {
-        let words = JSON.parse(localStorage.getItem('words')) || [];
-        words = initializeOrUpdateWords(words);
-
-        const wordContainer = document.querySelector('.words');
-        const targetContainer = document.querySelector('.targets');
-        const submitButton = document.getElementById('submit-btn');
-
-        wordContainer.innerHTML = "";
-        targetContainer.innerHTML = "";
-        selectedWord = null;
-        actionHistory.length = 0;
-
-        submitButton.disabled = false;
-
-        totalUniqueWords = new Set(words.map(w => w.word)).size;
-
-        if (words.length === 0) {
-            wordContainer.innerHTML = `
-                <p>${translations[currentLanguage].noWordsToTest}</p>
-                <p>${translations[currentLanguage].promptToAddWords}</p>
-            `;
-            wordContainer.style.display = 'block';
-            wordContainer.style.textAlign = 'center';
-            document.getElementById('submit-btn').style.display = 'none';
-            document.getElementById('restart-btn').style.display = 'none';
-            document.getElementById('result').style.display = 'none';
-            document.getElementById('answers').style.display = 'none';
-            return;
-        } else {
-            wordContainer.style.display = 'flex';
-            wordContainer.style.textAlign = 'initial';
-            document.getElementById('submit-btn').style.display = 'inline-block';
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
         }
 
-        const numWordsForRound = Math.min(settings.wordsPerRound, words.length);
-        let wordsToChoose = [...words];
+        function calculateWordScore(wordObj, isCorrect) {
+            let points = 0;
 
-        wordsTestedInSession = new Set(words.filter(w => w.hasBeenTested).map(w => w.word));
-
-        if (!settings.enableWeightSystem) {
-            currentRoundWords = shuffle(wordsToChoose).slice(0, numWordsForRound);
-        } else {
-            const allWordsTestedOnce = wordsTestedInSession.size >= totalUniqueWords;
-
-            let newWords = wordsToChoose.filter(w => !w.hasBeenTested);
-            let testedWords = wordsToChoose.filter(w => w.hasBeenTested);
-
-            if (testedWords.length === 0 && newWords.length > 0) {
-                currentRoundWords = shuffle(newWords).slice(0, numWordsForRound);
-            } else if (!allWordsTestedOnce && newWords.length > 0) {
-                let numNew = Math.min(Math.ceil(numWordsForRound * (2 / 3)), newWords.length);
-                let selectedNewWords = shuffle(newWords).slice(0, numNew);
-
-                let numWeighted = numWordsForRound - selectedNewWords.length;
-                let weightedWords = testedWords.sort((a, b) => a.score - b.score);
-                let selectedWeightedWords = shuffle(weightedWords).slice(0, numWeighted);
-
-                currentRoundWords = shuffle([...selectedNewWords, ...selectedWeightedWords]);
-
+            if (isCorrect) {
+                const streakReward = wordObj.streakCount > 1 ? (wordObj.streakCount - 1) * 10 : 0;
+                points = 10 + streakReward;
             } else {
-                let numWeighted = Math.min(Math.ceil(numWordsForRound * (3 / 4)), testedWords.length);
-                let numRandom = numWordsForRound - numWeighted;
-
-                let weightedWords = testedWords.sort((a, b) => a.score - b.score);
-                let selectedWeightedWords = shuffle(weightedWords).slice(0, numWeighted);
-
-                let remainingRandomWords = testedWords.filter(word => !selectedWeightedWords.some(sw => sw.word === word.word));
-                let selectedRandomWords = shuffle(remainingRandomWords).slice(0, numRandom);
-
-                currentRoundWords = shuffle([...selectedWeightedWords, ...selectedRandomWords]);
+                points = -10;
             }
+
+            return points;
         }
 
-        if (currentRoundWords.length < numWordsForRound && wordsToChoose.length > currentRoundWords.length) {
-            const alreadySelectedWords = new Set(currentRoundWords.map(w => w.word));
-            const availableWords = wordsToChoose.filter(w => !alreadySelectedWords.has(w.word));
-            const wordsToFill = shuffle(availableWords).slice(0, numWordsForRound - currentRoundWords.length);
-            currentRoundWords = shuffle([...currentRoundWords, ...wordsToFill]);
-        }
+        function createGame() {
+            let words = JSON.parse(localStorage.getItem('words')) || [];
+            words = initializeOrUpdateWords(words);
 
-        if (currentRoundWords.length === 0 && words.length > 0) {
-             currentRoundWords = shuffle([...words]).slice(0, numWordsForRound);
-        }
+            const wordContainer = document.querySelector('.words');
+            const targetContainer = document.querySelector('.targets');
+            const submitButton = document.getElementById('submit-btn');
 
-        currentRoundWords.forEach(wordObj => {
-            const originalWordIndex = words.findIndex(w => w.word === wordObj.word);
-            if (originalWordIndex !== -1) {
-                words[originalWordIndex].hasBeenTested = true;
-                wordsTestedInSession.add(wordObj.word);
+            wordContainer.innerHTML = "";
+            targetContainer.innerHTML = "";
+            selectedWord = null;
+            actionHistory.length = 0;
+
+            submitButton.disabled = false;
+
+            totalUniqueWords = new Set(words.map(w => w.word)).size;
+
+            if (words.length === 0) {
+                wordContainer.innerHTML = `
+                    <p>${translations[currentLanguage].noWordsToTest}</p>
+                    <p>${translations[currentLanguage].promptToAddWords}</p>
+                `;
+                wordContainer.style.display = 'block';
+                wordContainer.style.textAlign = 'center';
+                document.getElementById('submit-btn').style.display = 'none';
+                document.getElementById('restart-btn').style.display = 'none';
+                document.getElementById('result').style.display = 'none';
+                document.getElementById('answers').style.display = 'none';
+                return;
+            } else {
+                wordContainer.style.display = 'flex';
+                wordContainer.style.textAlign = 'initial';
+                document.getElementById('submit-btn').style.display = 'inline-block';
             }
-        });
-        localStorage.setItem('words', JSON.stringify(words));
 
-        const shuffledWords = shuffle([...currentRoundWords]);
-        const shuffledTranslations = shuffle([...currentRoundWords]);
+            const numWordsForRound = Math.min(settings.wordsPerRound, words.length);
+            let wordsToChoose = [...words];
+
+            wordsTestedInSession = new Set(words.filter(w => w.hasBeenTested).map(w => w.word));
+
+            if (!settings.enableWeightSystem) {
+                currentRoundWords = shuffle(wordsToChoose).slice(0, numWordsForRound);
+            } else {
+                const allWordsTestedOnce = wordsTestedInSession.size >= totalUniqueWords;
+
+                let newWords = wordsToChoose.filter(w => !w.hasBeenTested);
+                let testedWords = wordsToChoose.filter(w => w.hasBeenTested);
+
+                if (testedWords.length === 0 && newWords.length > 0) {
+                    currentRoundWords = shuffle(newWords).slice(0, numWordsForRound);
+                } else if (!allWordsTestedOnce && newWords.length > 0) {
+                    let numNew = Math.min(Math.ceil(numWordsForRound * (2 / 3)), newWords.length);
+                    let selectedNewWords = shuffle(newWords).slice(0, numNew);
+
+                    let numWeighted = numWordsForRound - selectedNewWords.length;
+                    let weightedWords = testedWords.sort((a, b) => a.score - b.score);
+                    let selectedWeightedWords = shuffle(weightedWords).slice(0, numWeighted);
+
+                    currentRoundWords = shuffle([...selectedNewWords, ...selectedWeightedWords]);
+
+                } else {
+                    let numWeighted = Math.min(Math.ceil(numWordsForRound * (3 / 4)), testedWords.length);
+                    let numRandom = numWordsForRound - numWeighted;
+
+                    let weightedWords = testedWords.sort((a, b) => a.score - b.score);
+                    let selectedWeightedWords = shuffle(weightedWords).slice(0, numWeighted);
+
+                    let remainingRandomWords = testedWords.filter(word => !selectedWeightedWords.some(sw => sw.word === word.word));
+                    let selectedRandomWords = shuffle(remainingRandomWords).slice(0, numRandom);
+
+                    currentRoundWords = shuffle([...selectedWeightedWords, ...selectedRandomWords]);
+                }
+            }
+
+            if (currentRoundWords.length < numWordsForRound && wordsToChoose.length > currentRoundWords.length) {
+                const alreadySelectedWords = new Set(currentRoundWords.map(w => w.word));
+                const availableWords = wordsToChoose.filter(w => !alreadySelectedWords.has(w.word));
+                const wordsToFill = shuffle(availableWords).slice(0, numWordsForRound - currentRoundWords.length);
+                currentRoundWords = shuffle([...currentRoundWords, ...wordsToFill]);
+            }
+
+            if (currentRoundWords.length === 0 && words.length > 0) {
+                 currentRoundWords = shuffle([...words]).slice(0, numWordsForRound);
+            }
+
+            currentRoundWords.forEach(wordObj => {
+                const originalWordIndex = words.findIndex(w => w.word === wordObj.word);
+                if (originalWordIndex !== -1) {
+                    words[originalWordIndex].hasBeenTested = true;
+                    wordsTestedInSession.add(wordObj.word);
+                }
+            });
+            localStorage.setItem('words', JSON.stringify(words));
+
+            const shuffledWords = shuffle([...currentRoundWords]);
+            const shuffledTranslations = shuffle([...currentRoundWords]);
 
 
-        shuffledWords.forEach(item => {
-            const wordDiv = document.createElement('div');
-            wordDiv.className = 'word';
-            wordDiv.draggable = true;
-            wordDiv.textContent = item.word;
-            wordDiv.dataset.word = item.word;
+            shuffledWords.forEach(item => {
+                const wordDiv = document.createElement('div');
+                wordDiv.className = 'word';
+                wordDiv.draggable = true;
+                wordDiv.textContent = item.word;
+                wordDiv.dataset.word = item.word;
 
-            wordDiv.addEventListener('dragstart', dragStart);
-            wordDiv.addEventListener('dragend', dragEnd);
-            wordDiv.addEventListener('click', () => selectWord(wordDiv));
+                wordDiv.addEventListener('dragstart', dragStart);
+                wordDiv.addEventListener('dragend', dragEnd);
+                wordDiv.addEventListener('click', handleWordClick);
 
-            wordContainer.appendChild(wordDiv);
-        });
+                wordContainer.appendChild(wordDiv);
+            });
 
-        shuffledTranslations.forEach(item => {
-            const targetDiv = document.createElement('div');
-            targetDiv.className = 'target';
-            targetDiv.dataset.translation = item.translation;
-            targetDiv.innerHTML = `
-                <div class="moved-word"></div>
-                <div class="original-translation">${item.translation}</div>
-                <button class="delete-btn" onclick="deleteWord(event, this)">×</button>
-            `;
-            targetDiv.addEventListener('dragover', allowDrop);
-            targetDiv.addEventListener('drop', drop);
-            targetDiv.addEventListener('click', () => matchWord(targetDiv));
+            shuffledTranslations.forEach(item => {
+                const targetDiv = document.createElement('div');
+                targetDiv.className = 'target';
+                targetDiv.dataset.translation = item.translation;
+                targetDiv.innerHTML = `
+                    <div class="moved-word"></div>
+                    <div class="original-translation">${item.translation}</div>
+                    <button class="delete-btn" onclick="deleteWord(event, this)">×</button>
+                `;
+                targetDiv.addEventListener('dragover', allowDrop);
+                targetDiv.addEventListener('drop', drop);
+                targetDiv.addEventListener('click', () => matchWord(targetDiv));
 
-            targetContainer.appendChild(targetDiv);
-        });
+                targetContainer.appendChild(targetDiv);
+            });
 
-        document.getElementById('undo-btn').style.display = 'inline-block';
-        document.getElementById('dark-mode-btn').style.display = 'inline-block';
-        document.getElementById('wordbank-btn').style.display = 'inline-block';
-        document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = (currentLanguage === 'zh' ? 'none' : 'inline-block');
-        document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = (currentLanguage === 'en' ? 'none' : 'inline-block');
+            document.getElementById('undo-btn').style.display = 'inline-block';
+            document.getElementById('dark-mode-btn').style.display = 'inline-block';
+            document.getElementById('wordbank-btn').style.display = 'inline-block';
+            document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = (currentLanguage === 'zh' ? 'none' : 'inline-block');
+            document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = (currentLanguage === 'en' ? 'none' : 'inline-block');
 
-        document.getElementById('restart-btn').style.display = 'none';
-    }
-
-    function switchLanguage(lang) {
-        currentLanguage = lang;
-        localStorage.setItem('currentLanguage', lang);
-        const t = translations[currentLanguage];
-
-        document.title = t.title;
-        document.getElementById('title').textContent = t.title;
-        document.getElementById('instructions').textContent = t.instructions;
-        document.getElementById('submit-btn').textContent = t.submit;
-        document.getElementById('undo-btn').textContent = t.undo;
-        document.getElementById('dark-mode-btn').textContent = t.darkMode;
-        document.getElementById('wordbank-btn').textContent = t.wordBank;
-        document.getElementById('restart-btn').textContent = t.restart;
-
-        document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = (lang === 'zh' ? 'none' : 'inline-block');
-        document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = (lang === 'en' ? 'none' : 'inline-block');
-
-        createGame();
-
-        const rulesIframe = document.getElementById('rulesModal').querySelector('iframe');
-        if (rulesIframe && rulesIframe.contentWindow) {
-            rulesIframe.contentWindow.postMessage({ type: 'languageChange', lang: lang }, '*');
+            document.getElementById('restart-btn').style.display = 'none';
         }
-    }
 
-    function allowDrop(e) {
-        e.preventDefault();
-    }
-
-    function dragStart(e) {
-        e.dataTransfer.setData('text/plain', e.target.dataset.word);
-    }
-
-    function dragEnd(e) {
-        e.target.classList.remove('dragging');
-    }
-
-    function drop(e) {
-        e.preventDefault();
-        const word = e.dataTransfer.getData('text/plain');
-        handleAction(e.target, word);
-    }
-
-    function selectWord(wordElement) {
-        if (wordElement.classList.contains('used')) return;
-        if (selectedWord) {
-            selectedWord.classList.remove('selected');
-        }
-        if (selectedWord === wordElement) {
-            selectedWord = null;
-        } else {
-            selectedWord = wordElement;
-            selectedWord.classList.add('selected');
-        }
-    }
-
-    function matchWord(targetElement) {
-        if (selectedWord) {
-            handleAction(targetElement, selectedWord.dataset.word);
-        }
-    }
-
-    function handleAction(targetElement, word) {
-        const actualTarget = targetElement.closest('.target');
-        if (!actualTarget) return;
-
-        const movedWordDiv = actualTarget.querySelector('.moved-word');
-        const oldWord = actualTarget.dataset.droppedWord || null;
-
-        // 紀錄舊的狀態
-        actionHistory.push({ target: actualTarget, oldWord: oldWord, newWord: word });
-
-        if (oldWord) {
-            enableWord(oldWord);
-        }
-        movedWordDiv.textContent = word;
-        disableWord(word);
-
-        actualTarget.dataset.droppedWord = word;
-        toggleDeleteButton(actualTarget);
-
-        if (selectedWord) {
-            selectedWord.classList.remove('selected');
-            selectedWord = null;
-        }
-    }
-
-    function toggleDeleteButton(targetElement) {
-        const deleteButton = targetElement.querySelector('.delete-btn');
-        if (targetElement.dataset.droppedWord) {
-            targetElement.classList.add('has-word');
-        } else {
-            targetElement.classList.remove('has-word');
-        }
-    }
-
-    function undoLastAction() {
-        if (actionHistory.length === 0) return;
-        const lastAction = actionHistory.pop();
-        const { target, oldWord, newWord } = lastAction;
-
-        const movedWordDiv = target.querySelector('.moved-word');
-        if (newWord) {
-            enableWord(newWord);
-        }
-        if (oldWord) {
-            disableWord(oldWord);
-            target.dataset.droppedWord = oldWord;
-            movedWordDiv.textContent = oldWord;
-        } else {
-            delete target.dataset.droppedWord;
-            movedWordDiv.textContent = "";
-        }
-        toggleDeleteButton(target);
-    }
-
-    function resetWordState(word) {
-        const wordDiv = document.querySelector(`.word[data-word="${word}"]`);
-        if (wordDiv) {
-            wordDiv.classList.remove('used');
-            wordDiv.draggable = true;
-            wordDiv.addEventListener('click', () => selectWord(wordDiv));
-        }
-    }
-
-    function enableWord(word) {
-        resetWordState(word);
-    }
-
-    function disableWord(word) {
-        const wordDiv = document.querySelector(`.word[data-word="${word}"]`);
-        if (wordDiv) {
-            wordDiv.classList.add('used');
-            wordDiv.removeEventListener('click', selectWord);
-            wordDiv.draggable = false;
-        }
-    }
-
-    function deleteWord(event, button) {
-        event.stopPropagation();
-        const target = button.closest('.target');
-        const currentWord = target.dataset.droppedWord;
-        if (currentWord) {
-            resetWordState(currentWord);
-        }
-        delete target.dataset.droppedWord;
-        target.querySelector('.moved-word').textContent = "";
-        toggleDeleteButton(target);
-    }
-
-    function resetGameUI() {
-        document.querySelectorAll('.target').forEach(target => {
-            target.querySelector('.moved-word').textContent = "";
-            delete target.dataset.droppedWord;
-            target.classList.remove('correct', 'incorrect');
-            toggleDeleteButton(target);
-            target.addEventListener('dragover', allowDrop);
-            target.addEventListener('drop', drop);
-            target.addEventListener('click', () => matchWord(target));
-        });
-        document.querySelectorAll('.word').forEach(word => {
-            word.classList.remove('used');
-            word.addEventListener('click', () => selectWord(word));
-            word.draggable = true;
-        });
-
-        document.getElementById('result').style.display = 'none';
-        document.getElementById('answers').style.display = 'none';
-
-        document.getElementById('submit-btn').disabled = false;
-        document.getElementById('undo-btn').style.display = 'inline-block';
-        document.getElementById('dark-mode-btn').style.display = 'inline-block';
-        document.getElementById('wordbank-btn').style.display = 'inline-block';
-        document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = (currentLanguage === 'zh' ? 'none' : 'inline-block');
-        document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = (currentLanguage === 'en' ? 'none' : 'inline-block');
-
-        document.getElementById('restart-btn').style.display = 'none';
-    }
-
-
-    function checkAnswers() {
-        let words = JSON.parse(localStorage.getItem('words')) || [];
-        words = initializeOrUpdateWords(words);
-
-        const targetElements = document.querySelectorAll('.target');
-        const unfilledTargets = Array.from(targetElements).filter(target => !target.dataset.droppedWord);
-
-        if (unfilledTargets.length > 0) {
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('currentLanguage', lang);
             const t = translations[currentLanguage];
-            const confirmMessage = t.confirmSubmitPartial.replace('{count}', unfilledTargets.length);
-            if (!confirm(confirmMessage)) {
+
+            document.title = t.title;
+            document.getElementById('title').textContent = t.title;
+            document.getElementById('instructions').textContent = t.instructions;
+            document.getElementById('submit-btn').textContent = t.submit;
+            document.getElementById('undo-btn').textContent = t.undo;
+            document.getElementById('dark-mode-btn').textContent = t.darkMode;
+            document.getElementById('wordbank-btn').textContent = t.wordBank;
+            document.getElementById('restart-btn').textContent = t.restart;
+
+            document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = (lang === 'zh' ? 'none' : 'inline-block');
+            document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = (lang === 'en' ? 'none' : 'inline-block');
+
+            createGame();
+
+            const rulesIframe = document.getElementById('rulesModal').querySelector('iframe');
+            if (rulesIframe && rulesIframe.contentWindow) {
+                rulesIframe.contentWindow.postMessage({ type: 'languageChange', lang: lang }, '*');
+            }
+        }
+
+        function allowDrop(e) {
+            e.preventDefault();
+        }
+
+        function dragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.dataset.word);
+        }
+
+        function dragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            const word = e.dataTransfer.getData('text/plain');
+            handleAction(e.target, word);
+        }
+
+        function handleWordClick(event) {
+            const wordElement = event.target;
+            // 檢查單字是否已被使用，如果是，則不執行任何操作
+            if (wordElement.classList.contains('used')) {
                 return;
             }
+            selectWord(wordElement);
         }
 
-        const correctAnswers = [];
-        const wrongAnswers = [];
-
-        targetElements.forEach(target => {
-            const droppedWord = target.dataset.droppedWord;
-            const originalTranslation = target.dataset.translation;
-            target.classList.remove('correct', 'incorrect');
-
-            if (droppedWord) {
-                const originalWordIndex = words.findIndex(w => w.word === droppedWord);
-
-                if (originalWordIndex !== -1) {
-                    const originalWordObj = words[originalWordIndex];
-                    if (originalWordObj.translation === originalTranslation) {
-                        target.classList.add('correct');
-                        correctAnswers.push(droppedWord);
-                        originalWordObj.correctCount++;
-                        originalWordObj.streakCount++;
-                        originalWordObj.wrongCount = Math.max(0, originalWordObj.wrongCount - 1);
-
-                        const points = calculateWordScore(originalWordObj, true);
-                        originalWordObj.score = Math.max(0, originalWordObj.score + points);
-                    } else {
-                        target.classList.add('incorrect');
-                        wrongAnswers.push(droppedWord);
-                        originalWordObj.wrongCount++;
-                        originalWordObj.streakCount = 0;
-
-                        const points = calculateWordScore(originalWordObj, false);
-                        originalWordObj.score = Math.max(0, originalWordObj.score + points);
-                    }
-                }
+        function selectWord(wordElement) {
+            if (selectedWord) {
+                selectedWord.classList.remove('selected');
+            }
+            if (selectedWord === wordElement) {
+                selectedWord = null;
             } else {
-                target.classList.add('incorrect');
+                selectedWord = wordElement;
+                selectedWord.classList.add('selected');
             }
-        });
-
-        document.querySelectorAll('.word:not(.used)').forEach(wordDiv => {
-            const word = wordDiv.dataset.word;
-            const originalWordIndex = words.findIndex(w => w.word === word);
-            if (originalWordIndex !== -1) {
-                const wordObj = words[originalWordIndex];
-                wordObj.wrongCount++;
-                wordObj.streakCount = 0;
-                wordObj.score = Math.max(0, wordObj.score - 10);
-            }
-        });
-
-
-        localStorage.setItem('words', JSON.stringify(words));
-
-        localStorage.setItem('wordCardUpdated', Date.now().toString());
-
-        const resultDiv = document.getElementById('result');
-        const answersDiv = document.getElementById('answers');
-        const restartBtn = document.getElementById('restart-btn');
-
-        resultDiv.style.display = 'block';
-        answersDiv.style.display = 'block';
-        document.getElementById('submit-btn').style.display = 'none';
-
-        document.querySelectorAll('.word').forEach(wordDiv => {
-            wordDiv.removeEventListener('click', selectWord);
-            wordDiv.draggable = false;
-            wordDiv.classList.add('used');
-        });
-        document.querySelectorAll('.target').forEach(targetDiv => {
-            targetDiv.removeEventListener('drop', drop);
-            targetDiv.removeEventListener('dragover', allowDrop);
-            targetDiv.removeEventListener('click', matchWord);
-            targetDiv.querySelector('.delete-btn').style.display = 'none';
-        });
-
-        if (isFirstRound) {
-            document.getElementById('wordbank-btn').style.display = 'none';
-            isFirstRound = false;
         }
 
-        const t = translations[currentLanguage];
-        resultDiv.innerHTML = `<h2>${correctAnswers.length} ${t.correct}, ${wrongAnswers.length + unfilledTargets.length} ${t.incorrect}.</h2>`;
-
-        let answersHTML = '';
-        if (wrongAnswers.length > 0 || unfilledTargets.length > 0) {
-            answersHTML += `<p><b>${t.correctAnswersTitle}</b></p>`;
-
-            if (wrongAnswers.length > 0) {
-                answersHTML += `<h4>${t.incorrectlyAnsweredTitle}</h4><ul>`;
-                wrongAnswers.forEach(word => {
-                    const correctTranslation = words.find(w => w.word === word)?.translation;
-                    const wrongTarget = Array.from(targetElements).find(t => t.dataset.droppedWord === word);
-                    const userChoiceTranslation = wrongTarget.dataset.translation;
-
-                    answersHTML += `<li><b>${word}</b> &rarr; <s>${userChoiceTranslation}</s> (${t.correctShouldBe}: ${correctTranslation})</li>`;
-                });
-                answersHTML += '</ul>';
+        function matchWord(targetElement) {
+            if (selectedWord) {
+                handleAction(targetElement, selectedWord.dataset.word);
             }
+        }
+
+        function handleAction(targetElement, word) {
+            const actualTarget = targetElement.closest('.target');
+            if (!actualTarget) return;
+
+            const movedWordDiv = actualTarget.querySelector('.moved-word');
+            const oldWord = actualTarget.dataset.droppedWord || null;
+
+            actionHistory.push({ target: actualTarget, oldWord: oldWord, newWord: word });
+
+            if (oldWord) {
+                enableWord(oldWord);
+            }
+            movedWordDiv.textContent = word;
+            disableWord(word);
+
+            actualTarget.dataset.droppedWord = word;
+            toggleDeleteButton(actualTarget);
+
+            if (selectedWord) {
+                selectedWord.classList.remove('selected');
+                selectedWord = null;
+            }
+        }
+
+        function toggleDeleteButton(targetElement) {
+            const deleteButton = targetElement.querySelector('.delete-btn');
+            if (targetElement.dataset.droppedWord) {
+                targetElement.classList.add('has-word');
+            } else {
+                targetElement.classList.remove('has-word');
+            }
+        }
+
+        function undoLastAction() {
+            if (actionHistory.length === 0) return;
+            const lastAction = actionHistory.pop();
+            const { target, oldWord, newWord } = lastAction;
+
+            const movedWordDiv = target.querySelector('.moved-word');
+            if (newWord) {
+                enableWord(newWord);
+            }
+            if (oldWord) {
+                disableWord(oldWord);
+                target.dataset.droppedWord = oldWord;
+                movedWordDiv.textContent = oldWord;
+            } else {
+                delete target.dataset.droppedWord;
+                movedWordDiv.textContent = "";
+            }
+            toggleDeleteButton(target);
+        }
+
+        function enableWord(word) {
+            const wordDiv = document.querySelector(`.word[data-word="${word}"]`);
+            if (wordDiv) {
+                wordDiv.classList.remove('used');
+                wordDiv.draggable = true;
+            }
+        }
+
+        function disableWord(word) {
+            const wordDiv = document.querySelector(`.word[data-word="${word}"]`);
+            if (wordDiv) {
+                wordDiv.classList.add('used');
+                wordDiv.draggable = false;
+            }
+        }
+
+        function deleteWord(event, button) {
+            event.stopPropagation();
+            const target = button.closest('.target');
+            const currentWord = target.dataset.droppedWord;
+            if (currentWord) {
+                enableWord(currentWord);
+            }
+            delete target.dataset.droppedWord;
+            target.querySelector('.moved-word').textContent = "";
+            toggleDeleteButton(target);
+        }
+
+        function resetGameUI() {
+            document.querySelectorAll('.target').forEach(target => {
+                target.querySelector('.moved-word').textContent = "";
+                delete target.dataset.droppedWord;
+                target.classList.remove('correct', 'incorrect');
+                toggleDeleteButton(target);
+                target.addEventListener('dragover', allowDrop);
+                target.addEventListener('drop', drop);
+                target.addEventListener('click', () => matchWord(target));
+            });
+            document.querySelectorAll('.word').forEach(word => {
+                word.classList.remove('used');
+                word.draggable = true;
+            });
+
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('answers').style.display = 'none';
+
+            document.getElementById('submit-btn').disabled = false;
+            document.getElementById('undo-btn').style.display = 'inline-block';
+            document.getElementById('dark-mode-btn').style.display = 'inline-block';
+            document.getElementById('wordbank-btn').style.display = 'inline-block';
+            document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = (currentLanguage === 'zh' ? 'none' : 'inline-block');
+            document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = (currentLanguage === 'en' ? 'none' : 'inline-block');
+
+            document.getElementById('restart-btn').style.display = 'none';
+        }
+
+
+        function checkAnswers() {
+            let words = JSON.parse(localStorage.getItem('words')) || [];
+            words = initializeOrUpdateWords(words);
+
+            const targetElements = document.querySelectorAll('.target');
+            const unfilledTargets = Array.from(targetElements).filter(target => !target.dataset.droppedWord);
 
             if (unfilledTargets.length > 0) {
-                answersHTML += `<h4>${t.unansweredTitle}</h4><ul>`;
-                unfilledTargets.forEach(target => {
-                    const originalTranslation = target.dataset.translation;
-                    const correctWord = currentRoundWords.find(w => w.translation === originalTranslation)?.word;
-                    if(correctWord) {
-                        answersHTML += `<li>${correctWord} : ${originalTranslation}</li>`;
-                    }
-                });
-                answersHTML += '</ul>';
+                const t = translations[currentLanguage];
+                const confirmMessage = t.confirmSubmitPartial.replace('{count}', unfilledTargets.length);
+                if (!confirm(confirmMessage)) {
+                    return;
+                }
             }
-        } else {
-            answersHTML += `<p>${t.correct === 'correct' ? 'Excellent! All words matched correctly!' : '太棒了！所有單字都答對了！'}</p>`;
+
+            const correctAnswers = [];
+            const wrongAnswers = [];
+
+            targetElements.forEach(target => {
+                const droppedWord = target.dataset.droppedWord;
+                const originalTranslation = target.dataset.translation;
+                target.classList.remove('correct', 'incorrect');
+
+                if (droppedWord) {
+                    const originalWordIndex = words.findIndex(w => w.word === droppedWord);
+
+                    if (originalWordIndex !== -1) {
+                        const originalWordObj = words[originalWordIndex];
+                        if (originalWordObj.translation === originalTranslation) {
+                            target.classList.add('correct');
+                            correctAnswers.push(droppedWord);
+                            originalWordObj.correctCount++;
+                            originalWordObj.streakCount++;
+                            originalWordObj.wrongCount = Math.max(0, originalWordObj.wrongCount - 1);
+
+                            const points = calculateWordScore(originalWordObj, true);
+                            originalWordObj.score = Math.max(0, originalWordObj.score + points);
+                        } else {
+                            target.classList.add('incorrect');
+                            wrongAnswers.push(droppedWord);
+                            originalWordObj.wrongCount++;
+                            originalWordObj.streakCount = 0;
+
+                            const points = calculateWordScore(originalWordObj, false);
+                            originalWordObj.score = Math.max(0, originalWordObj.score + points);
+                        }
+                    }
+                } else {
+                    target.classList.add('incorrect');
+                }
+            });
+
+            document.querySelectorAll('.word:not(.used)').forEach(wordDiv => {
+                const word = wordDiv.dataset.word;
+                const originalWordIndex = words.findIndex(w => w.word === word);
+                if (originalWordIndex !== -1) {
+                    const wordObj = words[originalWordIndex];
+                    wordObj.wrongCount++;
+                    wordObj.streakCount = 0;
+                    wordObj.score = Math.max(0, wordObj.score - 10);
+                }
+            });
+
+
+            localStorage.setItem('words', JSON.stringify(words));
+
+            localStorage.setItem('wordCardUpdated', Date.now().toString());
+
+            const resultDiv = document.getElementById('result');
+            const answersDiv = document.getElementById('answers');
+            const restartBtn = document.getElementById('restart-btn');
+
+            resultDiv.style.display = 'block';
+            answersDiv.style.display = 'block';
+            document.getElementById('submit-btn').style.display = 'none';
+
+            document.querySelectorAll('.word').forEach(wordDiv => {
+                wordDiv.draggable = false;
+                wordDiv.classList.add('used');
+            });
+            document.querySelectorAll('.target').forEach(targetDiv => {
+                targetDiv.removeEventListener('drop', drop);
+                targetDiv.removeEventListener('dragover', allowDrop);
+                targetDiv.removeEventListener('click', matchWord);
+                targetDiv.querySelector('.delete-btn').style.display = 'none';
+            });
+
+            if (isFirstRound) {
+                document.getElementById('wordbank-btn').style.display = 'none';
+                isFirstRound = false;
+            }
+
+            const t = translations[currentLanguage];
+            resultDiv.innerHTML = `<h2>${correctAnswers.length} ${t.correct}, ${wrongAnswers.length + unfilledTargets.length} ${t.incorrect}.</h2>`;
+
+            let answersHTML = '';
+            if (wrongAnswers.length > 0 || unfilledTargets.length > 0) {
+                answersHTML += `<p><b>${t.correctAnswersTitle}</b></p>`;
+
+                if (wrongAnswers.length > 0) {
+                    answersHTML += `<h4>${t.incorrectlyAnsweredTitle}</h4><ul>`;
+                    wrongAnswers.forEach(word => {
+                        const correctTranslation = words.find(w => w.word === word)?.translation;
+                        const wrongTarget = Array.from(targetElements).find(t => t.dataset.droppedWord === word);
+                        const userChoiceTranslation = wrongTarget.dataset.translation;
+
+                        answersHTML += `<li><b>${word}</b> &rarr; <s>${userChoiceTranslation}</s> (${t.correctShouldBe}: ${correctTranslation})</li>`;
+                    });
+                    answersHTML += '</ul>';
+                }
+
+                if (unfilledTargets.length > 0) {
+                    answersHTML += `<h4>${t.unansweredTitle}</h4><ul>`;
+                    unfilledTargets.forEach(target => {
+                        const originalTranslation = target.dataset.translation;
+                        const correctWord = currentRoundWords.find(w => w.translation === originalTranslation)?.word;
+                        if(correctWord) {
+                            answersHTML += `<li>${correctWord} : ${originalTranslation}</li>`;
+                        }
+                    });
+                    answersHTML += '</ul>';
+                }
+            } else {
+                answersHTML += `<p>${t.correct === 'correct' ? 'Excellent! All words matched correctly!' : '太棒了！所有單字都答對了！'}</p>`;
+            }
+            answersDiv.innerHTML = answersHTML;
+
+            restartBtn.style.display = 'inline-block';
+            document.getElementById('undo-btn').style.display = 'none';
+            document.getElementById('dark-mode-btn').style.display = 'none';
+            document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = 'none';
+            document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = 'none';
         }
-        answersDiv.innerHTML = answersHTML;
-
-        restartBtn.style.display = 'inline-block';
-        document.getElementById('undo-btn').style.display = 'none';
-        document.getElementById('dark-mode-btn').style.display = 'none';
-        document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = 'none';
-        document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = 'none';
-    }
 
 
-    function restartGame() {
-        let words = JSON.parse(localStorage.getItem('words')) || [];
-        words.forEach(wordItem => {
-            wordItem.hasBeenTested = false;
-        });
-        localStorage.setItem('words', JSON.stringify(words));
-        wordsTestedInSession.clear();
+        function restartGame() {
+            let words = JSON.parse(localStorage.getItem('words')) || [];
+            words.forEach(wordItem => {
+                wordItem.hasBeenTested = false;
+            });
+            localStorage.setItem('words', JSON.stringify(words));
+            wordsTestedInSession.clear();
 
-        resetGameUI();
-        createGame();
-    }
-
-    function toggleDarkMode() {
-        document.body.classList.toggle('dark-mode');
-        const isDark = document.body.classList.contains('dark-mode');
-        localStorage.setItem('darkMode', isDark);
-
-        const rulesIframe = document.getElementById('rulesModal').querySelector('iframe');
-        if (rulesIframe && rulesIframe.contentWindow) {
-            rulesIframe.contentWindow.postMessage({ type: 'darkModeChange', isDark: isDark }, '*');
+            resetGameUI();
+            createGame();
         }
-    }
 
-    function openWordBank() {
-        window.open('單字庫.html', '_blank');
-    }
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
 
-    function toggleRules() {
-        const modal = document.getElementById('rulesModal');
-        modal.style.display = 'block';
-
-        const rulesIframe = document.getElementById('rulesModal').querySelector('iframe');
-        if (rulesIframe && rulesIframe.contentWindow) {
-            const currentLang = localStorage.getItem('currentLanguage') || 'zh';
-            const isDark = localStorage.getItem('darkMode') === 'true';
-
-            rulesIframe.contentWindow.postMessage({ type: 'languageChange', lang: currentLang }, '*');
-            rulesIframe.contentWindow.postMessage({ type: 'darkModeChange', isDark: isDark }, '*');
+            const rulesIframe = document.getElementById('rulesModal').querySelector('iframe');
+            if (rulesIframe && rulesIframe.contentWindow) {
+                rulesIframe.contentWindow.postMessage({ type: 'darkModeChange', isDark: isDark }, '*');
+            }
         }
-    }
 
-    function closeRules(event) {
-        const modal = document.getElementById('rulesModal');
-        if (event.target === modal) {
-            modal.style.display = 'none';
+        function openWordBank() {
+            window.open('單字庫.html', '_blank');
         }
-    }
 
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
+        function toggleRules() {
             const modal = document.getElementById('rulesModal');
-            if (modal.style.display === 'block') {
+            modal.style.display = 'block';
+
+            const rulesIframe = document.getElementById('rulesModal').querySelector('iframe');
+            if (rulesIframe && rulesIframe.contentWindow) {
+                const currentLang = localStorage.getItem('currentLanguage') || 'zh';
+                const isDark = localStorage.getItem('darkMode') === 'true';
+
+                rulesIframe.contentWindow.postMessage({ type: 'languageChange', lang: currentLang }, '*');
+                rulesIframe.contentWindow.postMessage({ type: 'darkModeChange', isDark: isDark }, '*');
+            }
+        }
+
+        function closeRules(event) {
+            const modal = document.getElementById('rulesModal');
+            if (event.target === modal) {
                 modal.style.display = 'none';
             }
         }
-    });
 
-    window.addEventListener('message', function(event) {
-        if (event.data.type === 'wordsUpdated') {
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const modal = document.getElementById('rulesModal');
+                if (modal.style.display === 'block') {
+                    modal.style.display = 'none';
+                }
+            }
+        });
+
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'wordsUpdated') {
+                createGame();
+            }
+        });
+
+        window.addEventListener('storage', function(event) {
+            if (event.key === 'wordBankUpdated') {
+                createGame();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            currentLanguage = localStorage.getItem('currentLanguage') || 'zh';
+            switchLanguage(currentLanguage);
+
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+            }
+
             createGame();
-        }
-    });
-
-    window.addEventListener('storage', function(event) {
-        if (event.key === 'wordBankUpdated') {
-            createGame();
-        }
-    });
-
-    document.addEventListener('DOMContentLoaded', () => {
-        currentLanguage = localStorage.getItem('currentLanguage') || 'zh';
-        switchLanguage(currentLanguage);
-
-        const isDarkMode = localStorage.getItem('darkMode') === 'true';
-        if (isDarkMode) {
-            document.body.classList.add('dark-mode');
-        }
-
-        createGame();
-    });
+        });
     </script>
 </body>
 </html>

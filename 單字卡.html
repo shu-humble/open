@@ -382,37 +382,12 @@
             wordsTestedInSession = new Set(words.filter(w => w.hasBeenTested).map(w => w.word));
 
             if (!settings.enableWeightSystem) {
+                // 沒有權重時，隨機選取單字
                 currentRoundWords = shuffle(wordsToChoose).slice(0, numWordsForRound);
             } else {
-                const allWordsTestedOnce = wordsTestedInSession.size >= totalUniqueWords;
-
-                let newWords = wordsToChoose.filter(w => !w.hasBeenTested);
-                let testedWords = wordsToChoose.filter(w => w.hasBeenTested);
-
-                if (testedWords.length === 0 && newWords.length > 0) {
-                    currentRoundWords = shuffle(newWords).slice(0, numWordsForRound);
-                } else if (!allWordsTestedOnce && newWords.length > 0) {
-                    let numNew = Math.min(Math.ceil(numWordsForRound * (2 / 3)), newWords.length);
-                    let selectedNewWords = shuffle(newWords).slice(0, numNew);
-
-                    let numWeighted = numWordsForRound - selectedNewWords.length;
-                    let weightedWords = testedWords.sort((a, b) => a.score - b.score);
-                    let selectedWeightedWords = shuffle(weightedWords).slice(0, numWeighted);
-
-                    currentRoundWords = shuffle([...selectedNewWords, ...selectedWeightedWords]);
-
-                } else {
-                    let numWeighted = Math.min(Math.ceil(numWordsForRound * (3 / 4)), testedWords.length);
-                    let numRandom = numWordsForRound - numWeighted;
-
-                    let weightedWords = testedWords.sort((a, b) => a.score - b.score);
-                    let selectedWeightedWords = shuffle(weightedWords).slice(0, numWeighted);
-
-                    let remainingRandomWords = testedWords.filter(word => !selectedWeightedWords.some(sw => sw.word === word.word));
-                    let selectedRandomWords = shuffle(remainingRandomWords).slice(0, numRandom);
-
-                    currentRoundWords = shuffle([...selectedWeightedWords, ...selectedRandomWords]);
-                }
+                // 有權重時，依分數由低到高排序，並選取單字
+                const sortedWords = wordsToChoose.sort((a, b) => a.score - b.score);
+                currentRoundWords = sortedWords.slice(0, numWordsForRound);
             }
 
             if (currentRoundWords.length < numWordsForRound && wordsToChoose.length > currentRoundWords.length) {
@@ -463,8 +438,8 @@
                     <button class="delete-btn" onclick="deleteWord(event, this)">×</button>
                 `;
                 targetDiv.addEventListener('dragover', allowDrop);
-                targetDiv.addEventListener('drop', drop);
-                targetDiv.addEventListener('click', () => matchWord(targetDiv));
+            targetDiv.addEventListener('drop', drop);
+            targetDiv.addEventListener('click', () => matchWord(targetDiv));
 
                 targetContainer.appendChild(targetDiv);
             });
@@ -477,7 +452,6 @@
 
             document.getElementById('restart-btn').style.display = 'none';
         }
-
         function switchLanguage(lang) {
             currentLanguage = lang;
             localStorage.setItem('currentLanguage', lang);

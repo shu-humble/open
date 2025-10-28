@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Geometry Text Book</title>
+<style>
+/* 1. 設定 HTML 和 BODY 基礎 */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%; 
+    font-family: Arial, sans-serif;
+}
+body {
+    /* 設定邊距：上 20px, 右 20px, 下 50px (您的安全距離), 左 20px */
+    padding: 20px 20px 50px 20px; 
+    box-sizing: border-box; /* 確保 padding 不增加總高度 */
+    display: flex; 
+    flex-direction: column; /* 內容垂直排列 */
+}
+
+/* 頁首標題和分隔線的樣式 */
+.header {
+    flex-shrink: 0; /* 確保標題高度不變 */
+    margin-bottom: 10px; /* 在標題和內容之間增加一點間距 */
+}
+
+/* 2. 主要內容容器：佔據剩餘所有空間 */
+.main-content-wrapper {
+    display: flex;
+    flex-grow: 1; /* 佔滿 body 內扣除 header 後的剩餘空間 */
+}
+
+/* 左側菜單樣式 */
+.left {
+    flex: 0 0 30%; 
+    padding-right: 20px;
+    border-right: 1px solid #ccc; 
+    overflow-y: auto; /* 如果連結太多可以滾動 */
+}
+
+/* 右側 PDF 檢視器容器 */
+.right {
+    flex: 1; 
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column; /* 讓內容垂直排列 */
+}
+
+/* 確保 iframe 佔滿右側區塊的剩餘高度 */
+#pdf-viewer {
+    width: 100%;
+    flex-grow: 1; /* 關鍵：佔滿 .right 內扣除 h3 標題後的剩餘空間 */
+    border: none;
+}
+
+/* 章節連結樣式 */
+.chapter-link {
+    display: block;
+    margin-bottom: 8px;
+    text-decoration: none;
+    color: #007bff;
+    font-size: 1.2em;
+    padding: 2px 0;
+}
+.chapter-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<div class="header">
+    <b><font size="8"> Text Book</b></font><br>
+    <hr>
+</div>
+
+<div class="main-content-wrapper">
+    <div class="left">
+        <font size="5">
+         <a href="/幾何課本/1st Semester Assignment Sheet 2025-2026.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Assignment Sheet')">Assignment Sheet</a><br>
+        <a href="/幾何課本/Geometry-01.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 01')">Chapter 01</a><br>
+        <a href="/幾何課本/Geometry-02.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 02')">Chapter 02</a><br>
+        <a href="/幾何課本/Geometry-03.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 03')">Chapter 03</a><br>
+        <a href="/幾何課本/Geometry-04.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 04')">Chapter 04</a><br>
+        <a href="/幾何課本/Geometry-05.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 05')">Chapter 05</a><br>
+        <a href="/幾何課本/Geometry-06.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 06')">Chapter 06</a><br>
+        <a href="/幾何課本/Geometry-07.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 07')">Chapter 07</a><br>
+        <a href="/幾何課本/Geometry-08.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 08')">Chapter 08</a><br>
+        <a href="/幾何課本/Geometry-09.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 09')">Chapter 09</a><br>
+        <a href="/幾何課本/Geometry-10.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 10')">Chapter 10</a><br>
+        <a href="/幾何課本/Geometry-11.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 11')">Chapter 11</a><br>
+        <a href="/幾何課本/Geometry-12.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 12')">Chapter 12</a><br>
+        <a href="/幾何課本/Geometry-13.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 13')">Chapter 13</a><br>
+        <a href="/幾何課本/Geometry-14.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 14')">Chapter 14</a><br>
+        <a href="/幾何課本/Geometry-15.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 15')">Chapter 15</a><br>
+        <a href="/幾何課本/Geometry-16.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 16')">Chapter 16</a><br>
+        </font>
+    </div>
+    
+    <div class="right">
+     <!--  <h3 id="pdf-title"></h3> -->
+        
+        <iframe 
+            id="pdf-viewer"
+            src="" 
+            title="幾何課本 PDF 預覽">
+            Your browser does not support PDF preview.
+        </iframe>
+    </div>
+</div>
+<br><br>
+<script>
+    // 載入 PDF 的 JavaScript 函式
+    // 關鍵修正：第一個參數接收 event
+    function loadPDF(event, pdfPath, chapterName) {
+        
+        // **最重要的一步：阻止點擊連結時的預設行為 (導航到 href)**
+        event.preventDefault(); 
+
+        const viewer = document.getElementById('pdf-viewer');
+        const title = document.getElementById('pdf-title');
+        
+        viewer.src = pdfPath;
+        title.textContent = `${chapterName} 預覽`;
+    }
+
+    // 網頁載入完成後，自動載入第一個 PDF 
+    window.onload = function() {
+        // 為了初始化，我們不需要 event 物件
+        const firstLink = document.querySelector('.chapter-link');
+        if (firstLink) {
+            // 直接呼叫 loadPDF 的核心邏輯 (不傳遞 event)
+            const viewer = document.getElementById('pdf-viewer');
+            const title = document.getElementById('pdf-title');
+            
+            viewer.src = firstLink.href;
+            title.textContent = 'Assignment Sheet 預覽'; // 假設 Assignment Sheet 是第一個
+        }
+    };
+</script>
+</body>
+</html>

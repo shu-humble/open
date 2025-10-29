@@ -1,0 +1,21 @@
+    <div class="left">
+        <font size="5">
+         <a href=" open/幾�?課本/1st Semester Assignment Sheet 2025-2026.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Assignment Sheet')">Assignment Sheet</a><br>
+        <a href=" open/幾�?課本/Geometry-01.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 01')">Chapter 01</a><br>
+        <a href=" open/幾�?課本/Geometry-02.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 02')">Chapter 02</a><br>
+        <a href=" open/幾�?課本/Geometry-03.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 03')">Chapter 03</a><br>
+        <a href=" open/幾�?課本/Geometry-04.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 04')">Chapter 04</a><br>
+        <a href=" open/幾�?課本/Geometry-05.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 05')">Chapter 05</a><br>
+        <a href=" open/幾�?課本/Geometry-06.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 06')">Chapter 06</a><br>
+        <a href=" open/幾�?課本/Geometry-07.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 07')">Chapter 07</a><br>
+        <a href=" open/幾�?課本/Geometry-08.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 08')">Chapter 08</a><br>
+        <a href=" open/幾�?課本/Geometry-09.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 09')">Chapter 09</a><br>
+        <a href=" open/幾�?課本/Geometry-10.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 10')">Chapter 10</a><br>
+        <a href=" open/幾�?課本/Geometry-11.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 11')">Chapter 11</a><br>
+        <a href=" open/幾�?課本/Geometry-12.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 12')">Chapter 12</a><br>
+        <a href=" open/幾�?課本/Geometry-13.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 13')">Chapter 13</a><br>
+        <a href=" open/幾�?課本/Geometry-14.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 14')">Chapter 14</a><br>
+        <a href=" open/幾�?課本/Geometry-15.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 15')">Chapter 15</a><br>
+        <a href="open/幾�?課本/Geometry-16.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 16')">Chapter 16</a><br>
+        </font>
+    </div>

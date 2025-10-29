@@ -68,6 +68,49 @@ body {
     color: #0056b3;
     text-decoration: underline;
 }
+/* 版面縮小：左欄與連結間距調整 */
+.left { flex: 0 0 24%; max-width: 340px; min-width: 220px; padding-right: 12px; }
+.chapter-link { margin-bottom: 6px; font-size: 1.05em; line-height: 1.3; }
+/* 隱藏右側舊的控制列（避免重複與編碼問題） */
+.right .controls { display: none; }
+/* 進一步緊縮章節間距並移除左欄的 <br> 造成的額外間距 */
+.left br { display: none; }
+.chapter-link { margin-bottom: 2px !important; line-height: 1.15 !important; }
+/* 全螢幕控制區與按鈕樣式 */
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.fs-btn {
+    padding: 6px 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
+/* 進入全螢幕時讓 PDF 佔滿整個視窗 */
+#pdf-container:fullscreen,
+#pdf-container:-webkit-full-screen,
+#pdf-container:-ms-fullscreen {
+    width: 100vw;
+    height: 100vh;
+    border: none;
+}
+/* 讓 iframe 在容器內撐滿 */
+#pdf-container { display: flex; flex: 1; min-height: 0; }
+#pdf-container > #pdf-viewer { width: 100%; flex: 1; border: none; }
+/* 手機版控制列（預設隱藏，僅手機顯示） */
+.mobile-controls { display: none; gap: 8px; align-items: center; margin: 8px 0; }
+.mobile-controls select { flex: 1; padding: 6px; }
+.mobile-controls button { padding: 6px 10px; }
+
+/* 響應式：手機排版 */
+@media (max-width: 768px) {
+  .main-content-wrapper { flex-direction: column; }
+  .left { display: none; }
+  .mobile-controls { display: flex; }
+  #pdf-viewer { min-height: 65vh; }
+}
 </style>
 </head>
 <body>
@@ -76,38 +119,49 @@ body {
     <hr>
 </div>
 
+<div class="mobile-controls">
+    <select id="chapter-select" aria-label="Choose chapter"></select>
+    <button id="mobile-open" class="fs-btn">Open</button>
+    <button id="mobile-open-tab" class="fs-btn">New Tab</button>
+    <a id="mobile-download" class="fs-btn" href="#" download>Download</a>
+    <button id="fs-toggle" class="fs-btn">Fullscreen</button>
+  </div>
+
 <div class="main-content-wrapper">
     <div class="left">
         <font size="5">
-         <a href="/open/幾何課本/1st Semester Assignment Sheet 2025-2026.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Assignment Sheet')">Assignment Sheet</a><br>
-        <a href="/open/幾何課本/Geometry-01.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 01')">Chapter 01</a><br>
-        <a href="/open/幾何課本/Geometry-02.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 02')">Chapter 02</a><br>
-        <a href="/open/幾何課本/Geometry-03.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 03')">Chapter 03</a><br>
-        <a href="/open/幾何課本/Geometry-04.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 04')">Chapter 04</a><br>
-        <a href="/open/幾何課本/Geometry-05.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 05')">Chapter 05</a><br>
-        <a href="/open/幾何課本/Geometry-06.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 06')">Chapter 06</a><br>
-        <a href="/open/幾何課本/Geometry-07.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 07')">Chapter 07</a><br>
-        <a href="/open/幾何課本/Geometry-08.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 08')">Chapter 08</a><br>
-        <a href="/open/幾何課本/Geometry-09.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 09')">Chapter 09</a><br>
-        <a href="/open/幾何課本/Geometry-10.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 10')">Chapter 10</a><br>
-        <a href="/open/幾何課本/Geometry-11.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 11')">Chapter 11</a><br>
-        <a href="/open/幾何課本/Geometry-12.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 12')">Chapter 12</a><br>
-        <a href="/open/幾何課本/Geometry-13.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 13')">Chapter 13</a><br>
-        <a href="/open/幾何課本/Geometry-14.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 14')">Chapter 14</a><br>
-        <a href="/open/幾何課本/Geometry-15.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 15')">Chapter 15</a><br>
-        <a href="/open/幾何課本/Geometry-16.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 16')">Chapter 16</a><br>
+         <a href=" open/幾何課本/1st Semester Assignment Sheet 2025-2026.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Assignment Sheet')">Assignment Sheet</a><br>
+        <a href=" open/幾何課本/Geometry-01.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 01')">Chapter 01</a><br>
+        <a href=" open/幾何課本/Geometry-02.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 02')">Chapter 02</a><br>
+        <a href=" open/幾何課本/Geometry-03.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 03')">Chapter 03</a><br>
+        <a href=" open/幾何課本/Geometry-04.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 04')">Chapter 04</a><br>
+        <a href=" open/幾何課本/Geometry-05.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 05')">Chapter 05</a><br>
+        <a href=" open/幾何課本/Geometry-06.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 06')">Chapter 06</a><br>
+        <a href=" open/幾何課本/Geometry-07.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 07')">Chapter 07</a><br>
+        <a href=" open/幾何課本/Geometry-08.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 08')">Chapter 08</a><br>
+        <a href=" open/幾何課本/Geometry-09.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 09')">Chapter 09</a><br>
+        <a href=" open/幾何課本/Geometry-10.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 10')">Chapter 10</a><br>
+        <a href=" open/幾何課本/Geometry-11.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 11')">Chapter 11</a><br>
+        <a href=" open/幾何課本/Geometry-12.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 12')">Chapter 12</a><br>
+        <a href=" open/幾何課本/Geometry-13.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 13')">Chapter 13</a><br>
+        <a href=" open/幾何課本/Geometry-14.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 14')">Chapter 14</a><br>
+        <a href=" open/幾何課本/Geometry-15.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 15')">Chapter 15</a><br>
+        <a href="open/幾何課本/Geometry-16.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 16')">Chapter 16</a><br>
         </font>
     </div>
     
     <div class="right">
      <!--  <h3 id="pdf-title"></h3> -->
-        
+     <div class="controls">
+        <button id="fs-toggle" class="fs-btn" title="全螢幕切換">全螢幕</button>
+    </div>
         <iframe 
             id="pdf-viewer"
             src="" 
             title="幾何課本 PDF 預覽">
             Your browser does not support PDF preview.
         </iframe>
+
     </div>
 </div>
 <br><br>
@@ -139,6 +193,163 @@ body {
             title.textContent = 'Assignment Sheet 預覽'; // 假設 Assignment Sheet 是第一個
         }
     };
+</script>
+<hr>
+Sources ：<a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-for-enjoyment-and-challenge" >Geometry for Enjoyment and Challenge</a><br>
+<script>
+// 覆寫 loadPDF 與初始載入，修正 PDF 路徑（移除多餘空白與 open/）
+(function() {
+  function normalizePath(inputHref) {
+    try {
+      const linkUrl = new URL(inputHref, window.location.href);
+      const baseUrl = new URL('.', window.location.href);
+      let p = decodeURIComponent(linkUrl.pathname);
+      const basePath = decodeURIComponent(baseUrl.pathname);
+      p = p.replace(/\/\s+open\//g, '/');
+      const dupPrefix = basePath + 'open/';
+      if (p.startsWith(dupPrefix)) p = basePath + p.slice(dupPrefix.length);
+      if (p.startsWith(basePath)) return p.slice(basePath.length);
+      return linkUrl.href;
+    } catch (_) {
+      return inputHref;
+    }
+  }
+
+  // 重新定義 loadPDF
+  window.loadPDF = function(event, pdfPath, chapterName) {
+    if (event && typeof event.preventDefault === 'function') event.preventDefault();
+    const viewer = document.getElementById('pdf-viewer');
+    const title = document.getElementById('pdf-title');
+    const normalized = normalizePath(pdfPath);
+    if (viewer) viewer.src = normalized;
+    if (title) title.textContent = (chapterName || 'PDF') + ' 預覽';
+  };
+
+  // 覆寫 onload，初次載入使用正規化路徑
+  const prevOnload = window.onload;
+  window.onload = function() {
+    if (typeof prevOnload === 'function') {
+      try { prevOnload(); } catch (e) { /* ignore */ }
+    }
+    const firstLink = document.querySelector('.chapter-link');
+    const viewer = document.getElementById('pdf-viewer');
+    const title = document.getElementById('pdf-title');
+    if (firstLink && viewer) {
+      const normalized = normalizePath(firstLink.href);
+      viewer.src = normalized;
+      if (title) title.textContent = 'Assignment Sheet 預覽';
+    }
+  };
+
+  // 全螢幕切換按鈕邏輯（支援多個按鈕 id）
+  function bindFullscreenToggle(btn, target) {
+    if (!btn || !target) return;
+    function isFs() { return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement; }
+    function sync() { btn.textContent = isFs() ? 'Exit Fullscreen' : 'Fullscreen'; }
+    function enter(el) {
+      if (el.requestFullscreen) return el.requestFullscreen();
+      if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
+      if (el.msRequestFullscreen) return el.msRequestFullscreen();
+    }
+    function exit() {
+      if (document.exitFullscreen) return document.exitFullscreen();
+      if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+      if (document.msExitFullscreen) return document.msExitFullscreen();
+    }
+    btn.addEventListener('click', async function() {
+      try { if (!isFs()) { await enter(target); } else { await exit(); } } catch (e) { console.error('Fullscreen error', e); }
+      sync();
+    });
+    document.addEventListener('fullscreenchange', sync);
+    document.addEventListener('webkitfullscreenchange', sync);
+    document.addEventListener('MSFullscreenChange', sync);
+    sync();
+  }
+
+  // 綁定到主要 PDF iframe（若頁面上沒有按鈕，動態建立一個懸浮按鈕）
+  const viewerEl = document.getElementById('pdf-viewer');
+  const btn1 = document.getElementById('fs-toggle');
+  // 以整個文件作為後備全螢幕目標，避免 iframe 受限
+  const fsTarget = viewerEl || document.documentElement;
+  bindFullscreenToggle(btn1, fsTarget);
+  // 總是提供右下角浮動按鈕（若尚未存在）
+  if (!document.getElementById('fs-fab')) {
+    const b = document.createElement('button');
+    b.id = 'fs-fab';
+    b.className = 'fs-btn';
+    b.textContent = 'Fullscreen';
+    b.title = 'Toggle Fullscreen';
+    b.style.position = 'fixed';
+    b.style.right = '16px';
+    b.style.bottom = '16px';
+    b.style.zIndex = '9999';
+    document.body.appendChild(b);
+    bindFullscreenToggle(b, fsTarget);
+  }
+
+  // 手機版下拉選單：依據左欄連結自動建立
+  function normalizeForActions(href) {
+    // 與 viewer 同步的正規化，給行動按鈕使用
+    try {
+      const linkUrl = new URL(href, window.location.href);
+      const baseUrl = new URL('.', window.location.href);
+      let p = decodeURIComponent(linkUrl.pathname);
+      const basePath = decodeURIComponent(baseUrl.pathname);
+      p = p.replace(/\/[\s]*open\//g, '/');
+      const dupPrefix = basePath + 'open/';
+      if (p.startsWith(dupPrefix)) p = basePath + p.slice(dupPrefix.length);
+      return p.startsWith(basePath) ? p.slice(basePath.length) : linkUrl.href;
+    } catch (_) { return href; }
+  }
+
+  function buildMobileDropdown() {
+    const select = document.getElementById('chapter-select');
+    const openBtn = document.getElementById('mobile-open');
+    const openTabBtn = document.getElementById('mobile-open-tab');
+    const dlBtn = document.getElementById('mobile-download');
+    if (!select || !openBtn) return;
+    // 建立選項
+    select.innerHTML = '';
+    const links = document.querySelectorAll('.chapter-link');
+    links.forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a.href;
+      opt.textContent = (a.textContent || '').trim();
+      select.appendChild(opt);
+    });
+    // 預設選到第一個
+    if (select.options.length > 0) select.selectedIndex = 0;
+    // 點擊開啟
+    openBtn.addEventListener('click', function() {
+      const opt = select.options[select.selectedIndex];
+      if (!opt) return;
+      window.loadPDF({ preventDefault: function(){} }, opt.value, opt.textContent);
+    });
+    // 新分頁開啟
+    if (openTabBtn) {
+      openTabBtn.addEventListener('click', function() {
+        const opt = select.options[select.selectedIndex];
+        if (!opt) return;
+        const url = normalizeForActions(opt.value);
+        window.open(url, '_blank');
+      });
+    }
+    // 下載
+    if (dlBtn) {
+      const syncDownload = function() {
+        const opt = select.options[select.selectedIndex];
+        if (!opt) return;
+        const url = normalizeForActions(opt.value);
+        dlBtn.href = url;
+        const name = (opt.textContent || 'file') + '.pdf';
+        dlBtn.setAttribute('download', name);
+      };
+      select.addEventListener('change', syncDownload);
+      syncDownload();
+    }
+  }
+  buildMobileDropdown();
+})();
 </script>
 </body>
 </html>

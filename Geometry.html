@@ -351,5 +351,34 @@ Sources ：<a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-f
   buildMobileDropdown();
 })();
 </script>
+<script>
+(function() {
+  function normalizeHref(inputHref) {
+    try {
+      const linkUrl = new URL(inputHref, window.location.href);
+      const baseUrl = new URL('.', window.location.href);
+      let p = decodeURIComponent(linkUrl.pathname);
+      const basePath = decodeURIComponent(baseUrl.pathname);
+      p = p.replace(/\/\s*open\//g, '/');
+      const dupPrefix = basePath + 'open/';
+      if (p.startsWith(dupPrefix)) p = basePath + p.slice(dupPrefix.length);
+      return p.startsWith(basePath) ? p.slice(basePath.length) : linkUrl.href;
+    } catch (e) { return inputHref; }
+  }
+  function fixChapterLinks() {
+    document.querySelectorAll('.chapter-link').forEach(function(a) {
+      const raw = a.getAttribute('href');
+      if (!raw) return;
+      const cleaned = normalizeHref(raw.trim());
+      a.setAttribute('href', cleaned);
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fixChapterLinks);
+  } else {
+    fixChapterLinks();
+  }
+})();
+</script>
 </body>
 </html>

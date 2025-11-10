@@ -471,12 +471,13 @@
                     🗓️：<a href="https://gbn.glenbrook225.org/fs/resource-manager/view/5f5ef1b5-4e7b-449b-ac5c-0860dfb799a7" >Year</a> /
                     <a href="https://gbn.glenbrook225.org/families/information/calendar" >Month</a> /
                     <a href="https://gbn.glenbrook225.org/our-school/announcements/daily-announcements">Daily</a><br>
-                    <button class="music-button" onclick="togglePlay()">
+                    
+                    <a href="https://www.youtube.com/watch?v=1ZvGP3pJJBk" class="music-button" onclick="togglePlay(); return false;" title="Open on YouTube">
                         <img id="playPauseImage"
                              src="https://cdn-icons-png.flaticon.com/512/120/120625.png"
                              class="icon-img">
                         <span>Music</span>
-                    </button>
+                    </a>
 
 
                     <div id="playerContainer"></div>
@@ -500,7 +501,7 @@
                                     player = new YT.Player('playerContainer', {
                                         height: '0',
                                         width: '0',
-                                        videoId: 'YTf9awkaerk',
+                                        videoId: '1ZvGP3pJJBk',//YouTube 影片 ID
                                         events: {
                                             'onReady': (event) => {
                                                 event.target.setPlaybackQuality('tiny'); // 設定為 144p
@@ -612,7 +613,7 @@
                     <a href="https://classroom.google.com/c/Nzk4NTI0NDY5Mzc3" title="Google Classroom">Biology</a>|
                         <a href="https://docs.google.com/document/d/1_wqdxgvmeDV9mBffyDqDMunfb_DV_uxLjNeuHWxCbJY" title="Schedule">Schedule </a><br>
 
-                    <br><br><br><br>
+                    
                     <td class="Club">
                         <span class="section-title">Club</span><br>
                     
@@ -626,6 +627,9 @@
                     <a href="https://satracker.glenbrook225.org/qr/checkin/704DD703-872D-4CCA-9044-5A01DFAA3D3A" title="Glenbrook Student Activities Check In">♟️</a><br>
                     <a href="https://classroom.google.com/c/NjE5MTgyODkwOTM1" title="Google Classroom">WLHS Club</a>
                     <a href="https://satracker.glenbrook225.org/qr/checkin/5E6BF509-D56C-428E-A606-0B7493083381" title="Glenbrook Student Activities Check In">🌍</a><br>
+                    <a href="https://classroom.google.com/c/MjYyNTI1NDIyMzE2" title="Google Classroom">Track & Field</a>
+                   <a href="https://satracker.glenbrook225.org" title="Glenbrook Student Activities Check In">🏃</a><br>
+                   <br><br>
                 </td>
             </tr>
         </table>

@@ -1,0 +1,764 @@
+﻿<!doctype html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>黑白棋分析器</title>
+  <link rel="icon" href="黑白棋 icon.png">
+  <style>
+    :root {
+      --bg: #e8edf5;
+      --panel: #ffffff;
+      --accent: #0ea27f;
+      --accent-2: #0ea5e9;
+      --grid: #dbe5f2;
+      --line: #c5d0e0;
+      --black: #0f172a;
+      --white: #f9fafb;
+      --text: #1f2937;
+      --muted: #4b5563;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      font-family: "Segoe UI", "Noto Sans TC", system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(14,162,127,0.18), transparent 30%),
+                  radial-gradient(circle at 80% 10%, rgba(14,165,233,0.14), transparent 28%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+    h1 {
+      margin: 0 0 12px;
+      letter-spacing: 1px;
+      font-weight: 800;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      color: var(--black);
+    }
+    h1 span {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(260px, 360px) 1fr;
+      gap: 18px;
+    }
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: linear-gradient(145deg, rgba(255,255,255,0.98), rgba(255,255,255,0.93));
+      border: 1px solid rgba(15,23,42,0.08);
+      box-shadow: 0 10px 40px rgba(15,23,42,0.12);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .board-and-list {
+      display: grid;
+      grid-template-columns: minmax(420px, 1fr) 260px;
+      gap: 14px;
+      align-items: start;
+    }
+    @media (max-width: 1080px) {
+      .board-and-list { grid-template-columns: 1fr; }
+    }
+    .section-title {
+      margin: 0 0 10px;
+      font-size: 16px;
+      color: var(--muted);
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .controls {
+      display: grid;
+      gap: 10px;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .pill {
+      background: #eef3fb;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 10px;
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+    }
+    label { color: var(--text); font-size: 14px; }
+    button, select, input[type="text"], textarea {
+      background: var(--grid);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 14px;
+      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+    }
+    button:hover, select:hover, input[type="text"]:hover, textarea:hover {
+      border-color: var(--accent-2);
+    }
+    button:active { transform: translateY(1px); }
+    button.primary { background: linear-gradient(135deg, var(--accent), #22d3ee); color: #0b0f1a; border-color: transparent; font-weight: 700; }
+    button.ghost { background: transparent; }
+    textarea {
+      width: 100%;
+      min-height: 110px;
+      resize: vertical;
+      line-height: 1.4;
+    }
+    .board-wrap {
+      display: grid;
+      gap: 10px;
+      justify-items: center;
+    }
+    .board-shell {
+      position: relative;
+      display: inline-block;
+      padding: 18px 22px; /* 預留座標文字空間，避免覆蓋棋盤 */
+    }
+    .board {
+      background: #d6e8dd;
+      border: 1px solid #b5d0c1;
+      border-radius: 12px;
+      padding: 10px;
+      box-shadow: inset 0 0 0 1px rgba(15,23,42,0.04);
+      position: relative;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(8, 52px);
+      grid-template-rows: repeat(8, 52px);
+      gap: 6px;
+    }
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: repeat(8, 38px); grid-template-rows: repeat(8, 38px); gap: 4px; }
+    }
+    .cell {
+      position: relative;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #2e7c36, #215f28);
+      border: 1px solid rgba(15,23,42,0.08);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+    }
+    .cell:hover { transform: translateY(-1px); border-color: var(--accent); box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+    .disc {
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      box-shadow: 0 10px 18px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(0,0,0,0.35);
+    }
+    .black { background: linear-gradient(135deg, #0d1117, #1f2937); }
+    .white { background: linear-gradient(135deg, #f8fafc, #e2e8f0); }
+    .hint::after {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(16,185,129,0.9), rgba(16,185,129,0.05));
+      opacity: 0.9;
+    }
+    .hint.best::after { background: radial-gradient(circle, rgba(14,165,233,0.95), rgba(14,165,233,0.1)); }
+    .blocked {
+      background: repeating-linear-gradient(
+        45deg,
+        #304151,
+        #304151 10px,
+        #395062 10px,
+        #395062 20px
+      );
+      border: 1px solid #4b5563;
+    }
+    .blocked-mark {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      color: #f9fafb;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+      pointer-events: none;
+    }
+    .coords {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.6px;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      background: rgba(219,229,242,0.5);
+      border-radius: 12px;
+      padding: 10px;
+    }
+    .big {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--black);
+      letter-spacing: 0.6px;
+    }
+    .muted { color: var(--muted); font-size: 13px; }
+    .list {
+      max-height: 200px;
+      overflow: auto;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+    .list li {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(15,23,42,0.06);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+    }
+    .list li:last-child { border-bottom: none; }
+    .pill-badge {
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: #0b0f1a;
+      font-weight: 700;
+    }
+    .badge-green { background: var(--accent); }
+    .badge-blue { background: var(--accent-2); }
+    .badge-warn { background: var(--warn); }
+    .badge-danger { background: var(--danger); }
+    .flex-between { display: flex; align-items: center; justify-content: space-between; }
+    .mono { font-family: "Cascadia Mono", "Consolas", monospace; }
+    .move-panel { min-height: 200px; display: flex; flex-direction: column; gap: 10px; }
+    .hidden { display: none; }
+    .eval-wrap { margin: 0 0 4px; }
+    .eval-label { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+    .eval-bar {
+      height: 12px;
+      border-radius: 999px;
+      background: var(--grid);
+      border: 1px solid var(--line);
+      overflow: hidden;
+      position: relative;
+    }
+    .eval-fill {
+      position: absolute;
+      inset: 0;
+      width: 50%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #111827, var(--accent));
+      transition: width 160ms ease, background 160ms ease;
+    }
+    .file-labels, .rank-labels {
+      position: absolute;
+      color: var(--muted);
+      font-size: 12px;
+      pointer-events: none;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .file-labels {
+      left: 22px;
+      right: 22px;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      text-align: center;
+    }
+    .file-top { top: 2px; }
+    .file-bottom { bottom: 2px; }
+    .rank-labels {
+      top: 18px;
+      bottom: 18px;
+      display: grid;
+      grid-template-rows: repeat(8, 1fr);
+      align-items: center;
+    }
+    .rank-left { left: 4px; text-align: right; }
+    .rank-right { right: 4px; text-align: left; }
+  </style>
+</head>
+<body>
+  <h1>黑白棋分析器 <span>可編輯盤面 / 合法落點 / 簡易評估 / 禁手格</span></h1>
+  <div class="layout">
+    <section class="panel">
+      <div class="section-title">盤面控制</div>
+      <div class="controls">
+        <div class="row">
+          <span class="pill">
+            <label><input type="radio" name="turn" value="B" checked> 黑先</label>
+            <label><input type="radio" name="turn" value="W"> 白先</label>
+          </span>
+          <label class="pill"><input type="checkbox" id="editMode"> 編輯模式（點擊循環空/黑/白/禁手）</label>
+          <label class="pill"><input type="checkbox" id="showHints" checked> 顯示合法落點提示</label>
+        </div>
+        <div class="row">
+          <button class="primary" id="resetBtn">重設開局</button>
+          <button id="clearBtn">清空盤面</button>
+          <button id="swapBtn">交換行棋方</button>
+          <button id="undoBtn">悔棋</button>
+        </div>
+        <div class="row">
+          <button id="copyBtn">複製盤面字串</button>
+          <button id="loadBtn">匯入盤面</button>
+        </div>
+        <div class="row">
+          <span class="pill">
+            <label for="modeSelect">對戰模式</label>
+            <select id="modeSelect">
+              <option value="pvp">玩家互打</option>
+              <option value="pvai">玩家 vs AI</option>
+            </select>
+          </span>
+          <span class="pill">
+            <label for="aiSide">AI 顏色</label>
+            <select id="aiSide">
+              <option value="B">黑</option>
+              <option value="W" selected>白</option>
+            </select>
+          </span>
+
+        </div>
+        <div class="row">
+          <label class="pill"><input type="checkbox" id="showList" checked> 顯示右側分析列表</label>
+        </div>
+        <textarea id="boardText" placeholder="8 行，每行 8 個字元：. 空格、B 黑、W 白、X 禁手。例如開局：
+........
+........
+........
+...WB...
+...BW...
+........
+........
+........"></textarea>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="board-and-list">
+                <div class="board-wrap">
+          <div class="board-shell">
+            <div class="board">
+              <div id="grid" class="grid"></div>
+            </div>
+            <div class="file-labels file-top">
+              <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span>
+            </div>
+            <div class="file-labels file-bottom">
+              <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span>
+            </div>
+            <div class="rank-labels rank-left">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
+            </div>
+            <div class="rank-labels rank-right">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
+            </div>
+          </div>
+        </div>        <div class="move-panel" id="movePanel">
+          <div class="section-title">分析</div>
+          <div class="stats">
+            <div class="card">
+              <div class="muted">黑子</div>
+              <div class="big" id="blackCount">2</div>
+            </div>
+            <div class="card">
+              <div class="muted">白子</div>
+              <div class="big" id="whiteCount">2</div>
+            </div>
+            <div class="card">
+              <div class="muted">合法步數</div>
+              <div class="big" id="legalCount">4</div>
+            </div>
+            <div class="card">
+              <div class="muted">建議</div>
+              <div class="big" id="bestMove">-</div>
+            </div>
+          </div>
+          <div class="eval-wrap">
+            <div class="eval-label" id="evalLabel">平衡</div>
+            <div class="eval-bar"><div class="eval-fill" id="evalFill"></div></div>
+          </div>
+         
+          <div class="section-title" style="margin-top:4px;">合法落點詳情</div>
+          <ul class="list" id="moveList"></ul>
+        </div>
+      </div></section>
+  </div>
+
+  <section class="panel" style="margin-top: 12px;">
+    <div class="section-title">說明</div>
+    <p class="muted" style="margin:0 0 6px;">．一般模式：點空格下子並自動翻轉；遇到禁手格（X）不能下。</p>
+    <p class="muted" style="margin:0 0 6px;">．對戰模式：玩家互打或玩家 vs AI，可選 AI 顏色；若輪到 AI 會自動落子（或按「AI 下棋」立即執行）。</p>
+    <p class="muted" style="margin:0 0 6px;">．編輯模式：點擊循環空 → 黑 → 白 → 禁手（X） → 空，用來排盤或設定禁止落子格。</p>
+    <p class="muted" style="margin:0 0 6px;">．匯入格式為 8 行 8 字元，支援 . / 0 / 空白 代表空格，B/W 代表棋子，X 代表禁手。</p>
+    <p class="muted" style="margin:0;">．評估為簡易啟發式：角落加權、行棋方可行步數、翻子數量。</p>
+  </section>
+
+  <script>
+    const SIZE = 8;
+    const DIRS = [
+      [-1, -1], [-1, 0], [-1, 1],
+      [ 0, -1],          [ 0, 1],
+      [ 1, -1], [ 1, 0], [ 1, 1],
+    ];
+    const WEIGHT = [
+      [120,-20, 20,  5,  5, 20,-20,120],
+      [-20,-40, -5, -5, -5, -5,-40,-20],
+      [ 20, -5, 15,  3,  3, 15, -5, 20],
+      [  5, -5,  3,  3,  3,  3, -5,  5],
+      [  5, -5,  3,  3,  3,  3, -5,  5],
+      [ 20, -5, 15,  3,  3, 15, -5, 20],
+      [-20,-40, -5, -5, -5, -5,-40,-20],
+      [120,-20, 20,  5,  5, 20,-20,120],
+    ];
+    const EDIT_STATES = [".", "B", "W", "X"];
+
+    const gridEl = document.getElementById("grid");
+    const blackCountEl = document.getElementById("blackCount");
+    const whiteCountEl = document.getElementById("whiteCount");
+    const legalCountEl = document.getElementById("legalCount");
+    const bestMoveEl = document.getElementById("bestMove");
+    const moveListEl = document.getElementById("moveList");
+    const editModeEl = document.getElementById("editMode");
+    const showHintsEl = document.getElementById("showHints");
+    const boardTextEl = document.getElementById("boardText");
+    const turnRadios = Array.from(document.querySelectorAll('input[name="turn"]'));
+    const modeSelect = document.getElementById("modeSelect");
+    const aiSideSelect = document.getElementById("aiSide");
+
+    const movePanel = document.getElementById("movePanel");
+    const showListEl = document.getElementById("showList");
+    const evalFill = document.getElementById("evalFill");
+    const evalLabel = document.getElementById("evalLabel");
+    const bestSummaryEl = document.getElementById("bestSummary");
+
+    const undoStack = [];
+    let board = createInitial();
+    let currentPlayer = "B";
+
+    function createInitial() {
+      const b = Array.from({ length: SIZE }, () => Array(SIZE).fill("."));
+      b[3][3] = "W"; b[3][4] = "B";
+      b[4][3] = "B"; b[4][4] = "W";
+      return b;
+    }
+
+    function inBounds(r, c) { return r >= 0 && c >= 0 && r < SIZE && c < SIZE; }
+
+    function opposite(p) { return p === "B" ? "W" : "B"; }
+
+    function findFlips(b, r, c, p) {
+      if (b[r][c] !== ".") return [];
+      const flips = [];
+      for (const [dr, dc] of DIRS) {
+        const line = [];
+        let nr = r + dr, nc = c + dc;
+        while (inBounds(nr, nc) && b[nr][nc] === opposite(p)) {
+          line.push([nr, nc]);
+          nr += dr; nc += dc;
+        }
+        if (inBounds(nr, nc) && b[nr][nc] === p && line.length) {
+          flips.push(...line);
+        }
+      }
+      return flips;
+    }
+
+    function legalMoves(b, p) {
+      const res = [];
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          const flips = findFlips(b, r, c, p);
+          if (flips.length) res.push({ r, c, flips });
+        }
+      }
+      return res;
+    }
+
+    function applyMove(b, r, c, p, flips) {
+      const next = b.map(row => row.slice());
+      next[r][c] = p;
+      for (const [fr, fc] of flips) next[fr][fc] = p;
+      return next;
+    }
+
+    function count(b) {
+      let black = 0, white = 0;
+      for (const row of b) {
+        for (const cell of row) {
+          if (cell === "B") black++;
+          else if (cell === "W") white++;
+        }
+      }
+      return { black, white };
+    }
+
+    function scoreBoard(b, p) {
+      const moves = legalMoves(b, p);
+      let score = moves.length * 8;
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          if (b[r][c] === p) score += WEIGHT[r][c];
+        }
+      }
+      return score;
+    }
+
+    function bestMove(b, p) {
+      const moves = legalMoves(b, p);
+      if (!moves.length) return null;
+      let best = null;
+      for (const m of moves) {
+        const nb = applyMove(b, m.r, m.c, p, m.flips);
+        const s = scoreBoard(nb, p) - scoreBoard(nb, opposite(p)) + m.flips.length * 2;
+        if (!best || s > best.score) best = { ...m, score: s };
+      }
+      return best;
+    }
+
+    function coordLabel(r, c) {
+      return String.fromCharCode(65 + c) + (r + 1);
+    }
+
+    function pushUndo() {
+      undoStack.push({ board: board.map(row => row.slice()), player: currentPlayer });
+      if (undoStack.length > 30) undoStack.shift();
+    }
+
+    function updateEval(diff) {
+      const capped = Math.max(-400, Math.min(400, diff));
+      const pct = Math.round((capped / 800 + 0.5) * 100); // 0~100, 50 為平衡
+      if (evalFill) {
+        evalFill.style.width = pct + "%";
+        evalFill.style.background = pct >= 50
+          ? "linear-gradient(90deg, #111827, var(--accent))"
+          : "linear-gradient(90deg, #e5e7eb, var(--accent-2))";
+      }
+      let label = "平衡";
+      if (diff > 60) label = `黑優勢 (+${diff.toFixed(0)})`;
+      else if (diff < -60) label = `白優勢 (${diff.toFixed(0)})`;
+      else label = `平衡 (${diff.toFixed(0)})`;
+      if (evalLabel) evalLabel.textContent = label;
+    }
+
+    function render() {
+      gridEl.innerHTML = "";
+      const moves = legalMoves(board, currentPlayer);
+      const hints = new Map();
+      moves.forEach((m) => hints.set(m.r + "," + m.c, m));
+      const best = bestMove(board, currentPlayer);
+      const bestKey = best ? best.r + "," + best.c : null;
+
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          const val = board[r][c];
+          if (val === "B" || val === "W") {
+            const disc = document.createElement("div");
+            disc.className = "disc " + (val === "B" ? "black" : "white");
+            cell.appendChild(disc);
+          } else if (val === "X") {
+            cell.classList.add("blocked");
+            const mark = document.createElement("div");
+            mark.className = "blocked-mark";
+            mark.textContent = "X";
+            cell.appendChild(mark);
+          } else if (showHintsEl.checked && hints.has(r + "," + c)) {
+            cell.classList.add("hint");
+            if (bestKey === r + "," + c) cell.classList.add("best");
+          }
+          cell.addEventListener("click", () => onCellClick(r, c));
+          gridEl.appendChild(cell);
+        }
+      }
+
+      const { black, white } = count(board);
+      blackCountEl.textContent = black;
+      whiteCountEl.textContent = white;
+      legalCountEl.textContent = moves.length;
+      bestMoveEl.textContent = best ? coordLabel(best.r, best.c) : "-";
+      const evalDiff = scoreBoard(board, "B") - scoreBoard(board, "W");
+      updateEval(evalDiff);
+
+      moveListEl.innerHTML = "";
+      if (!moves.length) {
+        const li = document.createElement("li");
+        li.innerHTML = `<span>無合法著法</span><span class="pill-badge badge-danger">Pass</span>`;
+        moveListEl.appendChild(li);
+      } else {
+        const scored = moves.map((m) => {
+          const nb = applyMove(board, m.r, m.c, currentPlayer, m.flips);
+          const score = scoreBoard(nb, currentPlayer) - scoreBoard(nb, opposite(currentPlayer)) + m.flips.length * 2;
+          return { ...m, score };
+        });
+        scored
+          .sort((a, b) => b.score - a.score)
+          .forEach((m) => {
+            const li = document.createElement("li");
+            const label = coordLabel(m.r, m.c);
+            const flips = m.flips.length;
+            const tag = bestKey === m.r + "," + m.c
+              ? '<span class="pill-badge badge-blue">最佳</span>'
+              : '<span class="pill-badge badge-green">合法</span>';
+            li.innerHTML = `<span>${label}</span><span class="muted">翻 ${flips} 子，估分 ${m.score.toFixed(0)}</span>${tag}`;
+            moveListEl.appendChild(li);
+          });
+      }
+      boardTextEl.value = board.map(row => row.join("")).join("\n");
+      turnRadios.forEach(radio => radio.checked = radio.value === currentPlayer);
+      movePanel.classList.toggle("hidden", !showListEl.checked);
+    }
+
+    function isAITurn() {
+      return modeSelect.value === "pvai" && currentPlayer === aiSideSelect.value;
+    }
+
+    function autoPlayIfNeeded() {
+      if (!isAITurn()) return;
+      setTimeout(() => { if (isAITurn()) aiMove(); }, 120);
+    }
+
+    function finishTurn(triggerAuto = true) {
+      currentPlayer = opposite(currentPlayer);
+      if (!legalMoves(board, currentPlayer).length) {
+        currentPlayer = opposite(currentPlayer);
+        if (!legalMoves(board, currentPlayer).length) {
+          render();
+          return;
+        }
+      }
+      render();
+      if (triggerAuto) autoPlayIfNeeded();
+    }
+
+    function aiMove() {
+      const moves = legalMoves(board, currentPlayer);
+      if (!moves.length) {
+        currentPlayer = opposite(currentPlayer);
+        if (!legalMoves(board, currentPlayer).length) {
+          render();
+          return;
+        }
+        render();
+        autoPlayIfNeeded();
+        return;
+      }
+      const pick = bestMove(board, currentPlayer) || moves[0];
+      pushUndo();
+      board = applyMove(board, pick.r, pick.c, currentPlayer, pick.flips);
+      finishTurn(true);
+    }
+
+    function onCellClick(r, c) {
+      if (editModeEl.checked) {
+        const idx = EDIT_STATES.indexOf(board[r][c]);
+        const nextVal = EDIT_STATES[(idx + 1) % EDIT_STATES.length];
+        board[r][c] = nextVal;
+        render();
+        return;
+      }
+      if (board[r][c] !== ".") return;
+      const flips = findFlips(board, r, c, currentPlayer);
+      if (!flips.length) return;
+      pushUndo();
+      board = applyMove(board, r, c, currentPlayer, flips);
+      finishTurn(true);
+    }
+
+    function resetBoard() {
+      board = createInitial();
+      currentPlayer = "B";
+      render();
+      autoPlayIfNeeded();
+    }
+
+    function clearBoard() {
+      board = Array.from({ length: SIZE }, () => Array(SIZE).fill("."));
+      render();
+      autoPlayIfNeeded();
+    }
+
+    function loadFromText() {
+      const lines = boardTextEl.value.trim().split(/\r?\n/).filter(Boolean);
+      if (lines.length !== 8 || lines.some(l => l.trim().length !== 8)) {
+        alert("格式錯誤：需要 8 行，每行 8 個字元。");
+        return;
+      }
+      const b = Array.from({ length: SIZE }, () => Array(SIZE).fill("."));
+      for (let r = 0; r < SIZE; r++) {
+        const line = lines[r].trim();
+        for (let c = 0; c < SIZE; c++) {
+          const ch = line[c].toUpperCase();
+          if (ch === "." || ch === "0" || ch === " ") b[r][c] = ".";
+          else if (ch === "B" || ch === "W" || ch === "X") b[r][c] = ch;
+          else { alert("無效字元: " + ch); return; }
+        }
+      }
+      pushUndo();
+      board = b;
+      render();
+    }
+
+    function copyBoard() {
+      navigator.clipboard.writeText(boardTextEl.value).then(() => {
+        const old = boardTextEl.value;
+        boardTextEl.value = old + "\n(已複製)";
+        setTimeout(() => { boardTextEl.value = old; }, 600);
+      }).catch(() => alert("複製失敗，可能因為瀏覽器限制。"));
+    }
+
+    document.getElementById("resetBtn").addEventListener("click", resetBoard);
+    document.getElementById("clearBtn").addEventListener("click", clearBoard);
+    document.getElementById("swapBtn").addEventListener("click", () => {
+      currentPlayer = opposite(currentPlayer);
+      render();
+    });
+    document.getElementById("undoBtn").addEventListener("click", () => {
+      const last = undoStack.pop();
+      if (!last) return;
+      board = last.board;
+      currentPlayer = last.player;
+      render();
+    });
+    document.getElementById("loadBtn").addEventListener("click", loadFromText);
+    document.getElementById("copyBtn").addEventListener("click", copyBoard);
+    turnRadios.forEach(r => r.addEventListener("change", (e) => {
+      currentPlayer = e.target.value;
+      render();
+      autoPlayIfNeeded();
+    }));
+    editModeEl.addEventListener("change", () => render());
+    showHintsEl.addEventListener("change", () => render());
+    showListEl.addEventListener("change", () => render());
+    modeSelect.addEventListener("change", () => autoPlayIfNeeded());
+    aiSideSelect.addEventListener("change", () => autoPlayIfNeeded());
+
+    // 初始化
+    resetBoard();
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+

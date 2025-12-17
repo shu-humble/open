@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="UTF-8">
 <head>
   <meta charset="UTF-8">
@@ -231,7 +231,37 @@
     const urlParams = new URLSearchParams(window.location.search);
     let currentLanguage = urlParams.get('lang') || 'zh';
 
-    let words = JSON.parse(localStorage.getItem('words')) || [];
+    const WORDS_KEY = 'words';
+    const SETTINGS_KEY = 'wordGameSettings';
+    const ORIGINAL_WORDS_KEY = 'wordBankOriginalWords';
+    const ORIGINAL_SETTINGS_KEY = 'wordBankOriginalSettings';
+    const DRAFT_WORDS_KEY = 'wordBankDraftWords';
+    const DRAFT_SETTINGS_KEY = 'wordBankDraftSettings';
+    const DRAFT_DIRTY_KEY = 'wordBankDraftDirty';
+
+    function getDefaultSettings() {
+        return {
+            wordsPerRound: 10,
+            enableWeightSystem: true
+        };
+    }
+
+    function normalizeWordsList(rawWords) {
+        return (rawWords || []).map(wordItem => {
+            return {
+                word: wordItem.word,
+                translation: wordItem.translation,
+                wrongCount: wordItem.wrongCount !== undefined ? wordItem.wrongCount : 0,
+                correctCount: wordItem.correctCount !== undefined ? wordItem.correctCount : 0,
+                hasBeenTested: wordItem.hasBeenTested !== undefined ? wordItem.hasBeenTested : false,
+                streakCount: wordItem.streakCount !== undefined ? wordItem.streakCount : 0,
+                addedOrder: wordItem.addedOrder !== undefined ? wordItem.addedOrder : Date.now(),
+                score: wordItem.score !== undefined ? wordItem.score : 0
+            };
+        });
+    }
+
+    let words = [];
     words = words.map(wordItem => {
         return {
             word: wordItem.word,
@@ -245,10 +275,7 @@
         };
     });
 
-    let settings = JSON.parse(localStorage.getItem('wordGameSettings')) || {
-        wordsPerRound: 10,
-        enableWeightSystem: true
-    };
+    let settings = getDefaultSettings();
     
     // ===== 新增點 1: 排序方向的全域變數 =====
     let sortDirection = localStorage.getItem('sortDirection') || 'desc'; // asc 為升序, desc 為降序
@@ -256,6 +283,45 @@
 
     let originalWords;
     let originalSettings;
+
+    function initializeWorkingData() {
+        const committedWords = normalizeWordsList(JSON.parse(localStorage.getItem(WORDS_KEY)) || []);
+        const committedSettings = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || getDefaultSettings();
+
+        const storedOriginalWords = localStorage.getItem(ORIGINAL_WORDS_KEY);
+        const storedOriginalSettings = localStorage.getItem(ORIGINAL_SETTINGS_KEY);
+
+        const baselineWords = storedOriginalWords ? normalizeWordsList(JSON.parse(storedOriginalWords)) : committedWords;
+        const baselineSettings = storedOriginalSettings ? JSON.parse(storedOriginalSettings) : committedSettings;
+
+        const hasDirtyDraft = localStorage.getItem(DRAFT_DIRTY_KEY) === 'true';
+
+        if (hasDirtyDraft) {
+            localStorage.removeItem(DRAFT_WORDS_KEY);
+            localStorage.removeItem(DRAFT_SETTINGS_KEY);
+            localStorage.removeItem(DRAFT_DIRTY_KEY);
+
+            localStorage.setItem(WORDS_KEY, JSON.stringify(baselineWords));
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(baselineSettings));
+
+            words = JSON.parse(JSON.stringify(baselineWords));
+            settings = JSON.parse(JSON.stringify(baselineSettings));
+        } else {
+            const draftWordsRaw = localStorage.getItem(DRAFT_WORDS_KEY);
+            const draftSettingsRaw = localStorage.getItem(DRAFT_SETTINGS_KEY);
+
+            words = draftWordsRaw ? normalizeWordsList(JSON.parse(draftWordsRaw)) : committedWords;
+            settings = draftSettingsRaw ? JSON.parse(draftSettingsRaw) : committedSettings;
+        }
+
+        originalWords = JSON.parse(JSON.stringify(baselineWords));
+        originalSettings = JSON.parse(JSON.stringify(baselineSettings));
+
+        localStorage.setItem(ORIGINAL_WORDS_KEY, JSON.stringify(originalWords));
+        localStorage.setItem(ORIGINAL_SETTINGS_KEY, JSON.stringify(originalSettings));
+    }
+
+    initializeWorkingData();
 
     let needsSave = false;
     
@@ -401,6 +467,17 @@
       const hasChanges = (currentWordsString !== originalWordsString) || (currentSettingsString !== originalSettingsString);
 
       needsSave = hasChanges;
+
+      if (needsSave) {
+        localStorage.setItem(DRAFT_DIRTY_KEY, 'true');
+        localStorage.setItem(DRAFT_WORDS_KEY, JSON.stringify(words));
+        localStorage.setItem(DRAFT_SETTINGS_KEY, JSON.stringify(currentSettings));
+      } else {
+        localStorage.removeItem(DRAFT_DIRTY_KEY);
+        localStorage.removeItem(DRAFT_WORDS_KEY);
+        localStorage.removeItem(DRAFT_SETTINGS_KEY);
+      }
+
       updateSaveButtonState();
     }
     // New function to sort words
@@ -629,7 +706,7 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
     }
 
     function saveWords() {
-        localStorage.setItem('words', JSON.stringify(words));
+        localStorage.setItem(WORDS_KEY, JSON.stringify(words));
     }
 
     function saveSettings() {
@@ -655,7 +732,7 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
         }
 
         if (settingsChanged) {
-            localStorage.setItem('wordGameSettings', JSON.stringify(settings));
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
             markAsNeedsSave();
         }
     }
@@ -665,7 +742,6 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
         if (confirm(t.confirmDeleteAll)) {
             saveToUndoStack(); // 保存當前狀態
             words = [];
-            localStorage.removeItem('words');
             renderWords();
             markAsNeedsSave();
             console.log(t.alertDeleteAllDone);
@@ -700,6 +776,11 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
 
       originalWords = JSON.parse(JSON.stringify(words));
       originalSettings = JSON.parse(JSON.stringify(settings));
+      localStorage.removeItem(DRAFT_DIRTY_KEY);
+      localStorage.removeItem(DRAFT_WORDS_KEY);
+      localStorage.removeItem(DRAFT_SETTINGS_KEY);
+      localStorage.setItem(ORIGINAL_WORDS_KEY, JSON.stringify(originalWords));
+      localStorage.setItem(ORIGINAL_SETTINGS_KEY, JSON.stringify(originalSettings));
 
       needsSave = false;
       updateSaveButtonState();
@@ -807,29 +888,25 @@ function fallbackToTextarea(jsonString, t) {
                     });
                 }
             });
-            words = Array.from(currentWordsMap.values());
-            localStorage.setItem('words', JSON.stringify(words));
+            words = normalizeWordsList(Array.from(currentWordsMap.values()));
         } else {
             console.warn("Imported data does not contain a valid 'words' array.");
         }
 
         if (importedData.settings && typeof importedData.settings === 'object') {
             settings = {
-                wordsPerRound: importedData.settings.wordsPerRound !== undefined ? parseInt(importedData.settings.wordsPerRound) : 10,
-                enableWeightSystem: importedData.settings.enableWeightSystem !== undefined ? Boolean(importedData.settings.enableWeightSystem) : true
+                wordsPerRound: importedData.settings.wordsPerRound !== undefined ? parseInt(importedData.settings.wordsPerRound) : getDefaultSettings().wordsPerRound,
+                enableWeightSystem: importedData.settings.enableWeightSystem !== undefined ? Boolean(importedData.settings.enableWeightSystem) : getDefaultSettings().enableWeightSystem
             };
-            localStorage.setItem('wordGameSettings', JSON.stringify(settings));
         } else {
+            settings = getDefaultSettings();
             console.warn("Imported data does not contain valid 'settings' object.");
         }
 
         document.getElementById('wordsPerRound').value = settings.wordsPerRound;
         document.getElementById('enableWeightSystem').checked = settings.enableWeightSystem;
         renderWords();
-        originalWords = JSON.parse(JSON.stringify(words));
-        originalSettings = JSON.parse(JSON.stringify(settings));
-        needsSave = false;
-        updateSaveButtonState();
+        markAsNeedsSave();
     }
 
 
@@ -1004,19 +1081,8 @@ function fallbackToTextarea(jsonString, t) {
         }
         if (event.data.type === 'wordsUpdated') {
             // 當單字卡更新時，重新載入單字數據並更新顯示
-            words = JSON.parse(localStorage.getItem('words')) || [];
-            words = words.map(wordItem => {
-                return {
-                    word: wordItem.word,
-                    translation: wordItem.translation,
-                    wrongCount: wordItem.wrongCount !== undefined ? wordItem.wrongCount : 0,
-                    correctCount: wordItem.correctCount !== undefined ? wordItem.correctCount : 0,
-                    hasBeenTested: wordItem.hasBeenTested !== undefined ? wordItem.hasBeenTested : false,
-                    streakCount: wordItem.streakCount !== undefined ? wordItem.streakCount : 0,
-                    addedOrder: wordItem.addedOrder !== undefined ? wordItem.addedOrder : Date.now(),
-                    score: wordItem.score !== undefined ? wordItem.score : 0
-                };
-            });
+            words = JSON.parse(localStorage.getItem(WORDS_KEY)) || [];
+            words = normalizeWordsList(words);
             renderWords();
         }
     });
@@ -1025,21 +1091,20 @@ function fallbackToTextarea(jsonString, t) {
     window.addEventListener('storage', function(event) {
         if (event.key === 'wordCardUpdated') {
             // 當單字卡更新時，重新載入單字數據並更新顯示
-            words = JSON.parse(localStorage.getItem('words')) || [];
-            words = words.map(wordItem => {
-                return {
-                    word: wordItem.word,
-                    translation: wordItem.translation,
-                    wrongCount: wordItem.wrongCount !== undefined ? wordItem.wrongCount : 0,
-                    correctCount: wordItem.correctCount !== undefined ? wordItem.correctCount : 0,
-                    hasBeenTested: wordItem.hasBeenTested !== undefined ? wordItem.hasBeenTested : false,
-                    streakCount: wordItem.streakCount !== undefined ? wordItem.streakCount : 0,
-                    addedOrder: wordItem.addedOrder !== undefined ? wordItem.addedOrder : Date.now(),
-                    score: wordItem.score !== undefined ? wordItem.score : 0
-                };
-            });
+            words = JSON.parse(localStorage.getItem(WORDS_KEY)) || [];
+            words = normalizeWordsList(words);
             renderWords();
         }
+    });
+
+    // 離開或重整時提示儲存
+    window.addEventListener('beforeunload', function(event) {
+        if (!needsSave) return;
+        const t = translations[currentLanguage];
+        const message = t.reminder || 'You have unsaved changes!';
+        event.preventDefault();
+        event.returnValue = message;
+        return message;
     });
 
     document.addEventListener('DOMContentLoaded', () => {

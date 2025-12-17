@@ -158,6 +158,24 @@
             background: linear-gradient(135deg, #7cb2ff, #4f8afc);
             color: #0b1021;
         }
+        .speech-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin: 6px 0 2px;
+            color: var(--muted);
+            font-size: 0.95em;
+        }
+        .speech-controls label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .speech-controls input[type="range"] {
+            width: 130px;
+            accent-color: var(--accent);
+        }
         .result, .answers {
             margin-top: 16px;
             padding: 12px;
@@ -252,6 +270,16 @@
             <button class="button" onclick="switchLanguage('zh')">中文</button>
             <button class="button" onclick="switchLanguage('en')">English</button>
             <button id="restart-btn" class="button" onclick="restartGame()" style="display:none;"></button>
+        </div>
+        <div class="speech-controls">
+            <label>語速
+                <input type="range" id="speechRate" min="0.6" max="1.4" step="0.05">
+                <span id="speechRateLabel"></span>
+            </label>
+            <label>音量
+                <input type="range" id="speechVolume" min="0" max="1" step="0.05">
+                <span id="speechVolumeLabel"></span>
+            </label>
         </div>
         <div id="result" class="result" style="display:none;"></div>
         <div id="answers" class="answers" style="display:none;"></div>
@@ -500,6 +528,19 @@
             handleAction(e.target, word);
         }
 
+        const defaultSpeechSettings = { rate: 0.95, volume: 1 };
+        let speechSettings = (() => {
+            try {
+                const saved = JSON.parse(localStorage.getItem('speechSettings'));
+                if (saved && typeof saved === 'object') return { ...defaultSpeechSettings, ...saved };
+            } catch (e) {}
+            return { ...defaultSpeechSettings };
+        })();
+
+        function clamp(val, min, max) {
+            return Math.min(max, Math.max(min, val));
+        }
+
         function speakWord(text) {
             if (!text || !window.speechSynthesis) return;
             const synth = window.speechSynthesis;
@@ -507,7 +548,8 @@
             const utter = new SpeechSynthesisUtterance(text);
             const hasLatin = /[a-zA-Z]/.test(text);
             utter.lang = hasLatin ? 'en-US' : 'zh-TW';
-            utter.rate = 0.95;
+            utter.rate = clamp(speechSettings.rate ?? defaultSpeechSettings.rate, 0.5, 2);
+            utter.volume = clamp(speechSettings.volume ?? defaultSpeechSettings.volume, 0, 1);
             utter.pitch = 1;
             synth.speak(utter);
         }
@@ -864,6 +906,30 @@
             const isDarkMode = localStorage.getItem('darkMode') === 'true';
             if (isDarkMode) {
                 document.body.classList.add('dark-mode');
+            }
+
+            const rateInput = document.getElementById('speechRate');
+            const volInput = document.getElementById('speechVolume');
+            const rateLabel = document.getElementById('speechRateLabel');
+            const volLabel = document.getElementById('speechVolumeLabel');
+            const updateLabels = () => {
+                if (rateLabel) rateLabel.textContent = speechSettings.rate.toFixed(2);
+                if (volLabel) volLabel.textContent = speechSettings.volume.toFixed(2);
+            };
+            if (rateInput && volInput) {
+                rateInput.value = speechSettings.rate;
+                volInput.value = speechSettings.volume;
+                updateLabels();
+                rateInput.addEventListener('input', () => {
+                    speechSettings.rate = clamp(parseFloat(rateInput.value) || defaultSpeechSettings.rate, 0.5, 2);
+                    localStorage.setItem('speechSettings', JSON.stringify(speechSettings));
+                    updateLabels();
+                });
+                volInput.addEventListener('input', () => {
+                    speechSettings.volume = clamp(parseFloat(volInput.value) || defaultSpeechSettings.volume, 0, 1);
+                    localStorage.setItem('speechSettings', JSON.stringify(speechSettings));
+                    updateLabels();
+                });
             }
 
             createGame();

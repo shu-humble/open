@@ -231,7 +231,9 @@
     const urlParams = new URLSearchParams(window.location.search);
     let currentLanguage = urlParams.get('lang') || 'zh';
 
-    const WORDS_KEY = 'words';
+    const WORDS_KEY = 'words'; // legacy key (backward compatibility)
+    const WORD_META_KEY = 'wordMeta';
+    const WORD_STATS_KEY = 'wordStats';
     const SETTINGS_KEY = 'wordGameSettings';
     const ORIGINAL_WORDS_KEY = 'wordBankOriginalWords';
     const ORIGINAL_SETTINGS_KEY = 'wordBankOriginalSettings';
@@ -262,19 +264,7 @@
     }
 
     let words = [];
-    words = words.map(wordItem => {
-        return {
-            word: wordItem.word,
-            translation: wordItem.translation,
-            wrongCount: wordItem.wrongCount !== undefined ? wordItem.wrongCount : 0,
-            correctCount: wordItem.correctCount !== undefined ? wordItem.correctCount : 0,
-            hasBeenTested: wordItem.hasBeenTested !== undefined ? wordItem.hasBeenTested : false,
-            streakCount: wordItem.streakCount !== undefined ? wordItem.streakCount : 0,
-            addedOrder: wordItem.addedOrder !== undefined ? wordItem.addedOrder : Date.now(),
-            score: wordItem.score !== undefined ? wordItem.score : 0 // 添加分數字段
-        };
-    });
-
+    let statsMap = {};
     let settings = getDefaultSettings();
     
     // ===== 新增點 1: 排序方向的全域變數 =====
@@ -284,8 +274,70 @@
     let originalWords;
     let originalSettings;
 
+    function mergeMetaAndStats(metaList, statsMap) {
+        const statObj = statsMap || {};
+        return (metaList || []).map(m => {
+            const s = statObj[m.word] || {};
+            return {
+                word: m.word,
+                translation: m.translation,
+                addedOrder: m.addedOrder !== undefined ? m.addedOrder : Date.now(),
+                wrongCount: s.wrongCount || 0,
+                correctCount: s.correctCount || 0,
+                hasBeenTested: s.hasBeenTested || false,
+                streakCount: s.streakCount || 0,
+                score: s.score || 0
+            };
+        });
+    }
+
+    function splitWordsToMetaStats(wordsArray) {
+        const meta = [];
+        const stats = {};
+        (wordsArray || []).forEach(w => {
+            meta.push({
+                word: w.word,
+                translation: w.translation,
+                addedOrder: w.addedOrder !== undefined ? w.addedOrder : Date.now()
+            });
+            stats[w.word] = {
+                wrongCount: w.wrongCount || 0,
+                correctCount: w.correctCount || 0,
+                hasBeenTested: w.hasBeenTested || false,
+                streakCount: w.streakCount || 0,
+                score: w.score || 0
+            };
+        });
+        return { meta, stats };
+    }
+
+    function readMetaStatsWithMigration() {
+        let meta = JSON.parse(localStorage.getItem(WORD_META_KEY) || 'null');
+        let stats = JSON.parse(localStorage.getItem(WORD_STATS_KEY) || 'null');
+        // migrate from legacy words if needed
+        if (!meta || !stats) {
+            const legacy = JSON.parse(localStorage.getItem(WORDS_KEY) || 'null') || [];
+            const split = splitWordsToMetaStats(normalizeWordsList(legacy));
+            meta = split.meta;
+            stats = split.stats;
+            localStorage.setItem(WORD_META_KEY, JSON.stringify(meta));
+            localStorage.setItem(WORD_STATS_KEY, JSON.stringify(stats));
+        }
+        return { meta: meta || [], stats: stats || {} };
+    }
+
+    function saveMeta(metaList) {
+        localStorage.setItem(WORD_META_KEY, JSON.stringify(metaList || []));
+    }
+
+    function saveStats(statsMap) {
+        localStorage.setItem(WORD_STATS_KEY, JSON.stringify(statsMap || {}));
+    }
+
     function initializeWorkingData() {
-        const committedWords = normalizeWordsList(JSON.parse(localStorage.getItem(WORDS_KEY)) || []);
+        const { meta, stats } = readMetaStatsWithMigration();
+        statsMap = stats || {};
+        const committedWords = mergeMetaAndStats(meta, statsMap);
         const committedSettings = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || getDefaultSettings();
 
         const storedOriginalWords = localStorage.getItem(ORIGINAL_WORDS_KEY);
@@ -446,9 +498,10 @@
     }
 
     function markAsNeedsSave() {
-      // 在進行比較前，先複製並排序單字陣列，以忽略順序變化
-      const sortedWords = JSON.parse(JSON.stringify(words)).sort((a, b) => a.word.localeCompare(b.word));
-      const sortedOriginalWords = JSON.parse(JSON.stringify(originalWords)).sort((a, b) => a.word.localeCompare(b.word));
+      // 只比較靜態詞庫（word/translation/addedOrder），不比較統計
+      const pickMeta = arr => arr.map(w => ({ word: w.word, translation: w.translation, addedOrder: w.addedOrder }));
+      const sortedWords = pickMeta(JSON.parse(JSON.stringify(words))).sort((a, b) => a.word.localeCompare(b.word));
+      const sortedOriginalWords = pickMeta(JSON.parse(JSON.stringify(originalWords))).sort((a, b) => a.word.localeCompare(b.word));
       
       const currentWordsString = JSON.stringify(sortedWords);
       const originalWordsString = JSON.stringify(sortedOriginalWords);
@@ -627,7 +680,17 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
                 deleteBtn.textContent = t.delete;
                 deleteBtn.onclick = () => {
                     saveToUndoStack(); // 保存當前狀態
+                    const removed = words[index]?.word;
                     words.splice(index, 1);
+                    if (removed && statsMap[removed]) {
+                        delete statsMap[removed];
+                        saveStats(statsMap);
+                    }
+                    saveMeta(words.map(w => ({
+                        word: w.word,
+                        translation: w.translation,
+                        addedOrder: w.addedOrder
+                    })));
                     renderWords();
                     markAsNeedsSave();
                 };
@@ -691,6 +754,10 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
                 const translation = parts[1];
                 const newWordObj = { word, translation, wrongCount: 0, correctCount: 0, hasBeenTested: false, streakCount: 0, score: 0 }; // 確保新建時有 streakCount 和 score
                 const status = updateOrCreateWord(newWordObj);
+                // 若是更新，保留既有統計；若是新增，updateOrCreateWord 會建立 statsMap 條目
+                if (statsMap[word]) {
+                    // keep
+                }
                 if (status === 'added') addedCount++;
                 else updatedCount++;
             }
@@ -706,7 +773,14 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
     }
 
     function saveWords() {
-        localStorage.setItem(WORDS_KEY, JSON.stringify(words));
+        // save meta only (stats獨立管理)
+        const meta = words.map(w => ({
+            word: w.word,
+            translation: w.translation,
+            addedOrder: w.addedOrder !== undefined ? w.addedOrder : Date.now()
+        }));
+        saveMeta(meta);
+        saveStats(statsMap); // 同步保存動態，避免遺失
     }
 
     function saveSettings() {
@@ -742,6 +816,9 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
         if (confirm(t.confirmDeleteAll)) {
             saveToUndoStack(); // 保存當前狀態
             words = [];
+            statsMap = {};
+            saveStats(statsMap);
+            saveMeta([]);
             renderWords();
             markAsNeedsSave();
             console.log(t.alertDeleteAllDone);
@@ -758,7 +835,15 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
                 item.hasBeenTested = false;
                 item.streakCount = 0; // ***** 修改點 6: 重設權重時清空連勝數 *****
                 item.score = 0; // 重設分數
+                statsMap[item.word] = {
+                    wrongCount: 0,
+                    correctCount: 0,
+                    hasBeenTested: false,
+                    streakCount: 0,
+                    score: 0
+                };
             });
+            saveStats(statsMap);
             renderWords();
             markAsNeedsSave();
             console.log(t.alertWeightsReset);
@@ -772,6 +857,7 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
       }
 
       saveWords();
+      saveStats(statsMap);
       saveSettings();
 
       originalWords = JSON.parse(JSON.stringify(words));
@@ -801,7 +887,9 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
     function exportAllData() {
   const t = translations[currentLanguage];
   const data = {
-    words: words,
+    words: words, // 向後相容
+    wordMeta: words.map(w => ({ word: w.word, translation: w.translation, addedOrder: w.addedOrder })),
+    wordStats: statsMap,
     settings: settings
   };
   const jsonString = JSON.stringify(data);
@@ -861,37 +949,40 @@ function fallbackToTextarea(jsonString, t) {
     }
 
     function applyImportedData(importedData) {
-        let currentWordsMap = new Map();
-        words.forEach(word => currentWordsMap.set(word.word, word));
-
-        if (importedData.words && Array.isArray(importedData.words)) {
-            importedData.words.forEach(importedWord => {
-                const existingWord = currentWordsMap.get(importedWord.word);
-                if (existingWord) {
-                    existingWord.translation = importedWord.translation;
-                    existingWord.wrongCount = importedWord.wrongCount !== undefined ? importedWord.wrongCount : 0;
-                    existingWord.correctCount = importedWord.correctCount !== undefined ? importedWord.correctCount : 0;
-                    existingWord.hasBeenTested = importedWord.hasBeenTested !== undefined ? importedWord.hasBeenTested : false;
-                    existingWord.streakCount = importedWord.streakCount !== undefined ? importedWord.streakCount : 0;
-                    existingWord.score = importedWord.score !== undefined ? importedWord.score : 0;
-                    existingWord.addedOrder = importedWord.addedOrder !== undefined ? importedWord.addedOrder : Date.now();
-                } else {
-                    currentWordsMap.set(importedWord.word, {
-                        word: importedWord.word,
-                        translation: importedWord.translation,
-                        wrongCount: importedWord.wrongCount !== undefined ? importedWord.wrongCount : 0,
-                        correctCount: importedWord.correctCount !== undefined ? importedWord.correctCount : 0,
-                        hasBeenTested: importedWord.hasBeenTested !== undefined ? importedWord.hasBeenTested : false,
-                        streakCount: importedWord.streakCount !== undefined ? importedWord.streakCount : 0,
-                        score: importedWord.score !== undefined ? importedWord.score : 0,
-                        addedOrder: importedWord.addedOrder !== undefined ? importedWord.addedOrder : Date.now()
-                    });
-                }
-            });
-            words = normalizeWordsList(Array.from(currentWordsMap.values()));
-        } else {
-            console.warn("Imported data does not contain a valid 'words' array.");
+        let metaArr = [];
+        let statsObj = {};
+        if (importedData.wordMeta && Array.isArray(importedData.wordMeta)) {
+            metaArr = importedData.wordMeta.map(m => ({
+                word: m.word,
+                translation: m.translation,
+                addedOrder: m.addedOrder !== undefined ? m.addedOrder : Date.now()
+            }));
         }
+        if (importedData.wordStats && typeof importedData.wordStats === 'object') {
+            statsObj = importedData.wordStats;
+        }
+        // 向後相容：若沒有 wordMeta/wordStats，嘗試從 words 拆分
+        if (metaArr.length === 0 && importedData.words && Array.isArray(importedData.words)) {
+            importedData.words.forEach(importedWord => {
+                metaArr.push({
+                    word: importedWord.word,
+                    translation: importedWord.translation,
+                    addedOrder: importedWord.addedOrder !== undefined ? importedWord.addedOrder : Date.now()
+                });
+                statsObj[importedWord.word] = {
+                    wrongCount: importedWord.wrongCount !== undefined ? importedWord.wrongCount : 0,
+                    correctCount: importedWord.correctCount !== undefined ? importedWord.correctCount : 0,
+                    hasBeenTested: importedWord.hasBeenTested !== undefined ? importedWord.hasBeenTested : false,
+                    streakCount: importedWord.streakCount !== undefined ? importedWord.streakCount : 0,
+                    score: importedWord.score !== undefined ? importedWord.score : 0
+                };
+            });
+        }
+
+        statsMap = statsObj;
+        saveStats(statsMap);
+        saveMeta(metaArr);
+        words = mergeMetaAndStats(metaArr, statsMap);
 
         if (importedData.settings && typeof importedData.settings === 'object') {
             settings = {
@@ -1081,8 +1172,10 @@ function fallbackToTextarea(jsonString, t) {
         }
         if (event.data.type === 'wordsUpdated') {
             // 當單字卡更新時，重新載入單字數據並更新顯示
-            words = JSON.parse(localStorage.getItem(WORDS_KEY)) || [];
-            words = normalizeWordsList(words);
+            const meta = JSON.parse(localStorage.getItem(WORD_META_KEY) || '[]');
+            statsMap = JSON.parse(localStorage.getItem(WORD_STATS_KEY) || '{}');
+            const merged = mergeMetaAndStats(meta, statsMap);
+            words = normalizeWordsList(merged);
             renderWords();
         }
     });
@@ -1091,8 +1184,10 @@ function fallbackToTextarea(jsonString, t) {
     window.addEventListener('storage', function(event) {
         if (event.key === 'wordCardUpdated') {
             // 當單字卡更新時，重新載入單字數據並更新顯示
-            words = JSON.parse(localStorage.getItem(WORDS_KEY)) || [];
-            words = normalizeWordsList(words);
+            const meta = JSON.parse(localStorage.getItem(WORD_META_KEY) || '[]');
+            statsMap = JSON.parse(localStorage.getItem(WORD_STATS_KEY) || '{}');
+            const merged = mergeMetaAndStats(meta, statsMap);
+            words = normalizeWordsList(merged);
             renderWords();
         }
     });

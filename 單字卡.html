@@ -272,11 +272,11 @@
             <button id="restart-btn" class="button" onclick="restartGame()" style="display:none;"></button>
         </div>
         <div class="speech-controls">
-            <label>語速
-                <input type="range" id="speechRate" min="0.6" max="1.4" step="0.05">
+            <label><span id="speechRateText"></span>
+                <input type="range" id="speechRate" min="0.5" max="2" step="0.05">
                 <span id="speechRateLabel"></span>
             </label>
-            <label>音量
+            <label><span id="speechVolumeText"></span>
                 <input type="range" id="speechVolume" min="0" max="1" step="0.05">
                 <span id="speechVolumeLabel"></span>
             </label>
@@ -306,7 +306,9 @@
             noWordsToTest: "沒有單字可供測驗。",
             promptToAddWords: "請點擊「查看單字庫」新增單字。",
             unselected: "未選擇",
-            confirmSubmitPartial: "還有 {count} 個空格未填寫，確定要提交嗎？"
+            confirmSubmitPartial: "還有 {count} 個空格未填寫，確定要提交嗎？",
+            speechRate: "語速",
+            speechVolume: "音量"
           },
           en: {
             title: "Word Matching Game",
@@ -325,9 +327,15 @@
             noWordsToTest: "No words available for testing.",
             promptToAddWords: "Please click \"View Word Bank\" to add words.",
             unselected: "Unselected",
-            confirmSubmitPartial: "There are {count} empty spaces. Are you sure you want to submit?"
+            confirmSubmitPartial: "There are {count} empty spaces. Are you sure you want to submit?",
+            speechRate: "Speech rate",
+            speechVolume: "Volume"
           }
         };
+
+        const WORD_META_KEY = 'wordMeta';
+        const WORD_STATS_KEY = 'wordStats';
+        const LEGACY_WORDS_KEY = 'words';
 
         let isFirstRound = true;
 
@@ -342,9 +350,10 @@
         let currentRoundWords = [];
         let selectedWord = null;
         const actionHistory = [];
+        let statsMap = {};
 
-        function initializeOrUpdateWords(wordsArray) {
-            return wordsArray.map(wordItem => {
+        function normalizeWordsList(rawWords) {
+            return (rawWords || []).map(wordItem => {
                 return {
                     word: wordItem.word,
                     translation: wordItem.translation,
@@ -352,9 +361,65 @@
                     correctCount: wordItem.correctCount !== undefined ? wordItem.correctCount : 0,
                     hasBeenTested: wordItem.hasBeenTested !== undefined ? wordItem.hasBeenTested : false,
                     streakCount: wordItem.streakCount !== undefined ? wordItem.streakCount : 0,
-                    score: wordItem.score !== undefined ? wordItem.score : 0
+                    score: wordItem.score !== undefined ? wordItem.score : 0,
+                    addedOrder: wordItem.addedOrder !== undefined ? wordItem.addedOrder : Date.now()
                 };
             });
+        }
+
+        function mergeMetaAndStats(metaList, statsObj) {
+            const stats = statsObj || {};
+            return (metaList || []).map(m => {
+                const s = stats[m.word] || {};
+                return {
+                    word: m.word,
+                    translation: m.translation,
+                    addedOrder: m.addedOrder !== undefined ? m.addedOrder : Date.now(),
+                    wrongCount: s.wrongCount || 0,
+                    correctCount: s.correctCount || 0,
+                    hasBeenTested: s.hasBeenTested || false,
+                    streakCount: s.streakCount || 0,
+                    score: s.score || 0
+                };
+            });
+        }
+
+        function splitWordsToMetaStats(wordsArray) {
+            const meta = [];
+            const stats = {};
+            (wordsArray || []).forEach(w => {
+                meta.push({
+                    word: w.word,
+                    translation: w.translation,
+                    addedOrder: w.addedOrder !== undefined ? w.addedOrder : Date.now()
+                });
+                stats[w.word] = {
+                    wrongCount: w.wrongCount || 0,
+                    correctCount: w.correctCount || 0,
+                    hasBeenTested: w.hasBeenTested || false,
+                    streakCount: w.streakCount || 0,
+                    score: w.score || 0
+                };
+            });
+            return { meta, stats };
+        }
+
+        function readMetaStatsWithMigration() {
+            let meta = JSON.parse(localStorage.getItem(WORD_META_KEY) || 'null');
+            let stats = JSON.parse(localStorage.getItem(WORD_STATS_KEY) || 'null');
+            if (!meta || !stats) {
+                const legacy = normalizeWordsList(JSON.parse(localStorage.getItem(LEGACY_WORDS_KEY) || 'null') || []);
+                const split = splitWordsToMetaStats(legacy);
+                meta = split.meta;
+                stats = split.stats;
+                localStorage.setItem(WORD_META_KEY, JSON.stringify(meta));
+                localStorage.setItem(WORD_STATS_KEY, JSON.stringify(stats));
+            }
+            return { meta: meta || [], stats: stats || {} };
+        }
+
+        function saveStats(stats) {
+            localStorage.setItem(WORD_STATS_KEY, JSON.stringify(stats || {}));
         }
 
         function shuffle(array) {
@@ -375,8 +440,9 @@
         }
 
         function createGame() {
-            let words = JSON.parse(localStorage.getItem('words')) || [];
-            words = initializeOrUpdateWords(words);
+            const { meta, stats } = readMetaStatsWithMigration();
+            statsMap = stats || {};
+            let words = mergeMetaAndStats(meta, statsMap);
 
             const wordContainer = document.querySelector('.words');
             const targetContainer = document.querySelector('.targets');
@@ -439,9 +505,11 @@
                 if (originalWordIndex !== -1) {
                     words[originalWordIndex].hasBeenTested = true;
                     wordsTestedInSession.add(wordObj.word);
+                    if (!statsMap[wordObj.word]) statsMap[wordObj.word] = {};
+                    statsMap[wordObj.word].hasBeenTested = true;
                 }
             });
-            localStorage.setItem('words', JSON.stringify(words));
+            saveStats(statsMap);
 
             const shuffledWords = shuffle([...currentRoundWords]);
             const shuffledTranslations = shuffle([...currentRoundWords]);
@@ -498,6 +566,10 @@
             document.getElementById('dark-mode-btn').textContent = t.darkMode;
             document.getElementById('wordbank-btn').textContent = t.wordBank;
             document.getElementById('restart-btn').textContent = t.restart;
+            const rateText = document.getElementById('speechRateText');
+            const volText = document.getElementById('speechVolumeText');
+            if (rateText) rateText.textContent = t.speechRate;
+            if (volText) volText.textContent = t.speechVolume;
 
             document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = (lang === 'zh' ? 'none' : 'inline-block');
             document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = (lang === 'en' ? 'none' : 'inline-block');
@@ -528,7 +600,7 @@
             handleAction(e.target, word);
         }
 
-        const defaultSpeechSettings = { rate: 0.95, volume: 1 };
+        const defaultSpeechSettings = { rate: 1, volume: 1 };
         let speechSettings = (() => {
             try {
                 const saved = JSON.parse(localStorage.getItem('speechSettings'));
@@ -547,7 +619,12 @@
             if (synth.speaking) synth.cancel();
             const utter = new SpeechSynthesisUtterance(text);
             const hasLatin = /[a-zA-Z]/.test(text);
-            utter.lang = hasLatin ? 'en-US' : 'zh-TW';
+            const hasDigit = /[0-9]/.test(text);
+            if (hasLatin || (hasDigit && currentLanguage === 'en')) {
+                utter.lang = 'en-US';
+            } else {
+                utter.lang = 'zh-TW';
+            }
             utter.rate = clamp(speechSettings.rate ?? defaultSpeechSettings.rate, 0.5, 2);
             utter.volume = clamp(speechSettings.volume ?? defaultSpeechSettings.volume, 0, 1);
             utter.pitch = 1;
@@ -695,8 +772,9 @@
 
 
         function checkAnswers() {
-            let words = JSON.parse(localStorage.getItem('words')) || [];
-            words = initializeOrUpdateWords(words);
+            const { meta, stats } = readMetaStatsWithMigration();
+            statsMap = stats || {};
+            let words = mergeMetaAndStats(meta, statsMap);
 
             const targetElements = document.querySelectorAll('.target');
             const unfilledTargets = Array.from(targetElements).filter(target => !target.dataset.droppedWord);
@@ -722,23 +800,32 @@
 
                     if (originalWordIndex !== -1) {
                         const originalWordObj = words[originalWordIndex];
+                        if (!statsMap[originalWordObj.word]) statsMap[originalWordObj.word] = {};
+                        const stat = statsMap[originalWordObj.word];
                         if (originalWordObj.translation === originalTranslation) {
                             target.classList.add('correct');
                             correctAnswers.push(droppedWord);
-                            originalWordObj.correctCount++;
-                            originalWordObj.streakCount++;
-                            originalWordObj.wrongCount = Math.max(0, originalWordObj.wrongCount - 1);
+                            stat.correctCount = (stat.correctCount || 0) + 1;
+                            stat.streakCount = (stat.streakCount || 0) + 1;
+                            stat.wrongCount = Math.max(0, (stat.wrongCount || 0) - 1);
+                            originalWordObj.correctCount = stat.correctCount;
+                            originalWordObj.streakCount = stat.streakCount;
+                            originalWordObj.wrongCount = stat.wrongCount;
 
                             const points = calculateWordScore(originalWordObj, true);
-                            originalWordObj.score = Math.max(0, originalWordObj.score + points);
+                            stat.score = Math.max(0, (stat.score || 0) + points);
+                            originalWordObj.score = stat.score;
                         } else {
                             target.classList.add('incorrect');
                             wrongAnswers.push(droppedWord);
-                            originalWordObj.wrongCount++;
-                            originalWordObj.streakCount = 0;
+                            stat.wrongCount = (stat.wrongCount || 0) + 1;
+                            stat.streakCount = 0;
+                            originalWordObj.wrongCount = stat.wrongCount;
+                            originalWordObj.streakCount = stat.streakCount;
 
                             const points = calculateWordScore(originalWordObj, false);
-                            originalWordObj.score = Math.max(0, originalWordObj.score + points);
+                            stat.score = Math.max(0, (stat.score || 0) + points);
+                            originalWordObj.score = stat.score;
                         }
                     }
                 } else {
@@ -751,15 +838,19 @@
                 const originalWordIndex = words.findIndex(w => w.word === word);
                 if (originalWordIndex !== -1) {
                     const wordObj = words[originalWordIndex];
-                    wordObj.wrongCount++;
-                    wordObj.streakCount = 0;
-                    wordObj.score = Math.max(0, wordObj.score - 10);
+                    if (!statsMap[wordObj.word]) statsMap[wordObj.word] = {};
+                    const stat = statsMap[wordObj.word];
+                    stat.wrongCount = (stat.wrongCount || 0) + 1;
+                    stat.streakCount = 0;
+                    stat.score = Math.max(0, (stat.score || 0) - 10);
+                    wordObj.wrongCount = stat.wrongCount;
+                    wordObj.streakCount = stat.streakCount;
+                    wordObj.score = stat.score;
                 }
             });
 
 
-            localStorage.setItem('words', JSON.stringify(words));
-
+            saveStats(statsMap);
             localStorage.setItem('wordCardUpdated', Date.now().toString());
 
             const resultDiv = document.getElementById('result');
@@ -831,11 +922,13 @@
 
 
         function restartGame() {
-            let words = JSON.parse(localStorage.getItem('words')) || [];
-            words.forEach(wordItem => {
-                wordItem.hasBeenTested = false;
+            const { meta, stats } = readMetaStatsWithMigration();
+            statsMap = stats || {};
+            meta.forEach(m => {
+                if (!statsMap[m.word]) statsMap[m.word] = {};
+                statsMap[m.word].hasBeenTested = false;
             });
-            localStorage.setItem('words', JSON.stringify(words));
+            saveStats(statsMap);
             wordsTestedInSession.clear();
 
             resetGameUI();

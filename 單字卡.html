@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="UTF-8">
 <head>
     <meta charset="UTF-8">
@@ -18,13 +18,13 @@
             --bad: #ef4444;
         }
         body.dark-mode {
-            --bg: #232b3f;
+            --bg: #0a0f1f;
             --panel: #0c1326;
-            --text: #f8fafc;
-            --muted: #cbd5e1;
-            --border: #22304a;
-            --accent: #7cc3ff;
-            --accent-strong: #4ea6ff;
+            --text: #f9fafb;
+            --muted: #d7deed;
+            --border: #2d3e5c;
+            --accent: #8ac7ff;
+            --accent-strong: #58a6ff;
             --good: #3ee07a;
             --bad: #ff8b8b;
         }
@@ -76,18 +76,26 @@
             width: 120px;
             transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
             position: relative;
-            box-shadow: 0 10px 24px rgba(37,99,235,0.5);
+            box-shadow: 0 10px 24px rgba(37,99,235,0.25);
         }
         .word:active { cursor: grabbing; }
         .word.used {
             background: #e5e7eb;
-            color: var(--muted);
+            color: #7d8799;
             cursor: not-allowed;
             box-shadow: none;
         }
-        body.dark-mode .word.used { background: #1f2937; color: #6b7280; }
+        .word.paired { color: #6f7a91; box-shadow: none; }
+        .target.has-word { box-shadow: none; }
+        body.dark-mode .word.used { background: #1c2536; color: #a0abc4; }
+        body.dark-mode .word.paired {
+            background: linear-gradient(150deg, rgba(138,199,255,0.4), rgba(10,15,31,0.9));
+            color: rgba(255,255,255,0.75);
+            box-shadow: none;
+        }
+        body.dark-mode .target.has-word { box-shadow: none; }
         body.dark-mode .word, body.dark-mode .target {
-            background: linear-gradient(150deg, rgba(160, 160, 160, 0.496), rgba(47, 47, 47, 0.92));
+            background: linear-gradient(150deg, rgba(138,199,255,0.35), rgba(10,15,31,0.96));
             border-color: var(--border);
             color: var(--text);
         }
@@ -125,7 +133,8 @@
         }
         body.dark-mode .selected {
             background: linear-gradient(145deg, rgba(124,195,255,0.46), rgba(78,166,255,0.22));
-            color: #0b1021;
+            color: #ffffff;
+            text-shadow: 0 0 8px rgba(12, 19, 38, 0.7);
             box-shadow: 0 14px 32px rgba(78,166,255,0.35);
         }
         .buttons { margin-top: 10px; }
@@ -491,12 +500,25 @@
             handleAction(e.target, word);
         }
 
+        function speakWord(text) {
+            if (!text || !window.speechSynthesis) return;
+            const synth = window.speechSynthesis;
+            if (synth.speaking) synth.cancel();
+            const utter = new SpeechSynthesisUtterance(text);
+            const hasLatin = /[a-zA-Z]/.test(text);
+            utter.lang = hasLatin ? 'en-US' : 'zh-TW';
+            utter.rate = 0.95;
+            utter.pitch = 1;
+            synth.speak(utter);
+        }
+
         function handleWordClick(event) {
             const wordElement = event.target;
             // 檢查單字是否已被使用，如果是，則不執行任何操作
             if (wordElement.classList.contains('used')) {
                 return;
             }
+            speakWord(wordElement.dataset.word || wordElement.textContent);
             selectWord(wordElement);
         }
 
@@ -575,6 +597,7 @@
             const wordDiv = document.querySelector(`.word[data-word="${word}"]`);
             if (wordDiv) {
                 wordDiv.classList.remove('used');
+                wordDiv.classList.remove('paired');
                 wordDiv.draggable = true;
             }
         }
@@ -583,6 +606,7 @@
             const wordDiv = document.querySelector(`.word[data-word="${word}"]`);
             if (wordDiv) {
                 wordDiv.classList.add('used');
+                wordDiv.classList.add('paired');
                 wordDiv.draggable = false;
             }
         }
@@ -707,6 +731,7 @@
             document.querySelectorAll('.word').forEach(wordDiv => {
                 wordDiv.draggable = false;
                 wordDiv.classList.add('used');
+                wordDiv.classList.remove('paired');
             });
             document.querySelectorAll('.target').forEach(targetDiv => {
                 targetDiv.removeEventListener('drop', drop);

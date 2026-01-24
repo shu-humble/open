@@ -1,82 +1,65 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Geometry Text Book</title>
 <style>
-/* 1. 設定 HTML 和 BODY 基礎 */
 html, body {
     margin: 0;
     padding: 0;
-    height: 100%; 
+    height: 100%;
     font-family: Arial, sans-serif;
 }
 body {
-    /* 設定邊距：上 20px, 右 20px, 下 50px (您的安全距離), 左 20px */
-    padding: 20px 20px 50px 20px; 
-    box-sizing: border-box; /* 確保 padding 不增加總高度 */
-    display: flex; 
-    flex-direction: column; /* 內容垂直排列 */
+    padding: 20px 20px 50px 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
-
-/* 頁首標題和分隔線的樣式 */
 .header {
-    flex-shrink: 0; /* 確保標題高度不變 */
-    margin-bottom: 10px; /* 在標題和內容之間增加一點間距 */
+    flex-shrink: 0;
+    margin-bottom: 10px;
 }
-
-/* 2. 主要內容容器：佔據剩餘所有空間 */
 .main-content-wrapper {
     display: flex;
-    flex-grow: 1; /* 佔滿 body 內扣除 header 後的剩餘空間 */
+    flex-grow: 1;
+    min-height: 0;
 }
-
-/* 左側菜單樣式 */
 .left {
-    flex: 0 0 30%; 
-    padding-right: 20px;
-    border-right: 1px solid #ccc; 
-    overflow-y: auto; /* 如果連結太多可以滾動 */
+    flex: 0 0 24%;
+    max-width: 340px;
+    min-width: 220px;
+    padding-right: 12px;
+    border-right: 1px solid #ccc;
+    overflow-y: auto;
 }
-
-/* 右側 PDF 檢視器容器 */
 .right {
-    flex: 1; 
+    flex: 1;
     padding-left: 20px;
     display: flex;
-    flex-direction: column; /* 讓內容垂直排列 */
+    flex-direction: column;
+    min-height: 0;
 }
-
-/* 確保 iframe 佔滿右側區塊的剩餘高度 */
-#pdf-viewer {
-    width: 100%;
-    flex-grow: 1; /* 關鍵：佔滿 .right 內扣除 h3 標題後的剩餘空間 */
-    border: none;
-}
-
-/* 章節連結樣式 */
 .chapter-link {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
     text-decoration: none;
     color: #007bff;
-    font-size: 1.2em;
+    font-size: 1.05em;
+    line-height: 1.3;
     padding: 2px 0;
 }
 .chapter-link:hover {
     color: #0056b3;
     text-decoration: underline;
 }
-/* 版面縮小：左欄與連結間距調整 */
-.left { flex: 0 0 24%; max-width: 340px; min-width: 220px; padding-right: 12px; }
-.chapter-link { margin-bottom: 6px; font-size: 1.05em; line-height: 1.3; }
-/* 隱藏右側舊的控制列（避免重複與編碼問題） */
-.right .controls { display: none; }
-/* 進一步緊縮章節間距並移除左欄的 <br> 造成的額外間距 */
+.chapter-link.active {
+    color: #111;
+    font-weight: bold;
+    text-decoration: underline;
+}
 .left br { display: none; }
-.chapter-link { margin-bottom: 2px !important; line-height: 1.15 !important; }
-/* 全螢幕控制區與按鈕樣式 */
 .controls {
     display: flex;
     align-items: center;
@@ -88,7 +71,11 @@ body {
     font-size: 14px;
     cursor: pointer;
 }
-/* 進入全螢幕時讓 PDF 佔滿整個視窗 */
+.page-input {
+    width: 72px;
+    padding: 6px;
+    font-size: 14px;
+}
 #pdf-container:fullscreen,
 #pdf-container:-webkit-full-screen,
 #pdf-container:-ms-fullscreen {
@@ -96,26 +83,82 @@ body {
     height: 100vh;
     border: none;
 }
-/* 讓 iframe 在容器內撐滿 */
-#pdf-container { display: flex; flex: 1; min-height: 0; }
-#pdf-container > #pdf-viewer { width: 100%; flex: 1; border: none; }
-/* 手機版控制列（預設隱藏，僅手機顯示） */
-.mobile-controls { display: none; gap: 8px; align-items: center; margin: 8px 0; }
+#pdf-container {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+}
+#pdf-container > #pdf-viewer { flex: 1; }
+.pdf-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    flex-wrap: wrap;
+}
+.mode-select {
+    padding: 6px;
+    font-size: 14px;
+}
+#pdf-viewer {
+    width: 100%;
+    flex-grow: 1;
+    overflow: auto;
+    background: #f2f2f2;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+#pdf-canvas {
+    width: 100%;
+    height: auto;
+    max-width: 980px;
+    background: #fff;
+    display: block;
+}
+#pdf-page {
+    position: relative;
+}
+#pdf-text-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: auto;
+}
+.textLayer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    color: transparent;
+    pointer-events: auto;
+}
+.textLayer span { color: transparent; }
+.textLayer ::selection { background: rgba(0, 0, 255, 0.2); }
+.mobile-controls {
+    display: none;
+    gap: 8px;
+    align-items: center;
+    margin: 8px 0;
+}
 .mobile-controls select { flex: 1; padding: 6px; }
+.mobile-controls input { padding: 6px; }
 .mobile-controls button { padding: 6px 10px; }
-
-/* 響應式：手機排版 */
+.mobile-controls .mode-select { flex: 0 0 auto; }
 @media (max-width: 768px) {
   .main-content-wrapper { flex-direction: column; }
   .left { display: none; }
-  .mobile-controls { display: flex; }
+.mobile-controls { display: flex; }
   #pdf-viewer { min-height: 65vh; }
 }
 </style>
-</head>
-<body>
+</head><body>
 <div class="header">
-    <b><font size="8"> Text Book</b></font><br>
+    <b><font size="8"> Text Book</font></b><br>
     <hr>
 </div>
 
@@ -124,81 +167,112 @@ body {
     <button id="mobile-open" class="fs-btn">Open</button>
     <button id="mobile-open-tab" class="fs-btn">New Tab</button>
     <a id="mobile-download" class="fs-btn" href="#" download>Download</a>
-    <button id="fs-toggle" class="fs-btn">Fullscreen</button>
-  </div>
+    <select id="mode-select-mobile" class="mode-select" aria-label="Page mode">
+      <option value="chapter">Chapter</option>
+      <option value="book">Book</option>
+    </select>
+    <input id="page-input" class="page-input" type="number" min="1" placeholder="Page">
+    <button id="page-go" class="fs-btn">Go</button>
+    <button id="fs-toggle-mobile" class="fs-btn" data-fs-toggle>Fullscreen</button>
+</div>
 
 <div class="main-content-wrapper">
     <div class="left">
         <font size="5">
-         <a href=" open/幾何課本/2nd Semester Assignments 2025-2026.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Assignment Sheet')">Assignment Sheet</a><br>
-        <a href=" open/幾何課本/Geometry-01.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 01')">Chapter 01</a><br>
-        <a href=" open/幾何課本/Geometry-02.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 02')">Chapter 02</a><br>
-        <a href=" open/幾何課本/Geometry-03.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 03')">Chapter 03</a><br>
-        <a href=" open/幾何課本/Geometry-04.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 04')">Chapter 04</a><br>
-        <a href=" open/幾何課本/Geometry-05.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 05')">Chapter 05</a><br>
-        <a href=" open/幾何課本/Geometry-06.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 06')">Chapter 06</a><br>
-        <a href=" open/幾何課本/Geometry-07.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 07')">Chapter 07</a><br>
-        <a href=" open/幾何課本/Geometry-08.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 08')">Chapter 08</a><br>
-        <a href=" open/幾何課本/Geometry-09.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 09')">Chapter 09</a><br>
-        <a href=" open/幾何課本/Geometry-10.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 10')">Chapter 10</a><br>
-        <a href=" open/幾何課本/Geometry-11.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 11')">Chapter 11</a><br>
-        <a href=" open/幾何課本/Geometry-12.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 12')">Chapter 12</a><br>
-        <a href=" open/幾何課本/Geometry-13.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 13')">Chapter 13</a><br>
-        <a href=" open/幾何課本/Geometry-14.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 14')">Chapter 14</a><br>
-        <a href=" open/幾何課本/Geometry-15.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 15')">Chapter 15</a><br>
+        <a href="open/幾何課本/2nd Semester Assignments 2025-2026.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Assignment Sheet')">Assignment Sheet</a><br>
+        <a href="open/幾何課本/Geometry-01.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 01')">Chapter 01</a><br>
+        <a href="open/幾何課本/Geometry-02.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 02')">Chapter 02</a><br>
+        <a href="open/幾何課本/Geometry-03.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 03')">Chapter 03</a><br>
+        <a href="open/幾何課本/Geometry-04.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 04')">Chapter 04</a><br>
+        <a href="open/幾何課本/Geometry-05.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 05')">Chapter 05</a><br>
+        <a href="open/幾何課本/Geometry-06.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 06')">Chapter 06</a><br>
+        <a href="open/幾何課本/Geometry-07.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 07')">Chapter 07</a><br>
+        <a href="open/幾何課本/Geometry-08.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 08')">Chapter 08</a><br>
+        <a href="open/幾何課本/Geometry-09.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 09')">Chapter 09</a><br>
+        <a href="open/幾何課本/Geometry-10.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 10')">Chapter 10</a><br>
+        <a href="open/幾何課本/Geometry-11.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 11')">Chapter 11</a><br>
+        <a href="open/幾何課本/Geometry-12.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 12')">Chapter 12</a><br>
+        <a href="open/幾何課本/Geometry-13.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 13')">Chapter 13</a><br>
+        <a href="open/幾何課本/Geometry-14.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 14')">Chapter 14</a><br>
+        <a href="open/幾何課本/Geometry-15.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 15')">Chapter 15</a><br>
         <a href="open/幾何課本/Geometry-16.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 16')">Chapter 16</a><br>
         </font>
     </div>
-    
+
     <div class="right">
      <!--  <h3 id="pdf-title"></h3> -->
      <div class="controls">
-        <button id="fs-toggle" class="fs-btn" title="全螢幕切換">全螢幕</button>
+        <button id="fs-toggle-main" class="fs-btn" data-fs-toggle title="Fullscreen">Fullscreen</button>
     </div>
-        <iframe 
-            id="pdf-viewer"
-            src="" 
-            title="幾何課本 PDF 預覽">
-            Your browser does not support PDF preview.
-        </iframe>
-
+        <div id="pdf-container">
+            <div class="pdf-toolbar">
+                <button id="prev-page" class="fs-btn">Prev</button>
+                <button id="next-page" class="fs-btn">Next</button>
+                <span id="page-info">Page 0 / 0</span>
+                <select id="mode-select" class="mode-select" aria-label="Page mode">
+                  <option value="chapter">Chapter</option>
+                  <option value="book">Book</option>
+                </select>
+                <button id="open-tab-main" class="fs-btn">New Tab</button>
+                <input id="page-input-main" class="page-input" type="number" min="1" placeholder="Page">
+                <button id="page-go-main" class="fs-btn">Go</button>
+            </div>
+                        <div id="pdf-viewer" aria-label="PDF viewer">
+                <div id="pdf-page">
+                    <canvas id="pdf-canvas"></canvas>
+                    <div id="pdf-text-layer" class="textLayer"></div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 <br><br>
-<script>
-    // 載入 PDF 的 JavaScript 函式
-    // 關鍵修正：第一個參數接收 event
-    function loadPDF(event, pdfPath, chapterName) {
-        
-        // **最重要的一步：阻止點擊連結時的預設行為 (導航到 href)**
-        event.preventDefault(); 
-
-        const viewer = document.getElementById('pdf-viewer');
-        const title = document.getElementById('pdf-title');
-        
-        viewer.src = pdfPath;
-        title.textContent = `${chapterName} 預覽`;
-    }
-
-    // 網頁載入完成後，自動載入第一個 PDF 
-    window.onload = function() {
-        // 為了初始化，我們不需要 event 物件
-        const firstLink = document.querySelector('.chapter-link');
-        if (firstLink) {
-            // 直接呼叫 loadPDF 的核心邏輯 (不傳遞 event)
-            const viewer = document.getElementById('pdf-viewer');
-            const title = document.getElementById('pdf-title');
-            
-            viewer.src = firstLink.href;
-            title.textContent = 'Assignment Sheet 預覽'; // 假設 Assignment Sheet 是第一個
-        }
-    };
-</script>
 <hr>
-Sources ：<a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-for-enjoyment-and-challenge" >Geometry for Enjoyment and Challenge</a><br>
+Sources: <a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-for-enjoyment-and-challenge">Geometry for Enjoyment and Challenge</a><br>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
-// 覆寫 loadPDF 與初始載入，修正 PDF 路徑（移除多餘空白與 open/）
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+</script>
+<script>
 (function() {
+  const STORAGE_KEY = 'geometry:lastState';
+  const TOTALS_VERSION = 2;
+  let pdfDoc = null;
+  let currentPdf = '';
+  let currentPage = 1;
+  let rendering = false;
+  let pendingPage = null;
+  let totals = null;
+  let totalsPromise = null;
+
+  function loadState() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (_) { return {}; }
+  }
+  function saveState(state) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) { /* ignore */ }
+  }
+  function getMode() {
+    const state = loadState();
+    return state.pageMode || 'chapter';
+  }
+  function setMode(mode) {
+    const state = loadState();
+    state.pageMode = mode;
+    saveState(state);
+    updateModeUI();
+    setPageInfo();
+    setPageInputs();
+  }
+  function updateModeUI() {
+    const mode = getMode();
+    if (modeSelect) modeSelect.value = mode;
+    if (modeSelectMobile) modeSelectMobile.value = mode;
+    const placeholder = mode === 'book' ? 'Book Page' : 'Page';
+    if (pageInputMain) pageInputMain.placeholder = placeholder;
+    if (pageInputMobile) pageInputMobile.placeholder = placeholder;
+  }
   function normalizePath(inputHref) {
     try {
       const linkUrl = new URL(inputHref, window.location.href);
@@ -214,82 +288,7 @@ Sources ：<a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-f
       return inputHref;
     }
   }
-
-  // 重新定義 loadPDF
-  window.loadPDF = function(event, pdfPath, chapterName) {
-    if (event && typeof event.preventDefault === 'function') event.preventDefault();
-    const viewer = document.getElementById('pdf-viewer');
-    const title = document.getElementById('pdf-title');
-    const normalized = normalizePath(pdfPath);
-    if (viewer) viewer.src = normalized;
-    if (title) title.textContent = (chapterName || 'PDF') + ' 預覽';
-  };
-
-  // 覆寫 onload，初次載入使用正規化路徑
-  const prevOnload = window.onload;
-  window.onload = function() {
-    if (typeof prevOnload === 'function') {
-      try { prevOnload(); } catch (e) { /* ignore */ }
-    }
-    const firstLink = document.querySelector('.chapter-link');
-    const viewer = document.getElementById('pdf-viewer');
-    const title = document.getElementById('pdf-title');
-    if (firstLink && viewer) {
-      const normalized = normalizePath(firstLink.href);
-      viewer.src = normalized;
-      if (title) title.textContent = 'Assignment Sheet 預覽';
-    }
-  };
-
-  // 全螢幕切換按鈕邏輯（支援多個按鈕 id）
-  function bindFullscreenToggle(btn, target) {
-    if (!btn || !target) return;
-    function isFs() { return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement; }
-    function sync() { btn.textContent = isFs() ? 'Exit Fullscreen' : 'Fullscreen'; }
-    function enter(el) {
-      if (el.requestFullscreen) return el.requestFullscreen();
-      if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
-      if (el.msRequestFullscreen) return el.msRequestFullscreen();
-    }
-    function exit() {
-      if (document.exitFullscreen) return document.exitFullscreen();
-      if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
-      if (document.msExitFullscreen) return document.msExitFullscreen();
-    }
-    btn.addEventListener('click', async function() {
-      try { if (!isFs()) { await enter(target); } else { await exit(); } } catch (e) { console.error('Fullscreen error', e); }
-      sync();
-    });
-    document.addEventListener('fullscreenchange', sync);
-    document.addEventListener('webkitfullscreenchange', sync);
-    document.addEventListener('MSFullscreenChange', sync);
-    sync();
-  }
-
-  // 綁定到主要 PDF iframe（若頁面上沒有按鈕，動態建立一個懸浮按鈕）
-  const viewerEl = document.getElementById('pdf-viewer');
-  const btn1 = document.getElementById('fs-toggle');
-  // 以整個文件作為後備全螢幕目標，避免 iframe 受限
-  const fsTarget = viewerEl || document.documentElement;
-  bindFullscreenToggle(btn1, fsTarget);
-  // 總是提供右下角浮動按鈕（若尚未存在）
-  if (!document.getElementById('fs-fab')) {
-    const b = document.createElement('button');
-    b.id = 'fs-fab';
-    b.className = 'fs-btn';
-    b.textContent = 'Fullscreen';
-    b.title = 'Toggle Fullscreen';
-    b.style.position = 'fixed';
-    b.style.right = '16px';
-    b.style.bottom = '16px';
-    b.style.zIndex = '9999';
-    document.body.appendChild(b);
-    bindFullscreenToggle(b, fsTarget);
-  }
-
-  // 手機版下拉選單：依據左欄連結自動建立
   function normalizeForActions(href) {
-    // 與 viewer 同步的正規化，給行動按鈕使用
     try {
       const linkUrl = new URL(href, window.location.href);
       const baseUrl = new URL('.', window.location.href);
@@ -301,6 +300,414 @@ Sources ：<a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-f
       return p.startsWith(basePath) ? p.slice(basePath.length) : linkUrl.href;
     } catch (_) { return href; }
   }
+  function isAssignmentLink(a) {
+    if (!a) return false;
+    const text = (a.textContent || '').toLowerCase();
+    const href = (a.getAttribute('href') || a.href || '').toLowerCase();
+    return text.indexOf('assignment') !== -1 || href.indexOf('assignments') !== -1;
+  }
+  function getOffsetForPdf(href) {
+    const norm = normalizePath(href || '');
+    return norm.indexOf('Geometry-01.pdf') !== -1 ? -1 : 0;
+  }
+  function getMinLogical(href) {
+    const offset = getOffsetForPdf(href);
+    return offset < 0 ? 1 - offset : 1;
+  }
+  function toPdfPage(href, logicalPage) {
+    return logicalPage + getOffsetForPdf(href);
+  }
+  function toLogicalPage(href, pdfPage) {
+    return pdfPage - getOffsetForPdf(href);
+  }
+  function getAllChapterLinks() {
+    return Array.prototype.slice.call(document.querySelectorAll('.chapter-link'));
+  }
+  function getBookList() {
+    return getAllChapterLinks().filter(function(a) {
+      return !isAssignmentLink(a);
+    }).map(function(a) {
+      const raw = a.getAttribute('href') || a.href;
+      return normalizePath(raw || '');
+    }).filter(Boolean);
+  }
+  function readTotalsFromState(list) {
+    const state = loadState();
+    const cached = state.totals;
+    if (!cached || cached.version !== TOTALS_VERSION) return null;
+    if (!cached.list || !cached.pages || !cached.total) return null;
+    if (cached.list.length !== list.length) return null;
+    for (let i = 0; i < list.length; i++) {
+      if (cached.list[i] !== list[i]) return null;
+    }
+    return cached;
+  }
+  function saveTotalsToState(list, pages, total) {
+    const state = loadState();
+    state.totals = { version: TOTALS_VERSION, list: list, pages: pages, total: total };
+    saveState(state);
+  }
+  function ensureTotals() {
+    if (totals) return Promise.resolve(totals);
+    if (totalsPromise) return totalsPromise;
+    const list = getBookList();
+    const cached = readTotalsFromState(list);
+    if (cached) {
+      totals = cached;
+      return Promise.resolve(totals);
+    }
+    if (!window.pdfjsLib) return Promise.resolve(null);
+    totalsPromise = (async function() {
+      const pages = {};
+      let total = 0;
+      for (let i = 0; i < list.length; i++) {
+        const href = list[i];
+        try {
+          const doc = await pdfjsLib.getDocument(href).promise;
+          const rawPages = doc.numPages || 0;
+          const offset = getOffsetForPdf(href);
+          pages[href] = Math.max(0, rawPages - offset);
+          total += pages[href];
+          if (doc.destroy) await doc.destroy();
+        } catch (_) {
+          pages[href] = 0;
+        }
+      }
+      totals = { list: list, pages: pages, total: total };
+      saveTotalsToState(list, pages, total);
+      totalsPromise = null;
+      return totals;
+    })();
+    return totalsPromise;
+  }
+  function getGlobalPage() {
+    if (!totals || !currentPdf) return null;
+    let acc = 0;
+    for (let i = 0; i < totals.list.length; i++) {
+      const href = totals.list[i];
+      const count = totals.pages[href] || 0;
+      if (href === currentPdf) {
+        const logical = Math.max(getMinLogical(currentPdf), toLogicalPage(currentPdf, currentPage));
+        return acc + logical;
+      }
+      acc += count;
+    }
+    return null;
+  }
+  function findByGlobalPage(globalPage) {
+    if (!totals) return null;
+    let acc = 0;
+    for (let i = 0; i < totals.list.length; i++) {
+      const href = totals.list[i];
+      const count = totals.pages[href] || 0;
+      if (globalPage <= acc + count) {
+        const page = globalPage - acc;
+        if (page < getMinLogical(href)) return null;
+        return { href: href, page: page };
+      }
+      acc += count;
+    }
+    return null;
+  }
+
+  const viewer = document.getElementById('pdf-viewer');
+  const canvas = document.getElementById('pdf-canvas');
+  const textLayer = document.getElementById('pdf-text-layer');
+  const pageWrap = document.getElementById('pdf-page');
+  const ctx = canvas ? canvas.getContext('2d') : null;
+  const pageInfo = document.getElementById('page-info');
+  const pageInputMain = document.getElementById('page-input-main');
+  const pageGoMain = document.getElementById('page-go-main');
+  const pageInputMobile = document.getElementById('page-input');
+  const pageGoMobile = document.getElementById('page-go');
+  const modeSelect = document.getElementById('mode-select');
+  const modeSelectMobile = document.getElementById('mode-select-mobile');
+
+  function setPageInfo() {
+    if (!pageInfo) return;
+    if (!pdfDoc) { pageInfo.textContent = 'Page 0 / 0'; return; }
+    const mode = getMode();
+    if (mode === 'book') {
+      if (totals && totals.total) {
+        const globalPage = getGlobalPage();
+        pageInfo.textContent = 'Book ' + (globalPage || currentPage) + ' / ' + totals.total;
+      } else {
+        pageInfo.textContent = 'Book ' + currentPage + ' / ...';
+      }
+      return;
+    }
+    const offset = getOffsetForPdf(currentPdf);
+    const logical = Math.max(getMinLogical(currentPdf), currentPage - offset);
+    const maxLogical = Math.max(getMinLogical(currentPdf), (pdfDoc ? pdfDoc.numPages : 1) - offset);
+    pageInfo.textContent = 'Page ' + logical + ' / ' + maxLogical;
+  }
+  function setPageInputs() {
+    const mode = getMode();
+    if (mode === 'book' && totals && totals.total) {
+      const globalPage = getGlobalPage() || currentPage;
+      if (pageInputMain) {
+        pageInputMain.value = globalPage;
+        pageInputMain.max = totals.total;
+        pageInputMain.min = 1;
+      }
+      if (pageInputMobile) {
+        pageInputMobile.value = globalPage;
+        pageInputMobile.max = totals.total;
+        pageInputMobile.min = 1;
+      }
+      return;
+    }
+    const offset = getOffsetForPdf(currentPdf);
+    const logical = Math.max(1, currentPage - offset);
+    const maxLogical = pdfDoc ? Math.max(1, pdfDoc.numPages - offset) : '';
+    if (pageInputMain) {
+      pageInputMain.value = logical;
+      pageInputMain.max = maxLogical;
+      pageInputMain.min = getMinLogical(currentPdf);
+    }
+    if (pageInputMobile) {
+      pageInputMobile.value = logical;
+      pageInputMobile.max = maxLogical;
+      pageInputMobile.min = getMinLogical(currentPdf);
+    }
+  }
+  function storePage() {
+    if (!currentPdf || !pdfDoc) return;
+    const offset = getOffsetForPdf(currentPdf);
+    const logical = Math.max(1, currentPage - offset);
+    const state = loadState();
+    state.lastPdf = currentPdf;
+    state.pages = state.pages || {};
+    state.pages[currentPdf] = logical;
+    saveState(state);
+  }
+  function renderPage(num) {
+    if (!pdfDoc || !canvas || !ctx) return;
+    rendering = true;
+    pdfDoc.getPage(num).then(function(page) {
+      const containerWidth = viewer ? viewer.clientWidth : 800;
+      const viewport = page.getViewport({ scale: 1 });
+      const scale = Math.max(0.5, (containerWidth - 20) / viewport.width);
+      const scaled = page.getViewport({ scale: scale });
+      canvas.height = scaled.height;
+      canvas.width = scaled.width;
+      if (pageWrap) {
+        pageWrap.style.width = scaled.width + 'px';
+        pageWrap.style.height = scaled.height + 'px';
+      }
+      const renderTask = page.render({ canvasContext: ctx, viewport: scaled });
+      let textTask = Promise.resolve();
+      if (textLayer && pdfjsLib.renderTextLayer) {
+        textLayer.innerHTML = '';
+        textLayer.style.width = scaled.width + 'px';
+        textLayer.style.height = scaled.height + 'px';
+        textTask = page.getTextContent().then(function(textContent) {
+          return pdfjsLib.renderTextLayer({
+            textContent: textContent,
+            container: textLayer,
+            viewport: scaled,
+            textDivs: []
+          }).promise;
+        });
+      }
+      return Promise.all([renderTask.promise, textTask]);
+    }).then(function() {
+      rendering = false;
+      setPageInfo();
+      setPageInputs();
+      storePage();
+      if (pendingPage !== null) {
+        const next = pendingPage;
+        pendingPage = null;
+        renderPage(next);
+      }
+    }).catch(function(err) {
+      rendering = false;
+      console.error('PDF render error', err);
+    });
+  }
+  function queueRender(num) {
+    if (rendering) { pendingPage = num; return; }
+    renderPage(num);
+  }
+  function changePage(num) {
+    if (!pdfDoc) return;
+    if (num < 1 || num > pdfDoc.numPages) return;
+    currentPage = num;
+    queueRender(num);
+  }
+  function jumpToGlobalPage(page) {
+    if (!page || page < 1) return;
+    ensureTotals().then(function(t) {
+      if (!t || !t.total) return;
+      if (page > t.total) return;
+      const target = findByGlobalPage(page);
+      if (!target) return;
+      openPdf(target.href, target.page);
+    });
+  }
+  function handleJump(page) {
+    if (getMode() === 'book') {
+      jumpToGlobalPage(page);
+      return;
+    }
+    if (page < getMinLogical(currentPdf)) return;
+    const target = toPdfPage(currentPdf, page);
+    changePage(target);
+  }
+  function openPdf(url, targetPage, usePhysical) {
+    if (!window.pdfjsLib) {
+      if (viewer) viewer.textContent = 'PDF.js failed to load.';
+      return;
+    }
+    const normalized = normalizePath(url);
+    currentPdf = normalized;
+    setActiveLink(normalized);
+    const state = loadState();
+    state.lastPdf = normalized;
+    saveState(state);
+    pdfjsLib.getDocument(normalized).promise.then(function(doc) {
+      pdfDoc = doc;
+      const savedPage = state.pages && parseInt(state.pages[normalized], 10);
+      const offset = getOffsetForPdf(normalized);
+      const minLogical = getMinLogical(normalized);
+      if (usePhysical && targetPage && targetPage >= 1) {
+        currentPage = targetPage;
+      } else if (targetPage && targetPage >= minLogical) {
+        currentPage = toPdfPage(normalized, targetPage);
+      } else {
+        const logical = savedPage && savedPage >= 1 ? savedPage : 1;
+        currentPage = toPdfPage(normalized, logical);
+      }
+      const minPage = 1;
+      if (currentPage < minPage) currentPage = minPage;
+      if (currentPage > pdfDoc.numPages) currentPage = minPage;
+      setPageInfo();
+      setPageInputs();
+      renderPage(currentPage);
+    }).catch(function(err) {
+      console.error('PDF load error', err);
+      if (viewer) viewer.textContent = 'Failed to load PDF.';
+    });
+  }
+
+  window.loadPDF = function(event, pdfPath) {
+    if (event && typeof event.preventDefault === 'function') event.preventDefault();
+    openPdf(pdfPath);
+  };
+
+  function bindNav() {
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+    const fsButtons = document.querySelectorAll('[data-fs-toggle]');
+    const fsTarget = document.getElementById('pdf-container') || document.documentElement;
+    const openTabMain = document.getElementById('open-tab-main');
+    let lastWheelAt = 0;
+    function onModeChange(value) {
+      setMode(value);
+      if (getMode() === 'book') {
+        ensureTotals().then(function() {
+          setPageInfo();
+          setPageInputs();
+        });
+      }
+    }
+    if (prevBtn) prevBtn.addEventListener('click', function() { changePage(currentPage - 1); });
+    if (nextBtn) nextBtn.addEventListener('click', function() { changePage(currentPage + 1); });
+    if (modeSelect) {
+      modeSelect.addEventListener('change', function() { onModeChange(modeSelect.value); });
+    }
+    if (modeSelectMobile) {
+      modeSelectMobile.addEventListener('change', function() { onModeChange(modeSelectMobile.value); });
+    }
+    if (pageGoMain) {
+      pageGoMain.addEventListener('click', function() {
+        const page = parseInt(pageInputMain && pageInputMain.value, 10);
+        if (!page || page < 1) return;
+        handleJump(page);
+      });
+    }
+    if (pageInputMain) {
+      pageInputMain.addEventListener('keydown', function(e) {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        const page = parseInt(pageInputMain.value, 10);
+        if (!page || page < 1) return;
+        handleJump(page);
+      });
+    }
+    if (openTabMain) {
+      openTabMain.addEventListener('click', function() {
+        if (!currentPdf) return;
+        const mode = getMode();
+        const inputPage = parseInt(pageInputMain && pageInputMain.value, 10);
+        if (mode === 'book' && inputPage && inputPage >= 1) {
+          ensureTotals().then(function(t) {
+            if (!t || !t.total || inputPage > t.total) return;
+            const target = findByGlobalPage(inputPage);
+            if (!target) return;
+            const targetUrl = normalizeForActions(target.href) + '#page=' + toPdfPage(target.href, target.page);
+            window.open(targetUrl, '_blank');
+          });
+          return;
+        }
+        if (inputPage && inputPage >= getMinLogical(currentPdf)) {
+          const targetUrl = normalizeForActions(currentPdf) + '#page=' + toPdfPage(currentPdf, inputPage);
+          window.open(targetUrl, '_blank');
+          return;
+        }
+        const targetUrl = normalizeForActions(currentPdf) + '#page=' + currentPage;
+        window.open(targetUrl, '_blank');
+      });
+    }
+    if (pageGoMobile) {
+      pageGoMobile.addEventListener('click', function() {
+        const page = parseInt(pageInputMobile && pageInputMobile.value, 10);
+        if (!page || page < 1) return;
+        handleJump(page);
+      });
+    }
+    if (pageInputMobile) {
+      pageInputMobile.addEventListener('keydown', function(e) {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        const page = parseInt(pageInputMobile.value, 10);
+        if (!page || page < 1) return;
+        handleJump(page);
+      });
+    }
+    fsButtons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+          return;
+        }
+        if (fsTarget && fsTarget.requestFullscreen) fsTarget.requestFullscreen();
+      });
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key !== 'Escape') return;
+      if (document.fullscreenElement) document.exitFullscreen();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const t = e.target;
+      const tag = t && t.tagName ? t.tagName.toLowerCase() : '';
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+      if (e.key === 'ArrowLeft') changePage(currentPage - 1);
+      if (e.key === 'ArrowRight') changePage(currentPage + 1);
+    });
+    if (viewer) {
+      viewer.addEventListener('wheel', function(e) {
+        const now = Date.now();
+        if (now - lastWheelAt < 250) return;
+        if (Math.abs(e.deltaY) < 20) return;
+        lastWheelAt = now;
+        if (e.deltaY > 0) changePage(currentPage + 1);
+        if (e.deltaY < 0) changePage(currentPage - 1);
+      }, { passive: true });
+    }
+  }
 
   function buildMobileDropdown() {
     const select = document.getElementById('chapter-select');
@@ -308,33 +715,61 @@ Sources ：<a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-f
     const openTabBtn = document.getElementById('mobile-open-tab');
     const dlBtn = document.getElementById('mobile-download');
     if (!select || !openBtn) return;
-    // 建立選項
     select.innerHTML = '';
     const links = document.querySelectorAll('.chapter-link');
-    links.forEach(a => {
+    links.forEach(function(a) {
       const opt = document.createElement('option');
       opt.value = a.href;
       opt.textContent = (a.textContent || '').trim();
       select.appendChild(opt);
     });
-    // 預設選到第一個
-    if (select.options.length > 0) select.selectedIndex = 0;
-    // 點擊開啟
+    if (select.options.length > 0) {
+      const state = loadState();
+      if (state.lastPdf) {
+        const idx = Array.prototype.findIndex.call(select.options, function(opt) {
+          return normalizeForActions(opt.value) === normalizeForActions(state.lastPdf);
+        });
+        select.selectedIndex = idx >= 0 ? idx : 0;
+      } else {
+        select.selectedIndex = 0;
+      }
+    }
     openBtn.addEventListener('click', function() {
       const opt = select.options[select.selectedIndex];
       if (!opt) return;
-      window.loadPDF({ preventDefault: function(){} }, opt.value, opt.textContent);
+      openPdf(opt.value);
     });
-    // 新分頁開啟
     if (openTabBtn) {
       openTabBtn.addEventListener('click', function() {
         const opt = select.options[select.selectedIndex];
         if (!opt) return;
+        const mode = getMode();
         const url = normalizeForActions(opt.value);
-        window.open(url, '_blank');
+        const inputPage = parseInt(pageInputMobile && pageInputMobile.value, 10);
+        if (mode === 'book' && inputPage && inputPage >= 1) {
+          ensureTotals().then(function(t) {
+            if (!t || !t.total || inputPage > t.total) return;
+            const target = findByGlobalPage(inputPage);
+            if (!target) return;
+            const targetUrl = normalizeForActions(target.href) + '#page=' + toPdfPage(target.href, target.page);
+            window.open(targetUrl, '_blank');
+          });
+          return;
+        }
+        if (inputPage && inputPage >= getMinLogical(opt.value)) {
+          const normalized = normalizePath(opt.value);
+          const targetPage = toPdfPage(normalized, inputPage);
+          window.open(url + '#page=' + targetPage, '_blank');
+          return;
+        }
+        const state = loadState();
+        const normalized = normalizePath(opt.value);
+        const saved = state.pages && parseInt(state.pages[normalized], 10);
+        const logical = saved || 1;
+        const page = (normalized === currentPdf && currentPage) ? currentPage : toPdfPage(normalized, logical);
+        window.open(url + '#page=' + page, '_blank');
       });
     }
-    // 下載
     if (dlBtn) {
       const syncDownload = function() {
         const opt = select.options[select.selectedIndex];
@@ -348,37 +783,68 @@ Sources ：<a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-f
       syncDownload();
     }
   }
-  buildMobileDropdown();
-})();
-</script>
-<script>
-(function() {
-  function normalizeHref(inputHref) {
-    try {
-      const linkUrl = new URL(inputHref, window.location.href);
-      const baseUrl = new URL('.', window.location.href);
-      let p = decodeURIComponent(linkUrl.pathname);
-      const basePath = decodeURIComponent(baseUrl.pathname);
-      p = p.replace(/\/\s*open\//g, '/');
-      const dupPrefix = basePath + 'open/';
-      if (p.startsWith(dupPrefix)) p = basePath + p.slice(dupPrefix.length);
-      return p.startsWith(basePath) ? p.slice(basePath.length) : linkUrl.href;
-    } catch (e) { return inputHref; }
-  }
+
   function fixChapterLinks() {
     document.querySelectorAll('.chapter-link').forEach(function(a) {
       const raw = a.getAttribute('href');
       if (!raw) return;
-      const cleaned = normalizeHref(raw.trim());
+      const cleaned = normalizePath(raw.trim());
       a.setAttribute('href', cleaned);
     });
   }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', fixChapterLinks);
-  } else {
-    fixChapterLinks();
+  function setActiveLink(href) {
+    const normalized = normalizePath(href || '');
+    const links = document.querySelectorAll('.chapter-link');
+    links.forEach(function(a) {
+      const raw = a.getAttribute('href') || a.href || '';
+      const linkNorm = normalizePath(raw);
+      if (linkNorm === normalized) {
+        a.classList.add('active');
+      } else {
+        a.classList.remove('active');
+      }
+    });
   }
+
+  function init() {
+    bindNav();
+    buildMobileDropdown();
+    fixChapterLinks();
+    updateModeUI();
+    if (getMode() === 'book') {
+      ensureTotals().then(function() {
+        setPageInfo();
+        setPageInputs();
+      });
+    }
+    const state = loadState();
+    if (state.lastPdf) {
+      openPdf(state.lastPdf);
+      return;
+    }
+    const firstLink = document.querySelector('.chapter-link');
+    if (firstLink) openPdf(firstLink.href);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  let resizeTimer = null;
+  window.addEventListener('resize', function() {
+    if (!pdfDoc) return;
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() { renderPage(currentPage); }, 150);
+  });
 })();
 </script>
 </body>
 </html>
+
+
+
+
+
+

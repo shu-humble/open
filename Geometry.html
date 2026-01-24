@@ -9,30 +9,41 @@ html, body {
     margin: 0;
     padding: 0;
     height: 100%;
-    font-family: Arial, sans-serif;
+    font-family: "Noto Serif TC", "Source Han Serif TC", "Georgia", serif;
 }
 body {
     padding: 20px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
+    background: radial-gradient(1200px 800px at 10% 0%, #f5f1e7 0%, #f8f6f0 45%, #eef2f4 100%);
+    color: #1b1b1b;
 }
 .header {
     flex-shrink: 0;
     margin-bottom: 10px;
 }
+.header b {
+    letter-spacing: 0.5px;
+}
 .main-content-wrapper {
     display: flex;
     flex-grow: 1;
     min-height: 0;
+    background: #fdfdfb;
+    border: 1px solid #e4e0d6;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(33, 33, 33, 0.08);
+    overflow: hidden;
 }
 .left {
     flex: 0 0 24%;
     max-width: 340px;
     min-width: 220px;
     padding-right: 12px;
-    border-right: 1px solid #ccc;
+    border-right: 1px solid #e7e1d4;
     overflow-y: auto;
+    background: linear-gradient(180deg, #fbfaf6 0%, #f6f2ea 100%);
 }
 .right {
     flex: 1;
@@ -40,22 +51,23 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 0;
+    background: #fcfcfa;
 }
 .chapter-link {
     display: block;
     margin-bottom: 4px;
     text-decoration: none;
-    color: #007bff;
+    color: #2f5d62;
     font-size: 1.05em;
     line-height: 1.3;
     padding: 2px 0;
 }
 .chapter-link:hover {
-    color: #0056b3;
+    color: #1f3f43;
     text-decoration: underline;
 }
 .chapter-link.active {
-    color: #111;
+    color: #0e2b2d;
     font-weight: bold;
     text-decoration: underline;
 }
@@ -70,11 +82,19 @@ body {
     padding: 6px 10px;
     font-size: 14px;
     cursor: pointer;
+    background: #2f5d62;
+    color: #f7f4ed;
+    border: 1px solid #264b4f;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 .page-input {
     width: 72px;
     padding: 6px;
     font-size: 14px;
+    border-radius: 8px;
+    border: 1px solid #d7d0c2;
+    background: #fffdf8;
 }
 #pdf-container:fullscreen,
 #pdf-container:-webkit-full-screen,
@@ -102,6 +122,9 @@ body {
     padding: 6px 0;
     flex-wrap: wrap;
     justify-content: center;
+    background: linear-gradient(90deg, #f6efe2 0%, #f2f7f6 100%);
+    border: 1px solid #e7e1d4;
+    border-radius: 12px;
 }
 .mode-select {
     padding: 6px;
@@ -111,7 +134,7 @@ body {
     width: 100%;
     flex-grow: 1;
     overflow: auto;
-    background: #f2f2f2;
+    background: #f0f2ef;
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -124,6 +147,7 @@ body {
     background: #fff;
     display: block;
     margin: 0 auto;
+    box-shadow: 0 12px 30px rgba(20, 20, 20, 0.15);
 }
 #pdf-page {
     position: relative;
@@ -154,6 +178,10 @@ body {
     gap: 8px;
     align-items: center;
     margin: 8px 0;
+    background: #f7f2e8;
+    border: 1px solid #e7e1d4;
+    border-radius: 12px;
+    padding: 8px;
 }
 .mobile-controls select { flex: 1; padding: 6px; }
 .mobile-controls input { padding: 6px; }
@@ -509,8 +537,7 @@ Sources: <a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-for
     rendering = true;
     pdfDoc.getPage(num).then(function(page) {
       const containerWidth = viewer ? viewer.clientWidth : 800;
-      const viewport = page.getViewport({ scale: 1 });
-      const scale = Math.max(0.5, (containerWidth - 20) / viewport.width) * zoomLevel;
+      const scale = zoomLevel;
       const scaled = page.getViewport({ scale: scale });
       canvas.height = scaled.height;
       canvas.width = scaled.width;

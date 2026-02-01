@@ -8,14 +8,11 @@
 html, body {
     margin: 0;
     padding: 0;
-    height: 100%;
     font-family: "Noto Serif TC", "Source Han Serif TC", "Georgia", serif;
 }
 body {
-    padding: 20px;
+    padding: 16px;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
     background: radial-gradient(1200px 800px at 10% 0%, #f5f1e7 0%, #f8f6f0 45%, #eef2f4 100%);
     color: #1b1b1b;
 }
@@ -28,13 +25,12 @@ body {
 }
 .main-content-wrapper {
     display: flex;
-    flex-grow: 1;
     min-height: 0;
     background: #fdfdfb;
     border: 1px solid #e4e0d6;
     border-radius: 16px;
     box-shadow: 0 10px 25px rgba(33, 33, 33, 0.08);
-    overflow: hidden;
+    overflow: visible;
 }
 .left {
     flex: 0 0 24%;
@@ -58,7 +54,7 @@ body {
     margin-bottom: 4px;
     text-decoration: none;
     color: #2f5d62;
-    font-size: 1.05em;
+    font-size: 0.98em;
     line-height: 1.3;
     padding: 2px 0;
 }
@@ -80,7 +76,7 @@ body {
 }
 .fs-btn {
     padding: 6px 10px;
-    font-size: 14px;
+    font-size: 13px;
     cursor: pointer;
     background: #2f5d62;
     color: #f7f4ed;
@@ -89,9 +85,9 @@ body {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 .page-input {
-    width: 72px;
+    width: 68px;
     padding: 6px;
-    font-size: 14px;
+    font-size: 13px;
     border-radius: 8px;
     border: 1px solid #d7d0c2;
     background: #fffdf8;
@@ -109,32 +105,26 @@ body {
     align-items: center;
 }
 #pdf-container {
-    display: flex;
-    flex: 1;
-    min-height: 0;
-    flex-direction: column;
+    display: block;
 }
-#pdf-container > #pdf-viewer { flex: 1; }
+#pdf-container > #pdf-viewer { flex: 0; }
 .pdf-toolbar {
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 6px 0;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
     background: linear-gradient(90deg, #f6efe2 0%, #f2f7f6 100%);
     border: 1px solid #e7e1d4;
     border-radius: 12px;
-}
-.mode-select {
-    padding: 6px;
-    font-size: 14px;
+    overflow-x: auto;
 }
 #pdf-viewer {
     width: 100%;
-    flex-grow: 1;
-    overflow: auto;
-    background: #f0f2ef;
+    flex-grow: 0;
+    overflow: visible;
+    background: transparent;
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -153,6 +143,9 @@ body {
     position: relative;
     margin: 0 auto;
     display: inline-block;
+    width: max-content;
+    height: max-content;
+    max-width: 100%;
 }
 #pdf-text-layer {
     position: absolute;
@@ -182,16 +175,52 @@ body {
     border: 1px solid #e7e1d4;
     border-radius: 12px;
     padding: 8px;
+    flex-wrap: nowrap;
 }
-.mobile-controls select { flex: 1; padding: 6px; }
-.mobile-controls input { padding: 6px; }
-.mobile-controls button { padding: 6px 10px; }
+.mobile-controls select { flex: 0 0 auto; padding: 8px; font-size: 14px; }
+.mobile-controls input { padding: 8px; font-size: 14px; }
+.mobile-controls button { padding: 8px 10px; font-size: 14px; }
 .mobile-controls .mode-select { flex: 0 0 auto; }
+.mobile-controls .mobile-nav { display: flex; gap: 8px; }
+.mobile-controls .mobile-nav button { flex: 0 0 auto; }
 @media (max-width: 768px) {
   .main-content-wrapper { flex-direction: column; }
   .left { display: none; }
-.mobile-controls { display: flex; }
-  #pdf-viewer { min-height: 65vh; }
+  .mobile-controls { display: flex; flex-wrap: nowrap; overflow-x: auto; }
+  #pdf-viewer { min-height: 0; overflow: visible; }
+  .right { padding-left: 0; }
+  .pdf-toolbar { display: none; }
+  #mobile-open-tab, #mobile-download,
+  #mode-select-mobile, #zoom-out-mobile, #zoom-reset-mobile, #zoom-in-mobile { display: none; }
+  .mobile-controls { position: static; }
+  .mobile-controls > * { width: auto; }
+  body { padding: 12px; }
+  .header { margin-bottom: 6px; }
+}
+body.mobile-focus .header,
+body.mobile-focus .mobile-controls,
+body.mobile-focus .sources {
+  display: none;
+}
+body.desktop-focus .header,
+body.desktop-focus .left,
+body.desktop-focus .sources {
+  display: none;
+}
+body.desktop-focus .main-content-wrapper {
+  border: none;
+  box-shadow: none;
+}
+.focus-exit-fab {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 9999;
+  display: none;
+}
+body.mobile-focus .focus-exit-fab,
+body.desktop-focus .focus-exit-fab {
+  display: inline-flex;
 }
 </style>
 </head><body>
@@ -202,19 +231,18 @@ body {
 
 <div class="mobile-controls">
     <select id="chapter-select" aria-label="Choose chapter"></select>
-    <button id="mobile-open" class="fs-btn">Open</button>
+    <div class="mobile-nav">
+      <button id="prev-page-mobile" class="fs-btn">Prev</button>
+      <button id="next-page-mobile" class="fs-btn">Next</button>
+    </div>
+    <button id="mobile-focus-toggle" class="fs-btn" title="Focus">Focus</button>
     <button id="mobile-open-tab" class="fs-btn">New Tab</button>
     <a id="mobile-download" class="fs-btn" href="#" download>Download</a>
-    <select id="mode-select-mobile" class="mode-select" aria-label="Page mode">
-      <option value="chapter">Chapter</option>
-      <option value="book">Book</option>
-    </select>
     <button id="zoom-out-mobile" class="fs-btn" title="Zoom out">A-</button>
     <button id="zoom-reset-mobile" class="fs-btn" title="Reset zoom">A</button>
     <button id="zoom-in-mobile" class="fs-btn" title="Zoom in">A+</button>
     <input id="page-input" class="page-input" type="number" min="1" placeholder="Page">
     <button id="page-go" class="fs-btn">Go</button>
-    <button id="fs-toggle-mobile" class="fs-btn" data-fs-toggle>Fullscreen</button>
 </div>
 
 <div class="main-content-wrapper">
@@ -242,21 +270,17 @@ body {
 
     <div class="right">
      <!--  <h3 id="pdf-title"></h3> -->
-     <div class="controls">
-        <button id="fs-toggle-main" class="fs-btn" data-fs-toggle title="Fullscreen">Fullscreen</button>
-    </div>
+     <div class="controls"></div>
         <div id="pdf-container">
             <div class="pdf-toolbar">
                 <button id="prev-page" class="fs-btn">Prev</button>
                 <button id="next-page" class="fs-btn">Next</button>
                 <span id="page-info">Page 0 / 0</span>
-                <select id="mode-select" class="mode-select" aria-label="Page mode">
-                  <option value="chapter">Chapter</option>
-                  <option value="book">Book</option>
-                </select>
                 <button id="zoom-out" class="fs-btn" title="Zoom out">A-</button>
                 <button id="zoom-reset" class="fs-btn" title="Reset zoom">A</button>
                 <button id="zoom-in" class="fs-btn" title="Zoom in">A+</button>
+                <button id="desktop-focus-toggle" class="fs-btn">Focus</button>
+                <button id="desktop-focus-exit" class="fs-btn" style="display:none;">Exit</button>
                 <button id="open-tab-main" class="fs-btn">New Tab</button>
                 <input id="page-input-main" class="page-input" type="number" min="1" placeholder="Page">
                 <button id="page-go-main" class="fs-btn">Go</button>
@@ -270,9 +294,10 @@ body {
         </div>
     </div>
 </div>
-<br><br>
-<hr>
-Sources: <a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-for-enjoyment-and-challenge">Geometry for Enjoyment and Challenge</a><br>
+<div class="sources">
+  Sources: <a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-for-enjoyment-and-challenge">Geometry for Enjoyment and Challenge</a>
+</div>
+<button id="focus-exit-fab" class="fs-btn focus-exit-fab">Exit Focus</button>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
   if (window.pdfjsLib) {
@@ -299,24 +324,15 @@ Sources: <a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-for
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) { /* ignore */ }
   }
   function getMode() {
-    const state = loadState();
-    return state.pageMode || 'book';
+    return 'book';
   }
-  function setMode(mode) {
-    const state = loadState();
-    state.pageMode = mode;
-    saveState(state);
-    updateModeUI();
+  function setMode() {
     setPageInfo();
     setPageInputs();
   }
   function updateModeUI() {
-    const mode = getMode();
-    if (modeSelect) modeSelect.value = mode;
-    if (modeSelectMobile) modeSelectMobile.value = mode;
-    const placeholder = mode === 'book' ? 'Book Page' : 'Page';
-    if (pageInputMain) pageInputMain.placeholder = placeholder;
-    if (pageInputMobile) pageInputMobile.placeholder = placeholder;
+    if (pageInputMain) pageInputMain.placeholder = 'Book Page';
+    if (pageInputMobile) pageInputMobile.placeholder = 'Book Page';
   }
   function normalizePath(inputHref) {
     try {
@@ -479,8 +495,6 @@ Sources: <a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-for
   const pageGoMain = document.getElementById('page-go-main');
   const pageInputMobile = document.getElementById('page-input');
   const pageGoMobile = document.getElementById('page-go');
-  const modeSelect = document.getElementById('mode-select');
-  const modeSelectMobile = document.getElementById('mode-select-mobile');
   const zoomOutBtn = document.getElementById('zoom-out');
   const zoomInBtn = document.getElementById('zoom-in');
   const zoomResetBtn = document.getElementById('zoom-reset');
@@ -678,7 +692,6 @@ Sources: <a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-for
 
   window.loadPDF = function(event, pdfPath) {
     if (event && typeof event.preventDefault === 'function') event.preventDefault();
-    if (!isAssignmentHref(pdfPath)) setMode('chapter');
     openPdf(pdfPath);
   };
 
@@ -692,27 +705,18 @@ Sources: <a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-for
   function bindNav() {
     const prevBtn = document.getElementById('prev-page');
     const nextBtn = document.getElementById('next-page');
-    const fsButtons = document.querySelectorAll('[data-fs-toggle]');
-    const fsTarget = document.getElementById('pdf-container') || document.documentElement;
+    const prevBtnMobile = document.getElementById('prev-page-mobile');
+    const nextBtnMobile = document.getElementById('next-page-mobile');
+    const fsMobile = document.getElementById('mobile-focus-toggle');
+    const focusExitFab = document.getElementById('focus-exit-fab');
     const openTabMain = document.getElementById('open-tab-main');
+    const focusBtn = document.getElementById('desktop-focus-toggle');
+    const focusExitBtn = document.getElementById('desktop-focus-exit');
     let lastWheelAt = 0;
-    function onModeChange(value) {
-      setMode(value);
-      if (getMode() === 'book') {
-        ensureTotals().then(function() {
-          setPageInfo();
-          setPageInputs();
-        });
-      }
-    }
     if (prevBtn) prevBtn.addEventListener('click', function() { changePage(currentPage - 1); });
     if (nextBtn) nextBtn.addEventListener('click', function() { changePage(currentPage + 1); });
-    if (modeSelect) {
-      modeSelect.addEventListener('change', function() { onModeChange(modeSelect.value); });
-    }
-    if (modeSelectMobile) {
-      modeSelectMobile.addEventListener('change', function() { onModeChange(modeSelectMobile.value); });
-    }
+    if (prevBtnMobile) prevBtnMobile.addEventListener('click', function() { changePage(currentPage - 1); });
+    if (nextBtnMobile) nextBtnMobile.addEventListener('click', function() { changePage(currentPage + 1); });
     if (pageGoMain) {
       pageGoMain.addEventListener('click', function() {
         const page = parseInt(pageInputMain && pageInputMain.value, 10);
@@ -759,6 +763,25 @@ Sources: <a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-for
         window.open(targetUrl, '_blank');
       });
     }
+    if (focusBtn && focusExitBtn) {
+      const syncFocus = function() {
+        const on = document.body.classList.contains('desktop-focus');
+        focusBtn.style.display = on ? 'none' : '';
+        focusExitBtn.style.display = on ? '' : 'none';
+      };
+      focusBtn.addEventListener('click', function() {
+        document.body.classList.add('desktop-focus');
+        if (document.body.classList.contains('mobile-focus')) {
+          document.body.classList.remove('mobile-focus');
+        }
+        syncFocus();
+      });
+      focusExitBtn.addEventListener('click', function() {
+        document.body.classList.remove('desktop-focus');
+        syncFocus();
+      });
+      syncFocus();
+    }
     if (pageGoMobile) {
       pageGoMobile.addEventListener('click', function() {
         const page = parseInt(pageInputMobile && pageInputMobile.value, 10);
@@ -775,18 +798,39 @@ Sources: <a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-for
         handleJump(page);
       });
     }
-    fsButtons.forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        if (document.fullscreenElement) {
-          document.exitFullscreen();
-          return;
+    if (fsMobile) {
+      fsMobile.addEventListener('click', function() {
+        document.body.classList.toggle('mobile-focus');
+        if (document.body.classList.contains('desktop-focus')) {
+          document.body.classList.remove('desktop-focus');
         }
-        if (fsTarget && fsTarget.requestFullscreen) fsTarget.requestFullscreen();
+        if (focusExitFab) focusExitFab.style.display = document.body.classList.contains('mobile-focus') ? 'inline-flex' : '';
       });
-    });
+    }
+    if (focusExitFab) {
+      focusExitFab.addEventListener('click', function() {
+        document.body.classList.remove('mobile-focus');
+        document.body.classList.remove('desktop-focus');
+        focusExitFab.style.display = '';
+        if (focusBtn && focusExitBtn) {
+          focusBtn.style.display = '';
+          focusExitBtn.style.display = 'none';
+        }
+      });
+    }
     document.addEventListener('keydown', function(e) {
       if (e.key !== 'Escape') return;
-      if (document.fullscreenElement) document.exitFullscreen();
+      if (document.body.classList.contains('desktop-focus')) {
+        document.body.classList.remove('desktop-focus');
+        if (focusBtn && focusExitBtn) {
+          focusBtn.style.display = '';
+          focusExitBtn.style.display = 'none';
+        }
+      }
+      if (document.body.classList.contains('mobile-focus')) {
+        document.body.classList.remove('mobile-focus');
+      }
+      if (focusExitFab) focusExitFab.style.display = '';
     });
     document.addEventListener('keydown', function(e) {
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
@@ -801,14 +845,30 @@ Sources: <a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-for
         lastWheelAt = Date.now();
       }, { passive: true });
     }
+    let touchStartX = 0;
+    let touchStartY = 0;
+    if (viewer) {
+      viewer.addEventListener('touchstart', function(e) {
+        if (!e.touches || e.touches.length !== 1) return;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+      viewer.addEventListener('touchend', function(e) {
+        if (!e.changedTouches || e.changedTouches.length !== 1) return;
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy)) return;
+        if (dx < 0) changePage(currentPage + 1);
+        if (dx > 0) changePage(currentPage - 1);
+      }, { passive: true });
+    }
   }
 
   function buildMobileDropdown() {
     const select = document.getElementById('chapter-select');
-    const openBtn = document.getElementById('mobile-open');
     const openTabBtn = document.getElementById('mobile-open-tab');
     const dlBtn = document.getElementById('mobile-download');
-    if (!select || !openBtn) return;
+    if (!select) return;
     select.innerHTML = '';
     const links = document.querySelectorAll('.chapter-link');
     links.forEach(function(a) {
@@ -828,10 +888,9 @@ Sources: <a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-for
         select.selectedIndex = 0;
       }
     }
-    openBtn.addEventListener('click', function() {
+    select.addEventListener('change', function() {
       const opt = select.options[select.selectedIndex];
       if (!opt) return;
-      if (!isAssignmentHref(opt.value)) setMode('chapter');
       openPdf(opt.value);
     });
     if (openTabBtn) {
@@ -909,12 +968,10 @@ Sources: <a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-for
     buildMobileDropdown();
     fixChapterLinks();
     updateModeUI();
-    if (getMode() === 'book') {
-      ensureTotals().then(function() {
-        setPageInfo();
-        setPageInputs();
-      });
-    }
+    ensureTotals().then(function() {
+      setPageInfo();
+      setPageInputs();
+    });
     const state = loadState();
     if (state.lastPdf) {
       openPdf(state.lastPdf);
@@ -940,9 +997,3 @@ Sources: <a href="https://sites.google.com/a/lasdk8.org/mr-pasturel/geometry-for
 </script>
 </body>
 </html>
-
-
-
-
-
-

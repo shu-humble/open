@@ -68,12 +68,6 @@ body {
     text-decoration: underline;
 }
 .left br { display: none; }
-.controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-}
 .fs-btn {
     padding: 6px 10px;
     font-size: 13px;
@@ -91,18 +85,6 @@ body {
     border-radius: 8px;
     border: 1px solid #d7d0c2;
     background: #fffdf8;
-}
-#pdf-container:fullscreen,
-#pdf-container:-webkit-full-screen,
-#pdf-container:-ms-fullscreen {
-    width: 100vw;
-    height: 100vh;
-    border: none;
-}
-#pdf-container:fullscreen #pdf-viewer,
-#pdf-container:-webkit-full-screen #pdf-viewer,
-#pdf-container:-ms-fullscreen #pdf-viewer {
-    align-items: center;
 }
 #pdf-container {
     display: block;
@@ -129,6 +111,7 @@ body {
     justify-content: center;
     align-items: flex-start;
     padding: 0;
+    position: relative;
 }
 #pdf-canvas {
     width: auto;
@@ -180,9 +163,7 @@ body {
 .mobile-controls select { flex: 0 0 auto; padding: 8px; font-size: 14px; }
 .mobile-controls input { padding: 8px; font-size: 14px; }
 .mobile-controls button { padding: 8px 10px; font-size: 14px; }
-.mobile-controls .mode-select { flex: 0 0 auto; }
 .mobile-controls .mobile-nav { display: flex; gap: 8px; }
-.mobile-controls .mobile-nav button { flex: 0 0 auto; }
 @media (max-width: 768px) {
   .main-content-wrapper { flex-direction: column; }
   .left { display: none; }
@@ -190,7 +171,7 @@ body {
   #pdf-viewer { min-height: 0; overflow: visible; }
   .right { padding-left: 0; }
   .pdf-toolbar { display: none; }
-  #mobile-open-tab, #mobile-download,
+  #mobile-open-tab,
   #mode-select-mobile, #zoom-out-mobile, #zoom-reset-mobile, #zoom-in-mobile { display: none; }
   .mobile-controls { position: static; }
   .mobile-controls > * { width: auto; }
@@ -232,17 +213,14 @@ body.desktop-focus .focus-exit-fab {
 <div class="mobile-controls">
     <select id="chapter-select" aria-label="Choose chapter"></select>
     <div class="mobile-nav">
-      <button id="prev-page-mobile" class="fs-btn">Prev</button>
-      <button id="next-page-mobile" class="fs-btn">Next</button>
+      <input id="page-input" class="page-input" type="number" min="1" placeholder="Page">
     </div>
     <button id="mobile-focus-toggle" class="fs-btn" title="Focus">Focus</button>
     <button id="mobile-open-tab" class="fs-btn">New Tab</button>
-    <a id="mobile-download" class="fs-btn" href="#" download>Download</a>
     <button id="zoom-out-mobile" class="fs-btn" title="Zoom out">A-</button>
     <button id="zoom-reset-mobile" class="fs-btn" title="Reset zoom">A</button>
     <button id="zoom-in-mobile" class="fs-btn" title="Zoom in">A+</button>
-    <input id="page-input" class="page-input" type="number" min="1" placeholder="Page">
-    <button id="page-go" class="fs-btn">Go</button>
+
 </div>
 
 <div class="main-content-wrapper">
@@ -270,20 +248,18 @@ body.desktop-focus .focus-exit-fab {
 
     <div class="right">
      <!--  <h3 id="pdf-title"></h3> -->
-     <div class="controls"></div>
         <div id="pdf-container">
             <div class="pdf-toolbar">
+              <input id="page-input-main" class="page-input" type="number" min="1" placeholder="Page">
                 <button id="prev-page" class="fs-btn">Prev</button>
                 <button id="next-page" class="fs-btn">Next</button>
-                <span id="page-info">Page 0 / 0</span>
                 <button id="zoom-out" class="fs-btn" title="Zoom out">A-</button>
                 <button id="zoom-reset" class="fs-btn" title="Reset zoom">A</button>
                 <button id="zoom-in" class="fs-btn" title="Zoom in">A+</button>
                 <button id="desktop-focus-toggle" class="fs-btn">Focus</button>
                 <button id="desktop-focus-exit" class="fs-btn" style="display:none;">Exit</button>
                 <button id="open-tab-main" class="fs-btn">New Tab</button>
-                <input id="page-input-main" class="page-input" type="number" min="1" placeholder="Page">
-                <button id="page-go-main" class="fs-btn">Go</button>
+
             </div>
                         <div id="pdf-viewer" aria-label="PDF viewer">
                 <div id="pdf-page">
@@ -325,10 +301,6 @@ body.desktop-focus .focus-exit-fab {
   }
   function getMode() {
     return 'book';
-  }
-  function setMode() {
-    setPageInfo();
-    setPageInputs();
   }
   function updateModeUI() {
     if (pageInputMain) pageInputMain.placeholder = 'Book Page';
@@ -490,11 +462,8 @@ body.desktop-focus .focus-exit-fab {
   const textLayer = document.getElementById('pdf-text-layer');
   const pageWrap = document.getElementById('pdf-page');
   const ctx = canvas ? canvas.getContext('2d') : null;
-  const pageInfo = document.getElementById('page-info');
   const pageInputMain = document.getElementById('page-input-main');
-  const pageGoMain = document.getElementById('page-go-main');
   const pageInputMobile = document.getElementById('page-input');
-  const pageGoMobile = document.getElementById('page-go');
   const zoomOutBtn = document.getElementById('zoom-out');
   const zoomInBtn = document.getElementById('zoom-in');
   const zoomResetBtn = document.getElementById('zoom-reset');
@@ -502,25 +471,6 @@ body.desktop-focus .focus-exit-fab {
   const zoomInMobile = document.getElementById('zoom-in-mobile');
   const zoomResetMobile = document.getElementById('zoom-reset-mobile');
 
-  function setPageInfo() {
-    if (!pageInfo) return;
-    if (!pdfDoc) { pageInfo.textContent = 'Page 0 / 0'; return; }
-    const mode = getMode();
-    if (mode === 'book') {
-      if (totals && totals.total) {
-        const isAssignment = isAssignmentHref(currentPdf);
-        const globalPage = isAssignment ? getLastBookPage() : getGlobalPage();
-        pageInfo.textContent = 'Book ' + (globalPage || getLastBookPage() || 1) + ' / ' + totals.total;
-      } else {
-        pageInfo.textContent = 'Book ' + (getLastBookPage() || 1) + ' / ...';
-      }
-      return;
-    }
-    const offset = getOffsetForPdf(currentPdf);
-    const logical = Math.max(getMinLogical(currentPdf), currentPage - offset);
-    const maxLogical = Math.max(getMinLogical(currentPdf), (pdfDoc ? pdfDoc.numPages : 1) - offset);
-    pageInfo.textContent = 'Page ' + logical + ' / ' + maxLogical;
-  }
   function setPageInputs() {
     const mode = getMode();
     if (mode === 'book' && totals && totals.total) {
@@ -585,7 +535,6 @@ body.desktop-focus .focus-exit-fab {
     if (!pdfDoc || !canvas || !ctx) return;
     rendering = true;
     pdfDoc.getPage(num).then(function(page) {
-      const containerWidth = viewer ? viewer.clientWidth : 800;
       const scale = zoomLevel;
       const scaled = page.getViewport({ scale: scale });
       canvas.height = scaled.height;
@@ -612,7 +561,6 @@ body.desktop-focus .focus-exit-fab {
       return Promise.all([renderTask.promise, textTask]);
     }).then(function() {
       rendering = false;
-      setPageInfo();
       setPageInputs();
       storePage();
       if (pendingPage !== null) {
@@ -681,7 +629,6 @@ body.desktop-focus .focus-exit-fab {
     const minPage = 1;
     if (currentPage < minPage) currentPage = minPage;
     if (currentPage > pdfDoc.numPages) currentPage = minPage;
-    setPageInfo();
     setPageInputs();
     renderPage(currentPage);
     }).catch(function(err) {
@@ -705,25 +652,13 @@ body.desktop-focus .focus-exit-fab {
   function bindNav() {
     const prevBtn = document.getElementById('prev-page');
     const nextBtn = document.getElementById('next-page');
-    const prevBtnMobile = document.getElementById('prev-page-mobile');
-    const nextBtnMobile = document.getElementById('next-page-mobile');
     const fsMobile = document.getElementById('mobile-focus-toggle');
     const focusExitFab = document.getElementById('focus-exit-fab');
     const openTabMain = document.getElementById('open-tab-main');
     const focusBtn = document.getElementById('desktop-focus-toggle');
     const focusExitBtn = document.getElementById('desktop-focus-exit');
-    let lastWheelAt = 0;
     if (prevBtn) prevBtn.addEventListener('click', function() { changePage(currentPage - 1); });
     if (nextBtn) nextBtn.addEventListener('click', function() { changePage(currentPage + 1); });
-    if (prevBtnMobile) prevBtnMobile.addEventListener('click', function() { changePage(currentPage - 1); });
-    if (nextBtnMobile) nextBtnMobile.addEventListener('click', function() { changePage(currentPage + 1); });
-    if (pageGoMain) {
-      pageGoMain.addEventListener('click', function() {
-        const page = parseInt(pageInputMain && pageInputMain.value, 10);
-        if (!page || page < 1) return;
-        handleJump(page);
-      });
-    }
     if (zoomOutBtn) zoomOutBtn.addEventListener('click', function() { setZoom(zoomLevel - 0.1); });
     if (zoomInBtn) zoomInBtn.addEventListener('click', function() { setZoom(zoomLevel + 0.1); });
     if (zoomResetBtn) zoomResetBtn.addEventListener('click', function() { setZoom(1); });
@@ -737,6 +672,7 @@ body.desktop-focus .focus-exit-fab {
         const page = parseInt(pageInputMain.value, 10);
         if (!page || page < 1) return;
         handleJump(page);
+        pageInputMain.blur();
       });
     }
     if (openTabMain) {
@@ -782,13 +718,6 @@ body.desktop-focus .focus-exit-fab {
       });
       syncFocus();
     }
-    if (pageGoMobile) {
-      pageGoMobile.addEventListener('click', function() {
-        const page = parseInt(pageInputMobile && pageInputMobile.value, 10);
-        if (!page || page < 1) return;
-        handleJump(page);
-      });
-    }
     if (pageInputMobile) {
       pageInputMobile.addEventListener('keydown', function(e) {
         if (e.key !== 'Enter') return;
@@ -796,6 +725,7 @@ body.desktop-focus .focus-exit-fab {
         const page = parseInt(pageInputMobile.value, 10);
         if (!page || page < 1) return;
         handleJump(page);
+        pageInputMobile.blur();
       });
     }
     if (fsMobile) {
@@ -840,11 +770,6 @@ body.desktop-focus .focus-exit-fab {
       if (e.key === 'ArrowLeft') changePage(currentPage - 1);
       if (e.key === 'ArrowRight') changePage(currentPage + 1);
     });
-    if (viewer) {
-      viewer.addEventListener('wheel', function() {
-        lastWheelAt = Date.now();
-      }, { passive: true });
-    }
     let touchStartX = 0;
     let touchStartY = 0;
     if (viewer) {
@@ -861,13 +786,22 @@ body.desktop-focus .focus-exit-fab {
         if (dx < 0) changePage(currentPage + 1);
         if (dx > 0) changePage(currentPage - 1);
       }, { passive: true });
+      viewer.addEventListener('click', function(e) {
+        if (window.innerWidth > 768) return;
+        const rect = viewer.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        if (x < rect.width * 0.5) {
+          changePage(currentPage - 1);
+        } else {
+          changePage(currentPage + 1);
+        }
+      });
     }
   }
 
   function buildMobileDropdown() {
     const select = document.getElementById('chapter-select');
     const openTabBtn = document.getElementById('mobile-open-tab');
-    const dlBtn = document.getElementById('mobile-download');
     if (!select) return;
     select.innerHTML = '';
     const links = document.querySelectorAll('.chapter-link');
@@ -924,18 +858,7 @@ body.desktop-focus .focus-exit-fab {
         window.open(url + '#page=' + page, '_blank');
       });
     }
-    if (dlBtn) {
-      const syncDownload = function() {
-        const opt = select.options[select.selectedIndex];
-        if (!opt) return;
-        const url = normalizeForActions(opt.value);
-        dlBtn.href = url;
-        const name = (opt.textContent || 'file') + '.pdf';
-        dlBtn.setAttribute('download', name);
-      };
-      select.addEventListener('change', syncDownload);
-      syncDownload();
-    }
+    // download button removed
   }
 
   function fixChapterLinks() {
@@ -969,7 +892,6 @@ body.desktop-focus .focus-exit-fab {
     fixChapterLinks();
     updateModeUI();
     ensureTotals().then(function() {
-      setPageInfo();
       setPageInputs();
     });
     const state = loadState();
@@ -997,3 +919,4 @@ body.desktop-focus .focus-exit-fab {
 </script>
 </body>
 </html>
+

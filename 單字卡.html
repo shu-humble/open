@@ -46,7 +46,7 @@
         .game-container {
             max-width: 860px;
             margin: auto;
-            padding: 22px;
+            padding: 18px 18px 16px;
             background: var(--panel);
             border: 1px solid var(--border);
             border-radius: 12px;
@@ -61,11 +61,34 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: space-around;
-            margin-bottom: 18px;
-            gap: 8px;
+            margin-bottom: 8px;
+            gap: 6px;
+        }
+        .section-block {
+            padding: 8px 10px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+        .words-section {
+            background: rgba(37, 99, 235, 0.08);
+        }
+        .targets-section {
+            background: rgba(16, 185, 129, 0.08);
+        }
+        body.dark-mode .words-section {
+            background: rgba(138, 199, 255, 0.16);
+        }
+        body.dark-mode .targets-section {
+            background: rgba(62, 224, 122, 0.16);
+        }
+        .section-divider {
+            border: none;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 4px 0 8px;
         }
         .word, .target {
-            padding: 11px;
+            padding: 8px;
             margin: 4px;
             border: 1px solid var(--border);
             border-radius: 10px;
@@ -73,10 +96,16 @@
             cursor: pointer;
             user-select: none;
             text-align: center;
-            width: 120px;
+            width: var(--card-size, 120px);
+            height: var(--card-size, 120px);
             transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
             position: relative;
             box-shadow: 0 10px 24px rgba(37,99,235,0.25);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         .word:active { cursor: grabbing; }
         .word.used {
@@ -258,9 +287,12 @@
     <div class="game-container">
         <h1 id="title"></h1>
         <p class="instructions" id="instructions"></p>
-        <div class="words">
+        <div class="section-block words-section">
+            <div class="words"></div>
         </div>
-        <div class="targets">
+        <hr class="section-divider">
+        <div class="section-block targets-section">
+            <div class="targets"></div>
         </div>
         <div class="buttons">
             <button class="button" onclick="toggleDarkMode()" id="dark-mode-btn"></button>
@@ -465,6 +497,24 @@
             return array.sort(() => Math.random() - 0.5);
         }
 
+        function clampNumber(val, min, max) {
+            return Math.max(min, Math.min(max, val));
+        }
+
+        function updateCardSizeByAverage(wordsList, targetsList) {
+            const lengths = [];
+            (wordsList || []).forEach(w => {
+                if (w && w.word) lengths.push(w.word.toString().length);
+            });
+            (targetsList || []).forEach(t => {
+                if (t && t.translation) lengths.push(t.translation.toString().length);
+            });
+            if (lengths.length === 0) return;
+            const avg = lengths.reduce((sum, n) => sum + n, 0) / lengths.length;
+            const size = clampNumber(Math.round(64 + avg * 4), 80, 140);
+            document.documentElement.style.setProperty('--card-size', `${size}px`);
+        }
+
         function calculateWordScore(wordObj, isCorrect) {
             let points = 0;
 
@@ -573,7 +623,7 @@
             const requestedWordCount = settings.syncCounts ? settings.wordsPerRound : settings.questionCount;
             const requestedAnswerCount = settings.syncCounts ? settings.wordsPerRound : settings.answerCount;
             const numWordsForRound = Math.min(requestedWordCount, words.length);
-            const numAnswerForRound = Math.min(requestedAnswerCount, numWordsForRound);
+            const numAnswerForRound = Math.max(numWordsForRound, Math.min(requestedAnswerCount, words.length));
             let wordsToChoose = [...words];
 
             wordsTestedInSession = new Set(words.filter(w => w.hasBeenTested).map(w => w.word));
@@ -641,9 +691,21 @@
             });
             saveStats(statsMap);
 
-            const answerPool = shuffle([...currentRoundWords]).slice(0, numAnswerForRound);
+            let answerPool = [...currentRoundWords];
+            if (numAnswerForRound > currentRoundWords.length) {
+                const selectedSet = new Set(currentRoundWords.map(w => w.word));
+                const extraPool = wordsToChoose.filter(w => !selectedSet.has(w.word));
+                const extrasNeeded = numAnswerForRound - currentRoundWords.length;
+                const extras = shuffle(extraPool).slice(0, extrasNeeded);
+                answerPool = [...answerPool, ...extras];
+            } else if (numAnswerForRound < currentRoundWords.length) {
+                answerPool = shuffle([...currentRoundWords]).slice(0, numAnswerForRound);
+            }
+            answerPool = shuffle(answerPool);
+            updateCardSizeByAverage(currentRoundWords, answerPool);
             const shuffledWords = shuffle([...currentRoundWords]);
             const shuffledTranslations = shuffle([...answerPool]);
+            const requiredTranslations = new Set(currentRoundWords.map(w => w.translation));
 
 
             shuffledWords.forEach(item => {
@@ -664,6 +726,7 @@
                 const targetDiv = document.createElement('div');
                 targetDiv.className = 'target';
                 targetDiv.dataset.translation = item.translation;
+                targetDiv.dataset.required = requiredTranslations.has(item.translation) ? 'true' : 'false';
                 targetDiv.innerHTML = `
                     <div class="moved-word"></div>
                     <div class="original-translation">${item.translation}</div>
@@ -948,7 +1011,8 @@
             let words = mergeMetaAndStats(meta, statsMap);
 
             const targetElements = document.querySelectorAll('.target');
-            const unfilledTargets = Array.from(targetElements).filter(target => !target.dataset.droppedWord);
+            const requiredTargets = Array.from(targetElements).filter(target => target.dataset.required === 'true');
+            const unfilledTargets = requiredTargets.filter(target => !target.dataset.droppedWord);
 
             if (unfilledTargets.length > 0) {
                 const t = translations[currentLanguage];
@@ -965,6 +1029,11 @@
                 const droppedWord = target.dataset.droppedWord;
                 const originalTranslation = target.dataset.translation;
                 target.classList.remove('correct', 'incorrect');
+
+                if (!target.dataset.required || target.dataset.required === 'false') {
+                    // 多出來的卡片不列入計分或錯誤
+                    return;
+                }
 
                 if (droppedWord) {
                     const originalWordIndex = words.findIndex(w => w.word === droppedWord);

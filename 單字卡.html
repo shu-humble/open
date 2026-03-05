@@ -280,6 +280,9 @@
                 <input type="range" id="speechVolume" min="0" max="1" step="0.05">
                 <span id="speechVolumeLabel"></span>
             </label>
+            <label><span id="speechVoiceText"></span>
+                <select id="speechVoice"></select>
+            </label>
         </div>
         <div id="result" class="result" style="display:none;"></div>
         <div id="answers" class="answers" style="display:none;"></div>
@@ -308,7 +311,8 @@
             unselected: "未選擇",
             confirmSubmitPartial: "還有 {count} 個空格未填寫，確定要提交嗎？",
             speechRate: "語速",
-            speechVolume: "音量"
+            speechVolume: "音量",
+            speechVoice: "語音來源"
           },
           en: {
             title: "Word Matching Game",
@@ -329,7 +333,8 @@
             unselected: "Unselected",
             confirmSubmitPartial: "There are {count} empty spaces. Are you sure you want to submit?",
             speechRate: "Speech rate",
-            speechVolume: "Volume"
+            speechVolume: "Volume",
+            speechVoice: "Voice provider"
           }
         };
 
@@ -339,10 +344,34 @@
 
         let isFirstRound = true;
 
-        let settings = JSON.parse(localStorage.getItem('wordGameSettings')) || {
+        const defaultGameSettings = {
             wordsPerRound: 10,
-            enableWeightSystem: true
+            enableSmartSystem: true,
+            enableTimeSystem: false,
+            enableScoreSystem: true,
+            readParentheses: true,
+            questionCount: 10,
+            answerCount: 10,
+            syncCounts: true,
+            languageOverrideEnabled: false,
+            speechLanguage: 'auto'
         };
+        function loadGameSettings() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('wordGameSettings'));
+                if (saved && typeof saved === 'object') {
+                    const merged = { ...defaultGameSettings, ...saved };
+                    if (merged.enableSmartSystem === undefined && saved.enableWeightSystem !== undefined) {
+                        merged.enableSmartSystem = Boolean(saved.enableWeightSystem);
+                        merged.enableScoreSystem = Boolean(saved.enableWeightSystem);
+                        merged.enableTimeSystem = false;
+                    }
+                    return merged;
+                }
+            } catch (e) {}
+            return { ...defaultGameSettings };
+        }
+        let settings = loadGameSettings();
 
         let wordsTestedInSession = new Set();
         let totalUniqueWords = 0;
@@ -351,6 +380,10 @@
         let selectedWord = null;
         const actionHistory = [];
         let statsMap = {};
+        let lastMatchAt = null;
+        let lastActivityAt = Date.now();
+        let timeTrackingInvalid = false;
+        let pendingTimeStats = {};
 
         function normalizeWordsList(rawWords) {
             return (rawWords || []).map(wordItem => {
@@ -362,6 +395,8 @@
                     hasBeenTested: wordItem.hasBeenTested !== undefined ? wordItem.hasBeenTested : false,
                     streakCount: wordItem.streakCount !== undefined ? wordItem.streakCount : 0,
                     score: wordItem.score !== undefined ? wordItem.score : 0,
+                    timeUnits: wordItem.timeUnits !== undefined ? wordItem.timeUnits : 0,
+                    timeSamples: wordItem.timeSamples !== undefined ? wordItem.timeSamples : 0,
                     addedOrder: wordItem.addedOrder !== undefined ? wordItem.addedOrder : Date.now()
                 };
             });
@@ -379,7 +414,9 @@
                     correctCount: s.correctCount || 0,
                     hasBeenTested: s.hasBeenTested || false,
                     streakCount: s.streakCount || 0,
-                    score: s.score || 0
+                    score: s.score || 0,
+                    timeUnits: s.timeUnits || 0,
+                    timeSamples: s.timeSamples || 0
                 };
             });
         }
@@ -398,7 +435,9 @@
                     correctCount: w.correctCount || 0,
                     hasBeenTested: w.hasBeenTested || false,
                     streakCount: w.streakCount || 0,
-                    score: w.score || 0
+                    score: w.score || 0,
+                    timeUnits: w.timeUnits || 0,
+                    timeSamples: w.timeSamples || 0
                 };
             });
             return { meta, stats };
@@ -439,6 +478,58 @@
             return points;
         }
 
+        function recordActivity() {
+            const now = Date.now();
+            if (lastActivityAt && now - lastActivityAt > 180000) {
+                timeTrackingInvalid = true;
+            }
+            lastActivityAt = now;
+        }
+
+        function addPendingTime(word, units) {
+            if (!pendingTimeStats[word]) {
+                pendingTimeStats[word] = { timeUnits: 0, timeSamples: 0 };
+            }
+            pendingTimeStats[word].timeUnits += units;
+            pendingTimeStats[word].timeSamples += 1;
+        }
+
+        function recordMatchTime(word) {
+            if (!word || timeTrackingInvalid) return;
+            const now = Date.now();
+            if (lastMatchAt) {
+                const delta = now - lastMatchAt;
+                const units = Math.max(1, Math.ceil(delta / 10000));
+                addPendingTime(word, units);
+            }
+            lastMatchAt = now;
+        }
+
+        function markUnfamiliar(word) {
+            if (!word) return;
+            if (!statsMap[word]) statsMap[word] = {};
+            statsMap[word].wrongCount = (statsMap[word].wrongCount || 0) + 1;
+            statsMap[word].streakCount = 0;
+            const wordObj = currentRoundWords.find(w => w.word === word);
+            if (wordObj) {
+                wordObj.wrongCount = statsMap[word].wrongCount;
+                wordObj.streakCount = 0;
+            }
+            saveStats(statsMap);
+        }
+
+        function markUnfamiliarForTarget(targetElement, oldWord) {
+            if (!targetElement || !oldWord) return;
+            const translation = targetElement.dataset.translation;
+            const correctWord = currentRoundWords.find(w => w.translation === translation)?.word;
+            // 舊字一定記一次
+            markUnfamiliar(oldWord);
+            // 若舊字不是正確解，再記一次正確解（1~2 次）
+            if (correctWord && correctWord !== oldWord) {
+                markUnfamiliar(correctWord);
+            }
+        }
+
         function createGame() {
             const { meta, stats } = readMetaStatsWithMigration();
             statsMap = stats || {};
@@ -452,6 +543,10 @@
             targetContainer.innerHTML = "";
             selectedWord = null;
             actionHistory.length = 0;
+            lastMatchAt = null;
+            timeTrackingInvalid = false;
+            pendingTimeStats = {};
+            lastActivityAt = Date.now();
 
             submitButton.disabled = false;
 
@@ -475,18 +570,53 @@
                 document.getElementById('submit-btn').style.display = 'inline-block';
             }
 
-            const numWordsForRound = Math.min(settings.wordsPerRound, words.length);
+            const requestedWordCount = settings.syncCounts ? settings.wordsPerRound : settings.questionCount;
+            const requestedAnswerCount = settings.syncCounts ? settings.wordsPerRound : settings.answerCount;
+            const numWordsForRound = Math.min(requestedWordCount, words.length);
+            const numAnswerForRound = Math.min(requestedAnswerCount, numWordsForRound);
             let wordsToChoose = [...words];
 
             wordsTestedInSession = new Set(words.filter(w => w.hasBeenTested).map(w => w.word));
 
-            if (!settings.enableWeightSystem) {
-                // 沒有權重時，隨機選取單字
+            const getAvgTimeUnit = (w) => {
+                const s = statsMap[w.word] || {};
+                const samples = s.timeSamples || 0;
+                if (samples <= 0) return 0;
+                return (s.timeUnits || 0) / samples;
+            };
+
+            if (!settings.enableSmartSystem) {
+                // 沒有智能出題時，隨機選取單字
                 currentRoundWords = shuffle(wordsToChoose).slice(0, numWordsForRound);
             } else {
-                // 有權重時，依分數由低到高排序，並選取單字
-                const sortedWords = wordsToChoose.sort((a, b) => a.score - b.score);
-                currentRoundWords = sortedWords.slice(0, numWordsForRound);
+                const picks = [];
+                const pickSet = new Set();
+
+                if (settings.enableTimeSystem) {
+                    const byTime = [...wordsToChoose].sort((a, b) => getAvgTimeUnit(b) - getAvgTimeUnit(a));
+                    byTime.slice(0, numWordsForRound).forEach(w => {
+                        if (!pickSet.has(w.word)) {
+                            pickSet.add(w.word);
+                            picks.push(w);
+                        }
+                    });
+                }
+                if (settings.enableScoreSystem) {
+                    const byScore = [...wordsToChoose].sort((a, b) => (a.score || 0) - (b.score || 0));
+                    byScore.slice(0, numWordsForRound).forEach(w => {
+                        if (!pickSet.has(w.word)) {
+                            pickSet.add(w.word);
+                            picks.push(w);
+                        }
+                    });
+                }
+
+                if (picks.length === 0) {
+                    currentRoundWords = shuffle(wordsToChoose).slice(0, numWordsForRound);
+                } else {
+                    const shuffledPicks = shuffle(picks);
+                    currentRoundWords = shuffledPicks.slice(0, numWordsForRound);
+                }
             }
 
             if (currentRoundWords.length < numWordsForRound && wordsToChoose.length > currentRoundWords.length) {
@@ -511,8 +641,9 @@
             });
             saveStats(statsMap);
 
+            const answerPool = shuffle([...currentRoundWords]).slice(0, numAnswerForRound);
             const shuffledWords = shuffle([...currentRoundWords]);
-            const shuffledTranslations = shuffle([...currentRoundWords]);
+            const shuffledTranslations = shuffle([...answerPool]);
 
 
             shuffledWords.forEach(item => {
@@ -568,8 +699,10 @@
             document.getElementById('restart-btn').textContent = t.restart;
             const rateText = document.getElementById('speechRateText');
             const volText = document.getElementById('speechVolumeText');
+            const voiceText = document.getElementById('speechVoiceText');
             if (rateText) rateText.textContent = t.speechRate;
             if (volText) volText.textContent = t.speechVolume;
+            if (voiceText) voiceText.textContent = t.speechVoice;
 
             document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = (lang === 'zh' ? 'none' : 'inline-block');
             document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = (lang === 'en' ? 'none' : 'inline-block');
@@ -600,7 +733,7 @@
             handleAction(e.target, word);
         }
 
-        const defaultSpeechSettings = { rate: 1, volume: 1 };
+        const defaultSpeechSettings = { rate: 1, volume: 1, voiceVendor: 'google' };
         let speechSettings = (() => {
             try {
                 const saved = JSON.parse(localStorage.getItem('speechSettings'));
@@ -613,18 +746,49 @@
             return Math.min(max, Math.max(min, val));
         }
 
+        function pickVoiceForLang(voices, targetLang) {
+            if (!targetLang) return null;
+            const exact = voices.find(v => v.lang === targetLang);
+            if (exact) return exact;
+            const base = targetLang.split('-')[0];
+            return voices.find(v => v.lang && v.lang.startsWith(base)) || null;
+        }
+
+        function getSelectedVoice(targetLang) {
+            if (!window.speechSynthesis) return null;
+            const voices = window.speechSynthesis.getVoices();
+            if (!voices || voices.length === 0) return null;
+            const vendor = (speechSettings.voiceVendor || 'google').toLowerCase();
+            const vendorRegex = vendor === 'microsoft' ? /Microsoft/i : /Google/i;
+            const vendorVoices = voices.filter(v => vendorRegex.test(v.name));
+            let selected = pickVoiceForLang(vendorVoices, targetLang) || vendorVoices[0] || null;
+            if (!selected) {
+                selected = pickVoiceForLang(voices, targetLang) || voices[0] || null;
+            }
+            return selected;
+        }
+
         function speakWord(text) {
             if (!text || !window.speechSynthesis) return;
+            settings = loadGameSettings();
             const synth = window.speechSynthesis;
             if (synth.speaking) synth.cancel();
-            const utter = new SpeechSynthesisUtterance(text);
+            let speakText = text;
+            if (settings && settings.readParentheses === false) {
+                speakText = speakText.replace(/\s*\([^)]*\)\s*/g, ' ').trim();
+                speakText = speakText.replace(/\s{2,}/g, ' ');
+            }
+            const utter = new SpeechSynthesisUtterance(speakText);
             const hasLatin = /[a-zA-Z]/.test(text);
             const hasDigit = /[0-9]/.test(text);
-            if (hasLatin || (hasDigit && currentLanguage === 'en')) {
-                utter.lang = 'en-US';
-            } else {
-                utter.lang = 'zh-TW';
+            let targetLang = (hasLatin || (hasDigit && currentLanguage === 'en')) ? 'en-US' : 'zh-TW';
+            if (settings && settings.languageOverrideEnabled) {
+                const chosenLang = settings.speechLanguage && settings.speechLanguage !== 'auto' ? settings.speechLanguage : null;
+                if (chosenLang) targetLang = chosenLang;
             }
+            utter.lang = targetLang;
+            const selectedVoice = getSelectedVoice(targetLang);
+            if (selectedVoice) utter.voice = selectedVoice;
             utter.rate = clamp(speechSettings.rate ?? defaultSpeechSettings.rate, 0.5, 2);
             utter.volume = clamp(speechSettings.volume ?? defaultSpeechSettings.volume, 0, 1);
             utter.pitch = 1;
@@ -668,6 +832,10 @@
 
             actionHistory.push({ target: actualTarget, oldWord: oldWord, newWord: word });
 
+            if (oldWord && oldWord !== word) {
+                markUnfamiliarForTarget(actualTarget, oldWord);
+            }
+
             if (oldWord) {
                 enableWord(oldWord);
             }
@@ -676,6 +844,8 @@
 
             actualTarget.dataset.droppedWord = word;
             toggleDeleteButton(actualTarget);
+
+            recordMatchTime(word);
 
             if (selectedWord) {
                 selectedWord.classList.remove('selected');
@@ -735,6 +905,7 @@
             const target = button.closest('.target');
             const currentWord = target.dataset.droppedWord;
             if (currentWord) {
+                markUnfamiliarForTarget(target, currentWord);
                 enableWord(currentWord);
             }
             delete target.dataset.droppedWord;
@@ -849,6 +1020,14 @@
                 }
             });
 
+            if (!timeTrackingInvalid) {
+                Object.keys(pendingTimeStats).forEach(word => {
+                    if (!statsMap[word]) statsMap[word] = {};
+                    statsMap[word].timeUnits = (statsMap[word].timeUnits || 0) + (pendingTimeStats[word].timeUnits || 0);
+                    statsMap[word].timeSamples = (statsMap[word].timeSamples || 0) + (pendingTimeStats[word].timeSamples || 0);
+                });
+            }
+            pendingTimeStats = {};
 
             saveStats(statsMap);
             localStorage.setItem('wordCardUpdated', Date.now().toString());
@@ -988,6 +1167,7 @@
 
         window.addEventListener('storage', function(event) {
             if (event.key === 'wordBankUpdated') {
+                settings = loadGameSettings();
                 createGame();
             }
         });
@@ -1000,15 +1180,47 @@
             if (isDarkMode) {
                 document.body.classList.add('dark-mode');
             }
+            settings = loadGameSettings();
 
             const rateInput = document.getElementById('speechRate');
             const volInput = document.getElementById('speechVolume');
             const rateLabel = document.getElementById('speechRateLabel');
             const volLabel = document.getElementById('speechVolumeLabel');
+            const voiceSelect = document.getElementById('speechVoice');
             const updateLabels = () => {
                 if (rateLabel) rateLabel.textContent = speechSettings.rate.toFixed(2);
                 if (volLabel) volLabel.textContent = speechSettings.volume.toFixed(2);
             };
+            const populateVoices = () => {
+                if (!voiceSelect || !window.speechSynthesis) return;
+                const voices = window.speechSynthesis.getVoices();
+                voiceSelect.innerHTML = '';
+                const hasGoogle = voices.some(v => /Google/i.test(v.name));
+                const hasMicrosoft = voices.some(v => /Microsoft/i.test(v.name));
+                if (!hasGoogle && !hasMicrosoft) {
+                    const opt = document.createElement('option');
+                    opt.value = '';
+                    opt.textContent = 'No Google/Microsoft voices';
+                    opt.disabled = true;
+                    opt.selected = true;
+                    voiceSelect.appendChild(opt);
+                    return;
+                }
+                const vendors = [
+                    { value: 'google', label: 'Google', available: hasGoogle },
+                    { value: 'microsoft', label: 'Microsoft', available: hasMicrosoft }
+                ];
+                vendors.forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v.value;
+                    opt.textContent = v.label;
+                    opt.disabled = !v.available;
+                    voiceSelect.appendChild(opt);
+                });
+                const preferred = speechSettings.voiceVendor || (hasGoogle ? 'google' : 'microsoft');
+                voiceSelect.value = preferred;
+            };
+
             if (rateInput && volInput) {
                 rateInput.value = speechSettings.rate;
                 volInput.value = speechSettings.volume;
@@ -1024,6 +1236,20 @@
                     updateLabels();
                 });
             }
+            if (voiceSelect) {
+                populateVoices();
+                if (window.speechSynthesis) {
+                    window.speechSynthesis.onvoiceschanged = populateVoices;
+                }
+                voiceSelect.addEventListener('change', () => {
+                    speechSettings.voiceVendor = voiceSelect.value || 'google';
+                    localStorage.setItem('speechSettings', JSON.stringify(speechSettings));
+                });
+            }
+
+            ['click', 'keydown', 'dragstart', 'drop', 'touchstart'].forEach(evt => {
+                document.addEventListener(evt, recordActivity, true);
+            });
 
             createGame();
         });

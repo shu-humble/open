@@ -151,10 +151,57 @@
       width: 100%;
       margin: 5px 0;
     }
-    /* 父容器 */
+  /* 父容器 */
 .container {
   overflow: visible; /* 確保內容不被裁剪 */
 }
+  .count-setting {
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .count-main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .count-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-left: 6px;
+  }
+  .count-disabled {
+    opacity: 0.6;
+  }
+  #toggleCountModeBtn {
+    padding: 4px 8px;
+    border-radius: 3px;
+  }
+  .smart-setting {
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .smart-main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .smart-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-left: 6px;
+  }
+  #toggleSmartSystemBtn {
+    padding: 4px 8px;
+    border-radius: 3px;
+  }
   </style>
 </head>
 <body>
@@ -178,16 +225,59 @@
 
       <div>
         <h2 id="gameSettingsTitle"></h2>
-        <div style="margin-bottom: 10px;">
-          <label for="wordsPerRound" id="wordsPerRoundLabel"></label>
-          <input type="number" id="wordsPerRound" min="1" value="10">
+        <div class="count-setting">
+          <div class="count-main">
+            <label for="wordsPerRound" id="wordsPerRoundLabel"></label>
+            <input type="number" id="wordsPerRound" min="1" value="10">
+            <button type="button" id="toggleCountModeBtn" onclick="toggleCountMode()"></button>
+          </div>
+          <div id="countDetails" class="count-details" style="display: none;">
+            <div>
+              <label for="questionCount" id="questionCountLabel"></label>
+              <input type="number" id="questionCount" min="1" value="10">
+            </div>
+            <div>
+              <label for="answerCount" id="answerCountLabel"></label>
+              <input type="number" id="answerCount" min="1" value="10">
+            </div>
+          </div>
+          <input type="checkbox" id="syncCounts" style="display: none;">
         </div>
 
+        <div class="smart-setting">
+          <div class="smart-main">
+            <label>
+              <input type="checkbox" id="enableSmartSystem">
+              <span id="enableSmartSystemLabel"></span>
+            </label>
+            <button type="button" id="toggleSmartSystemBtn" onclick="toggleSmartSystemDetails()"></button>
+          </div>
+          <div id="smartSystemDetails" class="smart-details" style="display: none;">
+            <label>
+              <input type="checkbox" id="enableTimeSystem">
+              <span id="enableTimeSystemLabel"></span>
+            </label>
+            <label>
+              <input type="checkbox" id="enableScoreSystem">
+              <span id="enableScoreSystemLabel"></span>
+            </label>
+          </div>
+        </div>
         <div style="margin-bottom: 10px;">
           <label>
-            <input type="checkbox" id="enableWeightSystem">
-            <span id="enableWeightSystemLabel"></span>
+            <input type="checkbox" id="readParentheses">
+            <span id="readParenthesesLabel"></span>
           </label>
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label>
+            <input type="checkbox" id="languageOverrideEnabled">
+            <span id="languageOverrideEnabledLabel"></span>
+          </label>
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label for="speechLanguage" id="speechLanguageLabel"></label>
+          <select id="speechLanguage"></select>
         </div>
 
         <div>
@@ -244,8 +334,45 @@
     function getDefaultSettings() {
         return {
             wordsPerRound: 10,
-            enableWeightSystem: true
+            enableSmartSystem: true,
+            enableTimeSystem: false,
+            enableScoreSystem: true,
+            readParentheses: true,
+            questionCount: 10,
+            answerCount: 10,
+            syncCounts: true,
+            languageOverrideEnabled: false,
+            speechLanguage: 'auto'
         };
+    }
+
+    function normalizeSettings(raw) {
+        const merged = { ...getDefaultSettings(), ...(raw || {}) };
+        if (merged.enableSmartSystem === undefined && raw && raw.enableWeightSystem !== undefined) {
+            merged.enableSmartSystem = Boolean(raw.enableWeightSystem);
+            merged.enableScoreSystem = Boolean(raw.enableWeightSystem);
+            merged.enableTimeSystem = false;
+        }
+        return merged;
+    }
+
+    function serializeSettingsForCompare(obj) {
+        const s = normalizeSettings(obj || {});
+        const ordered = [
+            'wordsPerRound',
+            'enableSmartSystem',
+            'enableTimeSystem',
+            'enableScoreSystem',
+            'readParentheses',
+            'questionCount',
+            'answerCount',
+            'syncCounts',
+            'languageOverrideEnabled',
+            'speechLanguage'
+        ];
+        const out = {};
+        ordered.forEach(k => { out[k] = s[k]; });
+        return JSON.stringify(out);
     }
 
     function normalizeWordsList(rawWords) {
@@ -270,6 +397,7 @@
     // ===== 新增點 1: 排序方向的全域變數 =====
     let sortDirection = localStorage.getItem('sortDirection') || 'desc'; // asc 為升序, desc 為降序
     let sortOrder = localStorage.getItem('sortOrder') || 'accuracy'; // 儲存排序選項
+    let smartDetailsOpen = false;
 
     let originalWords;
     let originalSettings;
@@ -338,13 +466,13 @@
         const { meta, stats } = readMetaStatsWithMigration();
         statsMap = stats || {};
         const committedWords = mergeMetaAndStats(meta, statsMap);
-        const committedSettings = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || getDefaultSettings();
+        const committedSettings = normalizeSettings(JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {});
 
         const storedOriginalWords = localStorage.getItem(ORIGINAL_WORDS_KEY);
         const storedOriginalSettings = localStorage.getItem(ORIGINAL_SETTINGS_KEY);
 
         const baselineWords = storedOriginalWords ? normalizeWordsList(JSON.parse(storedOriginalWords)) : committedWords;
-        const baselineSettings = storedOriginalSettings ? JSON.parse(storedOriginalSettings) : committedSettings;
+        const baselineSettings = storedOriginalSettings ? normalizeSettings(JSON.parse(storedOriginalSettings)) : committedSettings;
 
         const hasDirtyDraft = localStorage.getItem(DRAFT_DIRTY_KEY) === 'true';
 
@@ -363,7 +491,7 @@
             const draftSettingsRaw = localStorage.getItem(DRAFT_SETTINGS_KEY);
 
             words = draftWordsRaw ? normalizeWordsList(JSON.parse(draftWordsRaw)) : committedWords;
-            settings = draftSettingsRaw ? JSON.parse(draftSettingsRaw) : committedSettings;
+            settings = draftSettingsRaw ? normalizeSettings(JSON.parse(draftSettingsRaw)) : committedSettings;
         }
 
         originalWords = JSON.parse(JSON.stringify(baselineWords));
@@ -438,7 +566,11 @@
         
         // 更新UI
         document.getElementById('wordsPerRound').value = settings.wordsPerRound;
-        document.getElementById('enableWeightSystem').checked = settings.enableWeightSystem;
+        document.getElementById('enableSmartSystem').checked = settings.enableSmartSystem;
+        document.getElementById('enableTimeSystem').checked = settings.enableTimeSystem;
+        document.getElementById('enableScoreSystem').checked = settings.enableScoreSystem;
+        applySmartSystemUI(false);
+        applyCountModeUI(false);
         
         renderWords();
         markAsNeedsSave();
@@ -463,7 +595,11 @@
         
         // 更新UI
         document.getElementById('wordsPerRound').value = settings.wordsPerRound;
-        document.getElementById('enableWeightSystem').checked = settings.enableWeightSystem;
+        document.getElementById('enableSmartSystem').checked = settings.enableSmartSystem;
+        document.getElementById('enableTimeSystem').checked = settings.enableTimeSystem;
+        document.getElementById('enableScoreSystem').checked = settings.enableScoreSystem;
+        applySmartSystemUI(false);
+        applyCountModeUI(false);
         
         renderWords();
         markAsNeedsSave();
@@ -497,6 +633,77 @@
       }
     }
 
+    function applyCountModeUI(copyToDetails) {
+      const syncCountsInput = document.getElementById('syncCounts');
+      const wordsPerRoundInput = document.getElementById('wordsPerRound');
+      const questionCountInput = document.getElementById('questionCount');
+      const answerCountInput = document.getElementById('answerCount');
+      const countDetails = document.getElementById('countDetails');
+      const toggleBtn = document.getElementById('toggleCountModeBtn');
+      const t = translations[currentLanguage];
+
+      const isSync = syncCountsInput.checked;
+      if (countDetails) {
+        countDetails.style.display = isSync ? 'none' : 'flex';
+      }
+      if (wordsPerRoundInput) {
+        wordsPerRoundInput.disabled = !isSync;
+        wordsPerRoundInput.classList.toggle('count-disabled', !isSync);
+      }
+      if (toggleBtn) {
+        toggleBtn.textContent = isSync ? t.countModeExpand : t.countModeCollapse;
+      }
+
+      if (!isSync) {
+        if (copyToDetails) {
+          const base = parseInt(wordsPerRoundInput.value) || settings.wordsPerRound || 10;
+          questionCountInput.value = base;
+          answerCountInput.value = base;
+        }
+      } else {
+        const base = parseInt(questionCountInput.value) || parseInt(answerCountInput.value) || settings.wordsPerRound || 10;
+        wordsPerRoundInput.value = base;
+        questionCountInput.value = base;
+        answerCountInput.value = base;
+      }
+    }
+
+    function toggleCountMode() {
+      const syncCountsInput = document.getElementById('syncCounts');
+      if (!syncCountsInput) return;
+      syncCountsInput.checked = !syncCountsInput.checked;
+      applyCountModeUI(true);
+      markAsNeedsSave();
+    }
+
+    function applySmartSystemUI(updateButton) {
+      const details = document.getElementById('smartSystemDetails');
+      const toggleBtn = document.getElementById('toggleSmartSystemBtn');
+      const enabled = document.getElementById('enableSmartSystem').checked;
+      const timeInput = document.getElementById('enableTimeSystem');
+      const scoreInput = document.getElementById('enableScoreSystem');
+      const t = translations[currentLanguage];
+
+      if (details) {
+        details.style.display = smartDetailsOpen ? 'flex' : 'none';
+        details.style.opacity = enabled ? '1' : '0.6';
+      }
+      if (timeInput) timeInput.disabled = !enabled;
+      if (scoreInput) scoreInput.disabled = !enabled;
+      if (toggleBtn && updateButton !== false) {
+        toggleBtn.textContent = smartDetailsOpen ? t.countModeCollapse : t.countModeExpand;
+      }
+    }
+
+    function toggleSmartSystemDetails() {
+      smartDetailsOpen = !smartDetailsOpen;
+      applySmartSystemUI(true);
+    }
+
+    function updateSmartSystemAvailability() {
+      applySmartSystemUI(true);
+    }
+
     function markAsNeedsSave() {
       // 只比較靜態詞庫（word/translation/addedOrder），不比較統計
       const pickMeta = arr => arr.map(w => ({ word: w.word, translation: w.translation, addedOrder: w.addedOrder }));
@@ -506,16 +713,31 @@
       const currentWordsString = JSON.stringify(sortedWords);
       const originalWordsString = JSON.stringify(sortedOriginalWords);
       
-      const currentWordsPerRound = parseInt(document.getElementById('wordsPerRound').value);
-      const currentEnableWeightSystem = document.getElementById('enableWeightSystem').checked;
+        const currentWordsPerRound = parseInt(document.getElementById('wordsPerRound').value);
+        const currentEnableSmartSystem = document.getElementById('enableSmartSystem').checked;
+        const currentEnableTimeSystem = document.getElementById('enableTimeSystem').checked;
+        const currentEnableScoreSystem = document.getElementById('enableScoreSystem').checked;
+        const currentReadParentheses = document.getElementById('readParentheses').checked;
+        const currentQuestionCount = parseInt(document.getElementById('questionCount').value);
+        const currentAnswerCount = parseInt(document.getElementById('answerCount').value);
+        const currentSyncCounts = document.getElementById('syncCounts').checked;
+        const currentLanguageOverrideEnabled = document.getElementById('languageOverrideEnabled').checked;
+        const currentSpeechLanguage = document.getElementById('speechLanguage').value || 'auto';
 
-      const currentSettings = {
-          wordsPerRound: currentWordsPerRound,
-          enableWeightSystem: currentEnableWeightSystem
-      };
-      const currentSettingsString = JSON.stringify(currentSettings);
-
-      const originalSettingsString = JSON.stringify(originalSettings);
+        const currentSettings = {
+            wordsPerRound: currentWordsPerRound,
+            enableSmartSystem: currentEnableSmartSystem,
+            enableTimeSystem: currentEnableTimeSystem,
+            enableScoreSystem: currentEnableScoreSystem,
+            readParentheses: currentReadParentheses,
+            questionCount: currentQuestionCount,
+            answerCount: currentAnswerCount,
+            syncCounts: currentSyncCounts,
+            languageOverrideEnabled: currentLanguageOverrideEnabled,
+            speechLanguage: currentSpeechLanguage
+        };
+      const currentSettingsString = serializeSettingsForCompare(currentSettings);
+      const originalSettingsString = serializeSettingsForCompare(originalSettings);
 
       const hasChanges = (currentWordsString !== originalWordsString) || (currentSettingsString !== originalSettingsString);
 
@@ -786,12 +1008,32 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
     function saveSettings() {
         const wordsPerRoundInput = document.getElementById('wordsPerRound');
         const newWordsPerRound = parseInt(wordsPerRoundInput.value);
-        const newEnableWeightSystem = document.getElementById('enableWeightSystem').checked;
+        const newEnableSmartSystem = document.getElementById('enableSmartSystem').checked;
+        const newEnableTimeSystem = document.getElementById('enableTimeSystem').checked;
+        const newEnableScoreSystem = document.getElementById('enableScoreSystem').checked;
+        const newReadParentheses = document.getElementById('readParentheses').checked;
+        const newLanguageOverrideEnabled = document.getElementById('languageOverrideEnabled').checked;
+        const questionCountInput = document.getElementById('questionCount');
+        const answerCountInput = document.getElementById('answerCount');
+        const newQuestionCount = parseInt(questionCountInput.value);
+        const newAnswerCount = parseInt(answerCountInput.value);
+        const newSyncCounts = document.getElementById('syncCounts').checked;
+        const newSpeechLanguage = document.getElementById('speechLanguage').value || 'auto';
         const t = translations[currentLanguage];
 
         if (isNaN(newWordsPerRound) || newWordsPerRound < 1) {
             alert(t.alertInvalidNumber);
             wordsPerRoundInput.value = settings.wordsPerRound;
+            return;
+        }
+        if (isNaN(newQuestionCount) || newQuestionCount < 1) {
+            alert(t.alertInvalidNumber);
+            questionCountInput.value = settings.questionCount;
+            return;
+        }
+        if (isNaN(newAnswerCount) || newAnswerCount < 1) {
+            alert(t.alertInvalidNumber);
+            answerCountInput.value = settings.answerCount;
             return;
         }
 
@@ -800,8 +1042,40 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
             settings.wordsPerRound = newWordsPerRound;
             settingsChanged = true;
         }
-        if (settings.enableWeightSystem !== newEnableWeightSystem) {
-            settings.enableWeightSystem = newEnableWeightSystem;
+        if (settings.enableSmartSystem !== newEnableSmartSystem) {
+            settings.enableSmartSystem = newEnableSmartSystem;
+            settingsChanged = true;
+        }
+        if (settings.enableTimeSystem !== newEnableTimeSystem) {
+            settings.enableTimeSystem = newEnableTimeSystem;
+            settingsChanged = true;
+        }
+        if (settings.enableScoreSystem !== newEnableScoreSystem) {
+            settings.enableScoreSystem = newEnableScoreSystem;
+            settingsChanged = true;
+        }
+        if (settings.readParentheses !== newReadParentheses) {
+            settings.readParentheses = newReadParentheses;
+            settingsChanged = true;
+        }
+        if (settings.languageOverrideEnabled !== newLanguageOverrideEnabled) {
+            settings.languageOverrideEnabled = newLanguageOverrideEnabled;
+            settingsChanged = true;
+        }
+        if (settings.speechLanguage !== newSpeechLanguage) {
+            settings.speechLanguage = newSpeechLanguage;
+            settingsChanged = true;
+        }
+        if (settings.questionCount !== newQuestionCount) {
+            settings.questionCount = newQuestionCount;
+            settingsChanged = true;
+        }
+        if (settings.answerCount !== newAnswerCount) {
+            settings.answerCount = newAnswerCount;
+            settingsChanged = true;
+        }
+        if (settings.syncCounts !== newSyncCounts) {
+            settings.syncCounts = newSyncCounts;
             settingsChanged = true;
         }
 
@@ -861,7 +1135,7 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
       saveSettings();
 
       originalWords = JSON.parse(JSON.stringify(words));
-      originalSettings = JSON.parse(JSON.stringify(settings));
+      originalSettings = normalizeSettings(JSON.parse(JSON.stringify(settings)));
       localStorage.removeItem(DRAFT_DIRTY_KEY);
       localStorage.removeItem(DRAFT_WORDS_KEY);
       localStorage.removeItem(DRAFT_SETTINGS_KEY);
@@ -985,17 +1259,28 @@ function fallbackToTextarea(jsonString, t) {
         words = mergeMetaAndStats(metaArr, statsMap);
 
         if (importedData.settings && typeof importedData.settings === 'object') {
-            settings = {
-                wordsPerRound: importedData.settings.wordsPerRound !== undefined ? parseInt(importedData.settings.wordsPerRound) : getDefaultSettings().wordsPerRound,
-                enableWeightSystem: importedData.settings.enableWeightSystem !== undefined ? Boolean(importedData.settings.enableWeightSystem) : getDefaultSettings().enableWeightSystem
-            };
+            settings = normalizeSettings(importedData.settings);
         } else {
             settings = getDefaultSettings();
             console.warn("Imported data does not contain valid 'settings' object.");
         }
 
         document.getElementById('wordsPerRound').value = settings.wordsPerRound;
-        document.getElementById('enableWeightSystem').checked = settings.enableWeightSystem;
+        document.getElementById('enableSmartSystem').checked = settings.enableSmartSystem;
+        document.getElementById('enableTimeSystem').checked = settings.enableTimeSystem;
+        document.getElementById('enableScoreSystem').checked = settings.enableScoreSystem;
+        document.getElementById('readParentheses').checked = settings.readParentheses;
+        document.getElementById('questionCount').value = settings.questionCount;
+        document.getElementById('answerCount').value = settings.answerCount;
+        document.getElementById('syncCounts').checked = settings.syncCounts;
+        document.getElementById('languageOverrideEnabled').checked = settings.languageOverrideEnabled;
+        document.getElementById('speechLanguage').value = settings.speechLanguage || 'auto';
+        document.getElementById('questionCount').value = settings.questionCount;
+        document.getElementById('answerCount').value = settings.answerCount;
+        document.getElementById('syncCounts').checked = settings.syncCounts;
+        document.getElementById('readParentheses').checked = settings.readParentheses;
+        applyCountModeUI(false);
+        applySmartSystemUI(true);
         renderWords();
         markAsNeedsSave();
     }
@@ -1013,8 +1298,25 @@ function fallbackToTextarea(jsonString, t) {
             save: '💾儲存所有設定',
             clear: '❌一鍵刪除所有單字',
             gameSettingsTitle: '遊戲設定',
-            wordsPerRoundLabel: '每局單字數量：',
-            enableWeightSystemText: '啟用權重出題系統 (優先考錯的字)',
+            wordsPerRoundLabel: '單局單字數：',
+            enableSmartSystemText: '智能出題系統',
+            enableTimeSystemText: '時間系統（依思考時間）',
+            enableScoreSystemText: '分數系統',
+            readParenthesesText: '朗讀時包含括號內文字',
+            languageOverrideEnabledText: '朗讀時手動選擇語言',
+            speechLanguageLabel: '朗讀語言：',
+            speechLanguageAuto: '自動判定',
+            speechLanguageEnglish: '英文 (美式)',
+            speechLanguageChinese: '中文 (台灣)',
+            speechLanguageJapanese: '日文',
+            speechLanguageKorean: '韓文',
+            speechLanguageSpanish: '西班牙文',
+            speechLanguageFrench: '法文',
+            speechLanguageGerman: '德文',
+            questionCountLabel: '上方卡片數：',
+            answerCountLabel: '下方卡片數：',
+            countModeExpand: '展開',
+            countModeCollapse: '收合',
             resetAllWrongCountsText: '📊 重設所有單字權重',
             wordListSectionTitle: '單字列',
             delete: '刪除',
@@ -1063,8 +1365,25 @@ function fallbackToTextarea(jsonString, t) {
             save: '💾 Save All Settings',
             clear: '❌ Delete All Words',
             gameSettingsTitle: 'Game Settings',
-            wordsPerRoundLabel: 'Words per round:',
-            enableWeightSystemText: 'Enable Weighted Question System (Prioritize incorrect words)',
+            wordsPerRoundLabel: 'Cards per round:',
+            enableSmartSystemText: 'Smart Question System',
+            enableTimeSystemText: 'Time system (thinking time)',
+            enableScoreSystemText: 'Score system ',
+            readParenthesesText: 'Read text in parentheses',
+            languageOverrideEnabledText: 'Choose language when speaking',
+            speechLanguageLabel: 'Speech language:',
+            speechLanguageAuto: 'Auto-detect',
+            speechLanguageEnglish: 'English (US)',
+            speechLanguageChinese: 'Chinese (Taiwan)',
+            speechLanguageJapanese: 'Japanese',
+            speechLanguageKorean: 'Korean',
+            speechLanguageSpanish: 'Spanish',
+            speechLanguageFrench: 'French',
+            speechLanguageGerman: 'German',
+            questionCountLabel: 'Top cards:',
+            answerCountLabel: 'Bottom cards:',
+            countModeExpand: 'Expand',
+            countModeCollapse: 'Collapse',
             resetAllWrongCountsText: '📊 Reset All Word Weights',
             wordListSectionTitle: 'Current Words',
             delete: 'Delete',
@@ -1104,6 +1423,39 @@ function fallbackToTextarea(jsonString, t) {
         }
     };
 
+    const speechLanguageOptions = [
+        { value: 'auto', key: 'speechLanguageAuto' },
+        { value: 'en-US', key: 'speechLanguageEnglish' },
+        { value: 'zh-TW', key: 'speechLanguageChinese' },
+        { value: 'ja-JP', key: 'speechLanguageJapanese' },
+        { value: 'ko-KR', key: 'speechLanguageKorean' },
+        { value: 'es-ES', key: 'speechLanguageSpanish' },
+        { value: 'fr-FR', key: 'speechLanguageFrench' },
+        { value: 'de-DE', key: 'speechLanguageGerman' }
+    ];
+
+    function populateSpeechLanguageOptions() {
+        const select = document.getElementById('speechLanguage');
+        if (!select) return;
+        const t = translations[currentLanguage];
+        select.innerHTML = '';
+        speechLanguageOptions.forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt.value;
+            option.textContent = t[opt.key] || opt.value;
+            select.appendChild(option);
+        });
+        select.value = settings.speechLanguage || 'auto';
+    }
+
+    function updateSpeechLanguageAvailability() {
+        const enabled = document.getElementById('languageOverrideEnabled').checked;
+        const select = document.getElementById('speechLanguage');
+        if (!select) return;
+        select.disabled = !enabled;
+        select.style.opacity = enabled ? '1' : '0.6';
+    }
+
     function toggleLanguage() {
         currentLanguage = currentLanguage === 'zh' ? 'en' : 'zh';
         updateLanguage();
@@ -1127,9 +1479,41 @@ function fallbackToTextarea(jsonString, t) {
             wordsPerRoundLabel.textContent = t.wordsPerRoundLabel;
         }
 
-        const enableWeightSystemLabel = document.getElementById('enableWeightSystemLabel');
-        if (enableWeightSystemLabel) {
-            enableWeightSystemLabel.textContent = t.enableWeightSystemText;
+        const enableSmartSystemLabel = document.getElementById('enableSmartSystemLabel');
+        if (enableSmartSystemLabel) {
+            enableSmartSystemLabel.textContent = t.enableSmartSystemText;
+        }
+        const enableTimeSystemLabel = document.getElementById('enableTimeSystemLabel');
+        if (enableTimeSystemLabel) {
+            enableTimeSystemLabel.textContent = t.enableTimeSystemText;
+        }
+        const enableScoreSystemLabel = document.getElementById('enableScoreSystemLabel');
+        if (enableScoreSystemLabel) {
+            enableScoreSystemLabel.textContent = t.enableScoreSystemText;
+        }
+        const readParenthesesLabel = document.getElementById('readParenthesesLabel');
+        if (readParenthesesLabel) {
+            readParenthesesLabel.textContent = t.readParenthesesText;
+        }
+        const languageOverrideEnabledLabel = document.getElementById('languageOverrideEnabledLabel');
+        if (languageOverrideEnabledLabel) {
+            languageOverrideEnabledLabel.textContent = t.languageOverrideEnabledText;
+        }
+        const speechLanguageLabel = document.getElementById('speechLanguageLabel');
+        if (speechLanguageLabel) {
+            speechLanguageLabel.textContent = t.speechLanguageLabel;
+        }
+        const questionCountLabel = document.getElementById('questionCountLabel');
+        if (questionCountLabel) {
+            questionCountLabel.textContent = t.questionCountLabel;
+        }
+        const answerCountLabel = document.getElementById('answerCountLabel');
+        if (answerCountLabel) {
+            answerCountLabel.textContent = t.answerCountLabel;
+        }
+        const toggleCountModeBtn = document.getElementById('toggleCountModeBtn');
+        if (toggleCountModeBtn) {
+            toggleCountModeBtn.textContent = document.getElementById('syncCounts').checked ? t.countModeExpand : t.countModeCollapse;
         }
 
         const resetWeightsButtonText = document.getElementById('resetWeightsButtonText');
@@ -1152,6 +1536,11 @@ function fallbackToTextarea(jsonString, t) {
         document.getElementById('redoBtn').textContent = t.redo;
 
         document.getElementById('langToggleBtn').textContent = '🌐 ' + (currentLanguage === 'zh' ? 'English' : '中文');
+
+        populateSpeechLanguageOptions();
+        updateSpeechLanguageAvailability();
+        applyCountModeUI(false);
+        applySmartSystemUI(true);
 
         renderWords();
         updateSaveButtonState();
@@ -1204,15 +1593,43 @@ function fallbackToTextarea(jsonString, t) {
 
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('wordsPerRound').value = settings.wordsPerRound;
-        document.getElementById('enableWeightSystem').checked = settings.enableWeightSystem;
+        document.getElementById('enableSmartSystem').checked = settings.enableSmartSystem;
+        document.getElementById('enableTimeSystem').checked = settings.enableTimeSystem;
+        document.getElementById('enableScoreSystem').checked = settings.enableScoreSystem;
+        document.getElementById('readParentheses').checked = settings.readParentheses;
+        document.getElementById('languageOverrideEnabled').checked = settings.languageOverrideEnabled;
+        document.getElementById('questionCount').value = settings.questionCount;
+        document.getElementById('answerCount').value = settings.answerCount;
+        document.getElementById('syncCounts').checked = settings.syncCounts;
+        document.getElementById('speechLanguage').value = settings.speechLanguage || 'auto';
 
         originalWords = JSON.parse(JSON.stringify(words));
-        originalSettings = JSON.parse(JSON.stringify(settings));
+        originalSettings = normalizeSettings(JSON.parse(JSON.stringify(settings)));
 
         document.getElementById('dataTextarea').addEventListener('input', markAsNeedsSave);
-        document.getElementById('wordsPerRound').addEventListener('input', markAsNeedsSave);
+        document.getElementById('wordsPerRound').addEventListener('input', () => {
+            const syncCountsInput = document.getElementById('syncCounts');
+            if (syncCountsInput && syncCountsInput.checked) {
+                const base = parseInt(document.getElementById('wordsPerRound').value) || settings.wordsPerRound || 10;
+                document.getElementById('questionCount').value = base;
+                document.getElementById('answerCount').value = base;
+            }
+            markAsNeedsSave();
+        });
         document.getElementById('wordsPerRound').addEventListener('change', markAsNeedsSave);
-        document.getElementById('enableWeightSystem').addEventListener('change', markAsNeedsSave);
+        document.getElementById('enableSmartSystem').addEventListener('change', markAsNeedsSave);
+        document.getElementById('enableSmartSystem').addEventListener('change', updateSmartSystemAvailability);
+        document.getElementById('enableTimeSystem').addEventListener('change', markAsNeedsSave);
+        document.getElementById('enableScoreSystem').addEventListener('change', markAsNeedsSave);
+        document.getElementById('readParentheses').addEventListener('change', markAsNeedsSave);
+        document.getElementById('languageOverrideEnabled').addEventListener('change', markAsNeedsSave);
+        document.getElementById('languageOverrideEnabled').addEventListener('change', updateSpeechLanguageAvailability);
+        document.getElementById('speechLanguage').addEventListener('change', markAsNeedsSave);
+        document.getElementById('questionCount').addEventListener('input', markAsNeedsSave);
+        document.getElementById('questionCount').addEventListener('change', markAsNeedsSave);
+        document.getElementById('answerCount').addEventListener('input', markAsNeedsSave);
+        document.getElementById('answerCount').addEventListener('change', markAsNeedsSave);
+        document.getElementById('syncCounts').addEventListener('change', markAsNeedsSave);
 
         needsSave = false;
         
@@ -1226,6 +1643,8 @@ function fallbackToTextarea(jsonString, t) {
         // 添加定時檢查儲存狀態
         setInterval(markAsNeedsSave, 1000);
         
+        applyCountModeUI(false);
+        applySmartSystemUI(true);
         updateLanguage(); // 這會觸發第一次 renderWords()
     });
 </script>

@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>立志寫作｜文章誓言</title>
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/11170/11170760.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=ZCOOL+XiaoWei&display=swap');
+
+        :root {
+            --bg-1: #f7f2e8;
+            --bg-2: #f4f7fb;
+            --card: #ffffff;
+            --ink: #1f2937;
+            --muted: #6b7280;
+            --accent: #f97316;
+            --accent-2: #0ea5e9;
+            --line: #e5e7eb;
+            --good: #16a34a;
+            --warn: #dc2626;
+            --shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+            --line-height: 1.6;
+            --para-before: 0em;
+            --para-after: 1.6em;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Space Grotesk", "ZCOOL XiaoWei", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 15% 12%, rgba(249, 115, 22, 0.18), transparent 38%),
+                radial-gradient(circle at 85% 8%, rgba(14, 165, 233, 0.18), transparent 36%),
+                linear-gradient(120deg, var(--bg-1), var(--bg-2));
+            min-height: 100vh;
+            padding: 28px 18px 40px;
+        }
+
+        .app {
+            max-width: 1120px;
+            margin: 0 auto;
+        }
+
+        .hero {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+
+        .hero h1 {
+            margin: 0 0 8px 0;
+            font-size: clamp(28px, 3.5vw, 42px);
+            letter-spacing: 0.5px;
+        }
+
+        .hero p {
+            margin: 0;
+            color: var(--muted);
+            max-width: 520px;
+        }
+
+        .stat-strip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(100px, 1fr));
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.65);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .stat {
+            padding: 8px 10px;
+            border-radius: 12px;
+            background: #fff;
+        }
+
+        .stat span {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .stat strong {
+            font-size: 18px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: var(--shadow);
+        }
+
+        .editor .field {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        input[type="text"], textarea, select {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-family: inherit;
+            font-size: 15px;
+        }
+
+        .editable {
+            min-height: 260px;
+            line-height: var(--line-height);
+            outline: none;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 16px;
+        }
+
+        .editable div,
+        .editable p {
+            margin: 0;
+            display: block;
+        }
+
+        .editable div + div,
+        .editable div + p,
+        .editable p + div,
+        .editable p + p {
+            margin-top: var(--para-gap);
+        }
+
+        .editable:empty::before {
+            content: attr(data-placeholder);
+            color: #9ca3af;
+        }
+
+        .lt-issue {
+            text-decoration-line: underline;
+            text-decoration-style: wavy;
+            text-decoration-thickness: 1.5px;
+        }
+
+        .lt-grammar {
+            text-decoration-color: #2563eb;
+        }
+
+        .lt-spell {
+            text-decoration-color: #dc2626;
+        }
+
+        .user-highlight {
+            background-color: var(--highlight-color, #fff59d);
+            border-radius: 4px;
+            padding: 0 2px;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .font-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .font-controls button {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .spacing-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .spacing-controls select,
+        .spacing-controls input {
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 6px 10px;
+            font-family: inherit;
+            font-size: 13px;
+        }
+
+        .color-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 13px;
+            align-items: center;
+        }
+
+        .color-controls input[type="color"] {
+            width: 42px;
+            height: 34px;
+            padding: 0;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        .color-controls button {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        button {
+            border: none;
+            border-radius: 999px;
+            padding: 10px 16px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 10px 18px rgba(249, 115, 22, 0.35);
+        }
+
+        .btn-secondary {
+            background: #111827;
+            color: #fff;
+        }
+
+        .btn-ghost {
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        .helper-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #f3f4f6;
+            padding: 6px 10px;
+            border-radius: 999px;
+        }
+
+        .toggle input {
+            accent-color: var(--accent);
+        }
+
+        .sidebar .card + .card {
+            margin-top: 16px;
+        }
+
+        .article-list {
+            display: grid;
+            gap: 8px;
+            max-height: 220px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .article-tools {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .article-item {
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid var(--line);
+            cursor: pointer;
+            background: #fff;
+        }
+
+        .article-item.active {
+            border-color: var(--accent);
+            box-shadow: 0 8px 16px rgba(249, 115, 22, 0.25);
+        }
+
+        .article-item small {
+            color: var(--muted);
+            display: block;
+        }
+
+        .loop-controls {
+            display: grid;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .loop-status {
+            margin-top: 8px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .review {
+            margin-top: 16px;
+        }
+
+        .review-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .review-results {
+            display: grid;
+            gap: 10px;
+        }
+
+        .review-item {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 10px;
+            background: #fff;
+        }
+
+        .review-item strong {
+            color: var(--warn);
+        }
+
+        .review-item .context {
+            margin: 6px 0;
+            color: var(--muted);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(14, 165, 233, 0.12);
+            color: #0c4a6e;
+            font-size: 12px;
+            margin-left: 6px;
+        }
+
+        .suggestion-box {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: #fff;
+            font-size: 13px;
+            color: var(--muted);
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.12);
+        }
+
+        .suggestion-box strong {
+            color: var(--ink);
+        }
+
+        footer {
+            margin-top: 18px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .translate-output {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 10px;
+            min-height: 80px;
+            background: #f9fafb;
+            white-space: pre-wrap;
+        }
+
+        @media (max-width: 960px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .stat-strip {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="hero">
+            <div>
+                <h1>立志寫作｜文章誓言</h1>
+                <p>在這裡立下你的文章誓言，寫下它、保存它，並讓它重複出現與朗讀，幫你把目標刻進日常。</p>
+            </div>
+            <div class="stat-strip">
+                <div class="stat">
+                    <span>字數</span>
+                    <strong id="wordCount">0</strong>
+                </div>
+                <div class="stat">
+                    <span>字元</span>
+                    <strong id="charCount">0</strong>
+                </div>
+                <div class="stat">
+                    <span>最後更新</span>
+                    <strong id="updatedAt">--</strong>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid">
+            <section class="card editor">
+                <div class="field">
+                    <label for="titleInput">文章標題</label>
+                    <input type="text" id="titleInput" placeholder="例如：我的寫作宣言">
+                </div>
+                <div class="field">
+                    <label for="contentInput">文章內容</label>
+                    <div id="contentInput" class="editable" contenteditable="true" spellcheck="true" data-placeholder="在這裡寫下你的文章..."></div>
+                </div>
+                <div class="toolbar">
+                    <button class="btn-primary keep-caret" id="saveBtn">儲存文章</button>
+                    <button class="btn-ghost keep-caret" id="newBtn">新增文章</button>
+                    <button class="btn-secondary keep-caret" id="exportBtn">匯出文字</button>
+                    <button class="btn-ghost keep-caret" id="deleteBtn">刪除本文</button>
+                </div>
+                <div class="font-controls">
+                    <span>文字大小</span>
+                    <button class="btn-ghost keep-caret" id="fontSmaller">A-</button>
+                    <button class="btn-ghost keep-caret" id="fontBigger">A+</button>
+                    <span id="fontSizeLabel">16px</span>
+                </div>
+                <div class="spacing-controls">
+                    <span>行距（自訂）</span>
+                    <input type="number" id="lineSpacingCustom" min="0.8" max="3" step="0.05" value="1.6">
+                    <label class="toggle">
+                        <input type="checkbox" id="paraBeforeToggle">
+                        Add space before paragraph
+                    </label>
+                    <label class="toggle">
+                        <input type="checkbox" id="paraAfterToggle" checked>
+                        Add space after paragraph
+                    </label>
+                    <input type="number" id="paraSpaceSize" min="0" max="3" step="0.1" value="1.6">
+                </div>
+                <div class="color-controls">
+                    <span>背景</span>
+                    <input type="color" id="bgColorPicker" value="#ffffff" class="keep-caret">
+                    <span>文字</span>
+                    <input type="color" id="textColorPicker" value="#1f2937" class="keep-caret">
+                    <span>螢光筆</span>
+                    <input type="color" id="highlightColorPicker" value="#fff59d" class="keep-caret">
+                    <button class="btn-ghost keep-caret" id="resetColorsBtn">重設</button>
+                </div>
+                <div class="helper-row">
+                    <span id="autosaveStatus">自動儲存：關</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="autosaveToggle">
+                        開啟自動儲存
+                    </label>
+                    <label class="toggle">
+                        <input type="checkbox" id="liveCheckToggle" checked>
+                        即時拼字（瀏覽器）
+                    </label>
+                    <span id="saveHint"></span>
+                </div>
+                <div class="helper-row">
+                    <span id="storageUsage">儲存容量：計算中...</span>
+                </div>
+                <div class="suggestion-box" id="suggestionBox">建議改寫：<strong id="suggestionText"></strong>（按 Tab 套用）</div>
+            </section>
+
+            <aside class="sidebar">
+                <section class="card">
+                    <h2>翻譯助手</h2>
+                    <p class="helper-row">輸入中/英，按 Enter 產生翻譯，會自動插入到文章並清空輸入。</p>
+                    <div class="article-tools">
+                        <input type="text" id="translateInput" placeholder="輸入要翻譯的文字">
+                        <button class="btn-primary keep-caret" id="translateBtn">翻譯</button>
+                    </div>
+                    <div class="translate-output" id="translateOutput">等待輸入…</div>
+                </section>
+
+                <section class="card">
+                    <h2>文章朗讀</h2>
+                    <p class="helper-row">使用瀏覽器內建語音朗讀，會優先挑選 Google 語音。</p>
+                    <div class="loop-controls">
+                        <label for="speechRate">朗讀速度</label>
+                        <input type="range" id="speechRate" min="0.6" max="1.6" step="0.1" value="1">
+                        <label for="speechPitch">朗讀音高</label>
+                        <input type="range" id="speechPitch" min="0.6" max="1.6" step="0.1" value="1">
+                        <div class="toolbar">
+                            <button class="btn-primary keep-caret" id="speakBtn">開始朗讀</button>
+                            <button class="btn-ghost keep-caret" id="stopSpeakBtn">暫停</button>
+                        </div>
+                    </div>
+                    <div class="loop-status" id="speechStatus">狀態：等待中</div>
+                </section>
+
+                <section class="card">
+                    <h2>我的文章</h2>
+                    <div class="article-tools">
+                        <input type="text" id="searchInput" placeholder="搜尋標題">
+                        <select id="sortSelect">
+                            <option value="updated_desc">時間：新 → 舊</option>
+                            <option value="updated_asc">時間：舊 → 新</option>
+                            <option value="title_asc">標題：A → Z</option>
+                            <option value="title_desc">標題：Z → A</option>
+                        </select>
+                    </div>
+                    <div class="article-list" id="articleList"></div>
+                </section>
+            </aside>
+        </div>
+
+        <section class="card review">
+            <h2>錯字與文法審查 <span class="badge">線上 + 本機</span></h2>
+            <p class="helper-row">
+                編輯區使用瀏覽器內建拼字檢查（紅波浪線）。線上文法檢查需手動點擊按鈕（公共 API 不允許持續自動請求）。
+            </p>
+            <div class="review-controls">
+                <input type="text" id="langSelect" value="自動辨識" readonly>
+                <button class="btn-primary keep-caret" id="checkBtn">開始檢查</button>
+                <button class="btn-ghost keep-caret" id="fixAllBtn">一鍵修正</button>
+                <button class="btn-ghost keep-caret" id="clearReviewBtn">清除結果</button>
+            </div>
+            <div class="loop-status" id="reviewStatus">線上檢查：等待中</div>
+            <div class="review-results" id="reviewResults"></div>
+        </section>
+
+        <footer>
+            提示：文章會儲存在瀏覽器的本機儲存空間。若要跨裝置同步，可手動匯出文字或複製貼上到雲端。
+        </footer>
+    </div>
+
+    <script>
+        const storageKey = 'vowWriter_articles_v1';
+        const autosaveKey = 'vowWriter_autosave_v1';
+        const settingsKey = 'vowWriter_settings_v1';
+        const titleInput = document.getElementById('titleInput');
+        const contentInput = document.getElementById('contentInput');
+        const wordCount = document.getElementById('wordCount');
+        const charCount = document.getElementById('charCount');
+        const updatedAt = document.getElementById('updatedAt');
+        const articleList = document.getElementById('articleList');
+        const saveBtn = document.getElementById('saveBtn');
+        const newBtn = document.getElementById('newBtn');
+        const deleteBtn = document.getElementById('deleteBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const autosaveToggle = document.getElementById('autosaveToggle');
+        const autosaveStatus = document.getElementById('autosaveStatus');
+        const saveHint = document.getElementById('saveHint');
+        const liveCheckToggle = document.getElementById('liveCheckToggle');
+        const searchInput = document.getElementById('searchInput');
+        const sortSelect = document.getElementById('sortSelect');
+        const translateInput = document.getElementById('translateInput');
+        const translateBtn = document.getElementById('translateBtn');
+        const translateOutput = document.getElementById('translateOutput');
+        const suggestionBox = document.getElementById('suggestionBox');
+        const suggestionText = document.getElementById('suggestionText');
+        const fontSmaller = document.getElementById('fontSmaller');
+        const fontBigger = document.getElementById('fontBigger');
+        const fontSizeLabel = document.getElementById('fontSizeLabel');
+        const storageUsage = document.getElementById('storageUsage');
+        const lineSpacingCustom = document.getElementById('lineSpacingCustom');
+        const paraBeforeToggle = document.getElementById('paraBeforeToggle');
+        const paraAfterToggle = document.getElementById('paraAfterToggle');
+        const paraSpaceSize = document.getElementById('paraSpaceSize');
+        const bgColorPicker = document.getElementById('bgColorPicker');
+        const textColorPicker = document.getElementById('textColorPicker');
+        const resetColorsBtn = document.getElementById('resetColorsBtn');
+        const highlightColorPicker = document.getElementById('highlightColorPicker');
+        const speechRate = document.getElementById('speechRate');
+        const speechPitch = document.getElementById('speechPitch');
+        const speakBtn = document.getElementById('speakBtn');
+        const stopSpeakBtn = document.getElementById('stopSpeakBtn');
+        const speechStatus = document.getElementById('speechStatus');
+        const checkBtn = document.getElementById('checkBtn');
+        const clearReviewBtn = document.getElementById('clearReviewBtn');
+        const reviewResults = document.getElementById('reviewResults');
+        const langSelect = document.getElementById('langSelect');
+        const reviewStatus = document.getElementById('reviewStatus');
+        const fixAllBtn = document.getElementById('fixAllBtn');
+
+        let articles = [];
+        let currentId = null;
+        let autosaveTimer = null;
+        let liveCheckTimer = null;
+        let lastCheckSnapshot = '';
+        let isApplyingHighlights = false;
+        let isSpeakingLoop = false;
+        let lastCaretOffset = 0;
+        let lastMatches = [];
+        let activeSuggestion = null;
+        let editorFontSize = 16;
+        let lineSpacingValue = 1.6;
+        let paraSpaceValue = 1.6;
+        let editorBgColor = '#ffffff';
+        let editorTextColor = '#1f2937';
+        let highlightColor = '#fff59d';
+        let undoStack = [];
+        let redoStack = [];
+        let snapshotTimer = null;
+        const undoLimit = 100;
+        let lastSelectionRange = null;
+
+        function getEditorText() {
+            return contentInput.innerText || '';
+        }
+
+        function getEditorHtml() {
+            return contentInput.innerHTML || '';
+        }
+
+        function setEditorText(text) {
+            contentInput.innerText = text || '';
+        }
+
+        function setEditorHtml(html) {
+            contentInput.innerHTML = html || '';
+        }
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function textToHtml(text) {
+            return escapeHtml(text).replace(/\n/g, '<br>');
+        }
+
+        function getSelectionOffsets() {
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0) return null;
+            const range = sel.getRangeAt(0);
+            if (!contentInput.contains(range.startContainer)) return null;
+            const preStart = range.cloneRange();
+            preStart.selectNodeContents(contentInput);
+            preStart.setEnd(range.startContainer, range.startOffset);
+            const start = preStart.toString().length;
+            const preEnd = range.cloneRange();
+            preEnd.selectNodeContents(contentInput);
+            preEnd.setEnd(range.endContainer, range.endOffset);
+            const end = preEnd.toString().length;
+            return { start, end };
+        }
+
+        function locateOffset(root, offset) {
+            const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+            let node = walker.nextNode();
+            let current = 0;
+            while (node) {
+                const len = node.textContent.length;
+                if (current + len >= offset) {
+                    return { node, offset: offset - current };
+                }
+                current += len;
+                node = walker.nextNode();
+            }
+            return { node: root, offset: root.childNodes.length };
+        }
+
+        function getRangeRect(start, end) {
+            const startLoc = locateOffset(contentInput, start);
+            const endLoc = locateOffset(contentInput, end);
+            const range = document.createRange();
+            try {
+                range.setStart(startLoc.node, startLoc.offset);
+                range.setEnd(endLoc.node, endLoc.offset);
+                return range.getBoundingClientRect();
+            } catch (err) {
+                return contentInput.getBoundingClientRect();
+            }
+        }
+
+        function restoreSelection(offsets) {
+            if (!offsets) return;
+            const startLoc = locateOffset(contentInput, offsets.start);
+            const endLoc = locateOffset(contentInput, offsets.end);
+            const range = document.createRange();
+            try {
+                range.setStart(startLoc.node, startLoc.offset);
+                range.setEnd(endLoc.node, endLoc.offset);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            } catch (err) {
+                // Ignore selection restore errors.
+            }
+        }
+
+        function storeSelectionRange() {
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0) return;
+            const range = sel.getRangeAt(0);
+            if (!contentInput.contains(range.commonAncestorContainer)) return;
+            lastSelectionRange = range.cloneRange();
+        }
+
+        function restoreSelectionRange() {
+            if (!lastSelectionRange) return;
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(lastSelectionRange);
+        }
+
+        function removeLtHighlights(root = contentInput) {
+            root.querySelectorAll('.lt-issue').forEach(span => {
+                span.replaceWith(document.createTextNode(span.textContent));
+            });
+        }
+
+        function getEditorHtmlClean() {
+            const clone = contentInput.cloneNode(true);
+            removeLtHighlights(clone);
+            return clone.innerHTML;
+        }
+
+        function pushSnapshot() {
+            const html = getEditorHtmlClean();
+            if (undoStack.length && undoStack[undoStack.length - 1] === html) return;
+            undoStack.push(html);
+            if (undoStack.length > undoLimit) undoStack.shift();
+            redoStack = [];
+        }
+
+        function scheduleSnapshot() {
+            if (snapshotTimer) clearTimeout(snapshotTimer);
+            snapshotTimer = setTimeout(() => {
+                pushSnapshot();
+            }, 600);
+        }
+
+        function restoreFromStack(stackFrom, stackTo) {
+            if (!stackFrom.length) return;
+            const current = getEditorHtmlClean();
+            stackTo.push(current);
+            const html = stackFrom.pop();
+            setEditorHtml(html);
+            updateStats();
+            updateLangDisplay(getEditorText());
+            scheduleLiveCheck();
+            setupAutosave();
+        }
+
+        function undoEditor() {
+            restoreFromStack(undoStack, redoStack);
+        }
+
+        function redoEditor() {
+            restoreFromStack(redoStack, undoStack);
+        }
+
+        function updateCaretOffset() {
+            const offsets = getSelectionOffsets();
+            if (offsets) {
+                lastCaretOffset = offsets.end;
+            }
+            storeSelectionRange();
+            updateSuggestionBox();
+        }
+
+        function loadArticles() {
+            const raw = localStorage.getItem(storageKey);
+            articles = raw ? JSON.parse(raw) : [];
+        }
+
+        function loadAutosaveSetting() {
+            const raw = localStorage.getItem(autosaveKey);
+            autosaveToggle.checked = raw === 'true';
+            autosaveStatus.textContent = autosaveToggle.checked ? '自動儲存：開' : '自動儲存：關';
+        }
+
+        function loadSettings() {
+            const raw = localStorage.getItem(settingsKey);
+            if (!raw) return;
+            try {
+                const data = JSON.parse(raw);
+                if (typeof data.speechRate === 'number') speechRate.value = data.speechRate;
+                if (typeof data.speechPitch === 'number') speechPitch.value = data.speechPitch;
+                if (typeof data.liveCheck === 'boolean') liveCheckToggle.checked = data.liveCheck;
+                if (typeof data.autosave === 'boolean') autosaveToggle.checked = data.autosave;
+                if (typeof data.sort === 'string') sortSelect.value = data.sort;
+                if (typeof data.search === 'string') searchInput.value = data.search;
+                if (typeof data.fontSize === 'number') editorFontSize = data.fontSize;
+                if (typeof data.lineSpacing === 'number') lineSpacingValue = data.lineSpacing;
+                if (typeof data.paraSpace === 'number') paraSpaceValue = data.paraSpace;
+                if (typeof data.paraBefore === 'boolean') paraBeforeToggle.checked = data.paraBefore;
+                if (typeof data.paraAfter === 'boolean') paraAfterToggle.checked = data.paraAfter;
+                if (typeof data.bgColor === 'string') editorBgColor = data.bgColor;
+                if (typeof data.textColor === 'string') editorTextColor = data.textColor;
+                if (typeof data.highlightColor === 'string') highlightColor = data.highlightColor;
+                autosaveStatus.textContent = autosaveToggle.checked ? '自動儲存：開' : '自動儲存：關';
+            } catch (err) {
+                // ignore
+            }
+        }
+
+        function saveSettings() {
+            const payload = {
+                speechRate: parseFloat(speechRate.value) || 1,
+                speechPitch: parseFloat(speechPitch.value) || 1,
+                liveCheck: liveCheckToggle.checked,
+                autosave: autosaveToggle.checked,
+                sort: sortSelect.value,
+                search: searchInput.value,
+                fontSize: editorFontSize,
+                lineSpacing: lineSpacingValue,
+                paraSpace: paraSpaceValue,
+                paraBefore: paraBeforeToggle.checked,
+                paraAfter: paraAfterToggle.checked,
+                bgColor: editorBgColor,
+                textColor: editorTextColor,
+                highlightColor: highlightColor
+            };
+            localStorage.setItem(settingsKey, JSON.stringify(payload));
+            updateStorageUsage();
+        }
+
+        function applyFontSize() {
+            editorFontSize = Math.max(12, Math.min(editorFontSize, 28));
+            contentInput.style.fontSize = `${editorFontSize}px`;
+            fontSizeLabel.textContent = `${editorFontSize}px`;
+        }
+
+        function updateStorageUsage() {
+            try {
+                const totalBytes = Object.keys(localStorage)
+                    .map(key => (localStorage.getItem(key) || '').length + key.length)
+                    .reduce((a, b) => a + b, 0) * 2;
+                const mb = (totalBytes / (1024 * 1024)).toFixed(2);
+                storageUsage.textContent = `儲存容量：${mb} MB（localStorage 估算）`;
+            } catch (err) {
+                storageUsage.textContent = '儲存容量：無法計算';
+            }
+        }
+
+        function applySpacing() {
+            const target = contentInput;
+            target.style.setProperty('--line-height', String(lineSpacingValue));
+            const enabled = paraBeforeToggle.checked || paraAfterToggle.checked;
+            const gap = enabled ? `${paraSpaceValue}em` : '0em';
+            target.style.setProperty('--para-gap', gap);
+        }
+
+        function syncSpacingControls() {
+            lineSpacingCustom.value = String(lineSpacingValue);
+            paraSpaceSize.value = String(paraSpaceValue);
+        }
+
+        function applyEditorColors() {
+            contentInput.style.backgroundColor = editorBgColor;
+            contentInput.style.color = editorTextColor;
+            bgColorPicker.value = editorBgColor;
+            textColorPicker.value = editorTextColor;
+        }
+
+        function rgbToHex(rgb) {
+            const res = rgb.match(/\d+/g);
+            if (!res || res.length < 3) return null;
+            const [r, g, b] = res.map(n => Math.max(0, Math.min(parseInt(n, 10), 255)));
+            return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+        }
+
+        function getSelectionTextColor() {
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0) return null;
+            const range = sel.getRangeAt(0);
+            if (!contentInput.contains(range.commonAncestorContainer)) return null;
+            const node = range.startContainer.nodeType === Node.TEXT_NODE
+                ? range.startContainer.parentElement
+                : range.startContainer;
+            if (!node) return null;
+            const color = window.getComputedStyle(node).color;
+            return rgbToHex(color);
+        }
+
+        function getSelectionHighlightColor() {
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0) return null;
+            const range = sel.getRangeAt(0);
+            if (!contentInput.contains(range.commonAncestorContainer)) return null;
+            const node = range.startContainer.nodeType === Node.TEXT_NODE
+                ? range.startContainer.parentElement
+                : range.startContainer;
+            if (!node) return null;
+            const highlight = node.closest('.user-highlight');
+            if (!highlight) return null;
+            const bg = highlight.style.backgroundColor || window.getComputedStyle(highlight).backgroundColor;
+            return rgbToHex(bg);
+        }
+
+        function applyHighlightColorToSelection(color) {
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0) return false;
+            const range = sel.getRangeAt(0);
+            if (!contentInput.contains(range.commonAncestorContainer)) return false;
+            const marks = contentInput.querySelectorAll('.user-highlight');
+            let applied = false;
+            marks.forEach(mark => {
+                if (range.intersectsNode(mark)) {
+                    mark.style.backgroundColor = color;
+                    applied = true;
+                }
+            });
+            if (applied) {
+                updateStats();
+                setupAutosave();
+                pushSnapshot();
+            }
+            return applied;
+        }
+
+        function removeHighlightFromSelection() {
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0) return false;
+            const range = sel.getRangeAt(0);
+            if (!contentInput.contains(range.commonAncestorContainer)) return false;
+            const marks = contentInput.querySelectorAll('.user-highlight');
+            let removed = false;
+            marks.forEach(mark => {
+                if (range.intersectsNode(mark)) {
+                    mark.replaceWith(...mark.childNodes);
+                    removed = true;
+                }
+            });
+            if (removed) {
+                updateStats();
+                setupAutosave();
+                pushSnapshot();
+            }
+            return removed;
+        }
+
+        function applyHighlightToSelection(color) {
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return false;
+            const range = sel.getRangeAt(0);
+            if (!contentInput.contains(range.commonAncestorContainer)) return false;
+            const span = document.createElement('span');
+            span.className = 'user-highlight';
+            span.style.backgroundColor = color;
+            try {
+                const frag = range.extractContents();
+                span.appendChild(frag);
+                range.insertNode(span);
+                range.collapse(false);
+                sel.removeAllRanges();
+                sel.addRange(range);
+                updateStats();
+                setupAutosave();
+                pushSnapshot();
+                return true;
+            } catch (err) {
+                return false;
+            }
+        }
+
+        function applyTextColorToSelection(color) {
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return false;
+            const range = sel.getRangeAt(0);
+            if (!contentInput.contains(range.commonAncestorContainer)) return false;
+            const span = document.createElement('span');
+            span.style.color = color;
+            try {
+                const frag = range.extractContents();
+                span.appendChild(frag);
+                range.insertNode(span);
+                range.collapse(false);
+                sel.removeAllRanges();
+                sel.addRange(range);
+                updateStats();
+                setupAutosave();
+                pushSnapshot();
+                return true;
+            } catch (err) {
+                return false;
+            }
+        }
+
+        function applyHighlightColor() {
+            highlightColorPicker.value = highlightColor;
+            document.documentElement.style.setProperty('--highlight-color', highlightColor);
+        }
+
+        function getQueryTitle() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        }
+
+        function setQueryTitle(title) {
+            const params = new URLSearchParams(window.location.search);
+            if (title) {
+                params.set('id', title);
+            } else {
+                params.delete('id');
+            }
+            const next = `${window.location.pathname}?${params.toString()}`;
+            window.history.replaceState(null, '', next);
+        }
+
+        function saveArticles() {
+            localStorage.setItem(storageKey, JSON.stringify(articles));
+            updateStorageUsage();
+        }
+
+        function formatTime(ts) {
+            if (!ts) return '--';
+            const date = new Date(ts);
+            return date.toLocaleString('zh-TW', { hour12: false });
+        }
+
+        function detectLanguage(text) {
+            if (!text) return 'zh-TW';
+            const hasLatin = /[A-Za-z]/.test(text);
+            const hasCJK = /[\u4e00-\u9fff]/.test(text);
+            if (hasLatin && !hasCJK) return 'en-US';
+            if (hasCJK && !hasLatin) return 'zh-TW';
+            // Mixed content: prefer English for grammar fixes, keep Chinese as fallback.
+            return 'en-US';
+        }
+
+        function updateLangDisplay(text) {
+            const lang = detectLanguage(text);
+            const label = lang === 'en-US' ? 'English' : '繁體中文';
+            langSelect.value = `自動辨識（${label}）`;
+        }
+
+        function detectTranslateLang(text) {
+            const hasLatin = /[A-Za-z]/.test(text);
+            const hasCJK = /[\u4e00-\u9fff]/.test(text);
+            if (hasCJK && !hasLatin) return { source: 'zh-TW', target: 'en' };
+            if (hasLatin && !hasCJK) return { source: 'en', target: 'zh-TW' };
+            return { source: 'auto', target: 'en' };
+        }
+
+        function insertTextAtCursor(text) {
+            removeLtHighlights();
+            let range = null;
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount > 0 && contentInput.contains(sel.anchorNode)) {
+                range = sel.getRangeAt(0);
+            } else {
+                const safeOffset = Math.max(0, Math.min(lastCaretOffset, getEditorText().length));
+                const startLoc = locateOffset(contentInput, safeOffset);
+                range = document.createRange();
+                range.setStart(startLoc.node, startLoc.offset);
+                range.setEnd(startLoc.node, startLoc.offset);
+            }
+            range.deleteContents();
+            range.insertNode(document.createTextNode(text));
+            range.collapse(false);
+            const sel2 = window.getSelection();
+            sel2.removeAllRanges();
+            sel2.addRange(range);
+            lastCaretOffset = getSelectionOffsets()?.end ?? lastCaretOffset;
+            updateStats();
+            updateLangDisplay(getEditorText());
+            scheduleLiveCheck();
+            setupAutosave();
+            pushSnapshot();
+        }
+
+        async function translateText() {
+            const text = translateInput.value.trim();
+            if (!text) return;
+            translateOutput.textContent = '翻譯中...';
+            const { source, target } = detectTranslateLang(text);
+            try {
+                const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${encodeURIComponent(source)}|${encodeURIComponent(target)}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('translate failed');
+                const data = await res.json();
+                const translated = data && data.responseData ? data.responseData.translatedText : '';
+                if (!translated) throw new Error('no translation');
+                translateOutput.textContent = translated;
+                insertTextAtCursor(translated);
+                translateInput.value = '';
+            } catch (err) {
+                translateOutput.textContent = '翻譯失敗，請稍後再試。';
+            }
+        }
+
+        function updateStats() {
+            const text = getEditorText().trim();
+            const words = text ? text.split(/\s+/).length : 0;
+            wordCount.textContent = words;
+            charCount.textContent = getEditorText().length;
+            const current = articles.find(a => a.id === currentId);
+            updatedAt.textContent = current ? formatTime(current.updatedAt) : '--';
+        }
+
+        function renderList() {
+            articleList.innerHTML = '';
+            if (articles.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'article-item';
+                empty.textContent = '目前沒有文章';
+                articleList.appendChild(empty);
+                return;
+            }
+            const keyword = searchInput.value.trim().toLowerCase();
+            const sorted = [...articles];
+            if (sortSelect.value === 'updated_desc') sorted.sort((a, b) => b.updatedAt - a.updatedAt);
+            if (sortSelect.value === 'updated_asc') sorted.sort((a, b) => a.updatedAt - b.updatedAt);
+            if (sortSelect.value === 'title_asc') sorted.sort((a, b) => a.title.localeCompare(b.title, 'zh-Hant'));
+            if (sortSelect.value === 'title_desc') sorted.sort((a, b) => b.title.localeCompare(a.title, 'zh-Hant'));
+            const filtered = keyword
+                ? sorted.filter(a => a.title.toLowerCase().includes(keyword))
+                : sorted;
+            filtered.forEach(article => {
+                    const item = document.createElement('div');
+                    item.className = 'article-item' + (article.id === currentId ? ' active' : '');
+                    item.innerHTML = `<strong>${article.title}</strong><small>${formatTime(article.updatedAt)}</small>`;
+                    item.addEventListener('click', () => loadArticle(article.id));
+                    articleList.appendChild(item);
+                });
+        }
+
+        function loadArticle(id) {
+            const article = articles.find(a => a.id === id);
+            if (!article) return;
+            currentId = id;
+            titleInput.value = article.title;
+            if (article.contentHtml) {
+                setEditorHtml(article.contentHtml);
+            } else {
+                setEditorText(article.content || '');
+            }
+            updateStats();
+            renderList();
+            updateLangDisplay(getEditorText());
+            scheduleLiveCheck();
+            setQueryTitle(article.title);
+        }
+
+        function saveCurrent() {
+            const title = titleInput.value.trim();
+            if (!title) {
+                alert('請先輸入文章標題（不可重複）。');
+                return;
+            }
+            const conflict = articles.find(a => a.title === title && a.id !== currentId);
+            if (conflict) {
+                alert('標題已存在，請換一個標題。');
+                return;
+            }
+            const contentHtml = getEditorHtmlClean();
+            const now = Date.now();
+
+            if (currentId) {
+                const target = articles.find(a => a.id === currentId);
+                if (target) {
+                    target.title = title;
+                    target.contentHtml = contentHtml;
+                    target.updatedAt = now;
+                }
+            } else {
+                currentId = now;
+                articles.push({ id: currentId, title, contentHtml, updatedAt: now });
+            }
+            saveArticles();
+            renderList();
+            updateStats();
+            saveHint.textContent = '已儲存';
+            setTimeout(() => { saveHint.textContent = ''; }, 1200);
+            setQueryTitle(title);
+        }
+
+        function newArticle() {
+            currentId = null;
+            titleInput.value = '';
+            setEditorText('');
+            updateStats();
+            renderList();
+        }
+
+        function deleteArticle() {
+            if (!currentId) return;
+            const ok = confirm('確定要刪除這篇文章嗎？');
+            if (!ok) return;
+            articles = articles.filter(a => a.id !== currentId);
+            currentId = null;
+            saveArticles();
+            newArticle();
+        }
+
+        function exportText() {
+            const title = titleInput.value.trim() || '文章';
+            const blob = new Blob([getEditorText()], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${title}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function setupAutosave() {
+            if (autosaveTimer) clearTimeout(autosaveTimer);
+            autosaveTimer = setTimeout(() => {
+                if (autosaveToggle.checked) {
+                    saveCurrent();
+                }
+            }, 800);
+        }
+
+        function getPreferredVoice(lang) {
+            const voices = window.speechSynthesis.getVoices();
+            if (!voices.length) return null;
+            const langPrefix = (lang || '').split('-')[0].toLowerCase();
+            const byLang = voices.filter(v => v.lang.toLowerCase().startsWith(langPrefix));
+            const google = byLang.find(v => /google/i.test(v.name)) || voices.find(v => /google/i.test(v.name));
+            return google || byLang[0] || voices[0];
+        }
+
+        function speakText() {
+            const text = getEditorText().trim();
+            if (!text) {
+                alert('請先寫下文章內容。');
+                return;
+            }
+            if (!('speechSynthesis' in window)) {
+                alert('此瀏覽器不支援朗讀。');
+                return;
+            }
+            isSpeakingLoop = true;
+            window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(text);
+            const autoLang = detectLanguage(text);
+            const voice = getPreferredVoice(autoLang);
+            if (voice) utter.voice = voice;
+            utter.rate = parseFloat(speechRate.value) || 1;
+            utter.pitch = parseFloat(speechPitch.value) || 1;
+            utter.lang = autoLang || (voice ? voice.lang : 'zh-TW');
+            utter.onstart = () => { speechStatus.textContent = '狀態：朗讀中'; };
+            utter.onend = () => {
+                if (isSpeakingLoop) {
+                    speakText();
+                } else {
+                    speechStatus.textContent = '狀態：停止';
+                }
+            };
+            utter.onerror = () => {
+                isSpeakingLoop = false;
+                speechStatus.textContent = '狀態：朗讀失敗';
+            };
+            window.speechSynthesis.speak(utter);
+        }
+
+        function localChecks(text) {
+            const issues = [];
+            if (/\s{2,}/.test(text)) {
+                issues.push({ message: '可能有連續空白', context: '出現兩個以上連續空白。' });
+            }
+            const repeated = text.match(/\b(\w+)\s+\1\b/i);
+            if (repeated) {
+                issues.push({ message: '可能有重複單字', context: `重複：${repeated[0]}` });
+            }
+            return issues;
+        }
+
+        function renderReview(matches, source) {
+            reviewResults.innerHTML = '';
+            if (!matches.length) {
+                reviewResults.innerHTML = `<div class="review-item">沒有發現明顯問題${source ? `（${source}）` : ''}</div>`;
+                return;
+            }
+            matches.forEach(match => {
+                const item = document.createElement('div');
+                item.className = 'review-item';
+                const suggestion = match.replacements && match.replacements[0] ? match.replacements[0].value : '';
+                item.innerHTML = `
+                    <strong>${match.message}</strong>
+                    <div class="context">${match.context}</div>
+                    ${suggestion ? `<button class="btn-ghost" data-offset="${match.offset}" data-length="${match.length}" data-suggestion="${suggestion}">套用建議：${suggestion}</button>` : ''}
+                `;
+                reviewResults.appendChild(item);
+            });
+        }
+
+        function buildHighlightedHTML(text, matches) {
+            const sorted = matches
+                .filter(m => typeof m.offset === 'number' && typeof m.length === 'number')
+                .sort((a, b) => a.offset - b.offset);
+            let html = '';
+            let lastIndex = 0;
+            sorted.forEach(match => {
+                if (match.offset < lastIndex) return;
+                html += textToHtml(text.slice(lastIndex, match.offset));
+                const cls = match.issueType === 'misspelling' ? 'lt-spell' : 'lt-grammar';
+                html += `<span class="lt-issue ${cls}">${textToHtml(text.slice(match.offset, match.offset + match.length))}</span>`;
+                lastIndex = match.offset + match.length;
+            });
+            html += textToHtml(text.slice(lastIndex));
+            return html;
+        }
+
+        function applyHighlights(matches) {
+            if (!liveCheckToggle.checked) return;
+            if (!getEditorText().trim()) return;
+            removeLtHighlights();
+            lastMatches = matches;
+            const offsets = getSelectionOffsets();
+            isApplyingHighlights = true;
+            const sorted = [...matches]
+                .filter(m => typeof m.offset === 'number' && typeof m.length === 'number')
+                .sort((a, b) => b.offset - a.offset);
+            sorted.forEach(match => {
+                const cls = match.issueType === 'misspelling' ? 'lt-spell' : 'lt-grammar';
+                const startLoc = locateOffset(contentInput, match.offset);
+                const endLoc = locateOffset(contentInput, match.offset + match.length);
+                const range = document.createRange();
+                try {
+                    range.setStart(startLoc.node, startLoc.offset);
+                    range.setEnd(endLoc.node, endLoc.offset);
+                    const span = document.createElement('span');
+                    span.className = `lt-issue ${cls}`;
+                    const frag = range.extractContents();
+                    span.appendChild(frag);
+                    range.insertNode(span);
+                } catch (err) {
+                    // ignore
+                }
+            });
+            isApplyingHighlights = false;
+            restoreSelection(offsets);
+            updateSuggestionBox();
+        }
+
+        function clearHighlights() {
+            removeLtHighlights();
+            lastMatches = [];
+            activeSuggestion = null;
+            suggestionBox.style.display = 'none';
+        }
+
+        function updateSuggestionBox() {
+            if (getEditorText().trim() !== lastCheckSnapshot) {
+                activeSuggestion = null;
+                suggestionBox.style.display = 'none';
+                return;
+            }
+            const caret = lastCaretOffset;
+            activeSuggestion = null;
+            if (!lastMatches.length) {
+                suggestionBox.style.display = 'none';
+                return;
+            }
+            const match = lastMatches.find(m => caret >= m.offset && caret <= (m.offset + m.length));
+            if (!match || !match.replacements || !match.replacements[0]) {
+                suggestionBox.style.display = 'none';
+                return;
+            }
+            activeSuggestion = {
+                offset: match.offset,
+                length: match.length,
+                value: match.replacements[0].value
+            };
+            suggestionText.textContent = activeSuggestion.value;
+            suggestionBox.style.display = 'block';
+            const rect = getRangeRect(activeSuggestion.offset, activeSuggestion.offset + activeSuggestion.length);
+            const left = Math.min(rect.left, window.innerWidth - 220);
+            const top = rect.bottom + 6;
+            suggestionBox.style.left = `${Math.max(left, 12)}px`;
+            suggestionBox.style.top = `${Math.min(top, window.innerHeight - 40)}px`;
+        }
+
+        function applySuggestionFromBox() {
+            if (!activeSuggestion) return;
+            if (getEditorText().trim() !== lastCheckSnapshot) {
+                reviewStatus.textContent = '線上檢查：內容已修改，請重新檢查';
+                return;
+            }
+            const startLoc = locateOffset(contentInput, activeSuggestion.offset);
+            const endLoc = locateOffset(contentInput, activeSuggestion.offset + activeSuggestion.length);
+            const range = document.createRange();
+            range.setStart(startLoc.node, startLoc.offset);
+            range.setEnd(endLoc.node, endLoc.offset);
+            range.deleteContents();
+            range.insertNode(document.createTextNode(activeSuggestion.value));
+            range.collapse(false);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+            lastCaretOffset = getSelectionOffsets()?.end ?? lastCaretOffset;
+            updateStats();
+            updateLangDisplay(getEditorText());
+            scheduleLiveCheck();
+            setupAutosave();
+            pushSnapshot();
+            lastMatches = lastMatches.filter(m => m.offset !== activeSuggestion.offset);
+            activeSuggestion = null;
+            suggestionBox.style.display = 'none';
+            reviewStatus.textContent = '線上檢查：已套用建議';
+        }
+
+        function applyAllSuggestions() {
+            if (getEditorText().trim() !== lastCheckSnapshot) {
+                reviewStatus.textContent = '線上檢查：內容已修改，請重新檢查';
+                return;
+            }
+            if (!lastMatches.length) {
+                reviewStatus.textContent = '線上檢查：沒有可套用的建議';
+                return;
+            }
+            const sorted = [...lastMatches]
+                .filter(m => m.replacements && m.replacements[0])
+                .sort((a, b) => b.offset - a.offset);
+            if (!sorted.length) {
+                reviewStatus.textContent = '線上檢查：沒有可套用的建議';
+                return;
+            }
+            removeLtHighlights();
+            sorted.forEach(m => {
+                const startLoc = locateOffset(contentInput, m.offset);
+                const endLoc = locateOffset(contentInput, m.offset + m.length);
+                const range = document.createRange();
+                try {
+                    range.setStart(startLoc.node, startLoc.offset);
+                    range.setEnd(endLoc.node, endLoc.offset);
+                    range.deleteContents();
+                    range.insertNode(document.createTextNode(m.replacements[0].value));
+                } catch (err) {
+                    // ignore
+                }
+            });
+            lastMatches = [];
+            activeSuggestion = null;
+            suggestionBox.style.display = 'none';
+            updateStats();
+            updateLangDisplay(getEditorText());
+            scheduleLiveCheck();
+            setupAutosave();
+            pushSnapshot();
+            reviewStatus.textContent = '線上檢查：已一鍵修正';
+        }
+
+        async function runCheck() {
+            const text = getEditorText().trim();
+            if (!text) {
+                alert('請先輸入文章內容。');
+                return;
+            }
+            reviewStatus.textContent = '線上檢查：檢查中...';
+            reviewResults.innerHTML = '檢查中...';
+            lastCheckSnapshot = text;
+            const language = 'auto';
+            try {
+                const buildParams = (lang) => new URLSearchParams({
+                    text,
+                    language: lang,
+                    preferredVariants: 'en-US,zh-TW',
+                    level: 'picky'
+                });
+                const fetchCheck = async (lang) => {
+                    const res = await fetch('https://api.languagetool.org/v2/check', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: buildParams(lang)
+                    });
+                    if (!res.ok) throw new Error('LanguageTool unavailable');
+                    return res.json();
+                };
+
+                let data = await fetchCheck(language);
+                let matches = data.matches.map(m => ({
+                    message: m.message,
+                    context: `${m.context.text}`,
+                    offset: m.offset,
+                    length: m.length,
+                    replacements: m.replacements || [],
+                    issueType: m.rule && m.rule.issueType ? m.rule.issueType : 'grammar'
+                }));
+                let detected = data.language && (data.language.detectedLanguage || data.language);
+                let code = detected && detected.code ? detected.code : 'unknown';
+
+                // Fallback: if auto-detect yields 0 results but text is mostly Latin, retry English.
+                const hasLatin = /[A-Za-z]/.test(text);
+                if (matches.length === 0 && hasLatin && code !== 'en') {
+                    data = await fetchCheck('en-US');
+                    matches = data.matches.map(m => ({
+                        message: m.message,
+                        context: `${m.context.text}`,
+                        offset: m.offset,
+                        length: m.length,
+                        replacements: m.replacements || [],
+                        issueType: m.rule && m.rule.issueType ? m.rule.issueType : 'grammar'
+                    }));
+                    detected = data.language && (data.language.detectedLanguage || data.language);
+                    code = detected && detected.code ? detected.code : 'en-US';
+                }
+
+                renderReview(matches, '線上檢查');
+                applyHighlights(matches);
+                reviewStatus.textContent = `線上檢查：完成（找到 ${matches.length} 個問題，語言 ${code}）`;
+            } catch (err) {
+                const localIssues = localChecks(text);
+                renderReview(localIssues, '本機簡易檢查');
+                reviewStatus.textContent = '線上檢查：失敗或被限制，已顯示本機檢查結果';
+            }
+        }
+
+        reviewResults.addEventListener('click', (event) => {
+            const btn = event.target.closest('button[data-offset]');
+            if (!btn) return;
+            if (getEditorText().trim() !== lastCheckSnapshot) {
+                alert('內容已修改，請重新檢查後再套用建議。');
+                return;
+            }
+            const offset = parseInt(btn.dataset.offset, 10);
+            const length = parseInt(btn.dataset.length, 10);
+            const suggestion = btn.dataset.suggestion;
+            const text = getEditorText();
+            const before = text.slice(0, offset);
+            const after = text.slice(offset + length);
+            setEditorText(before + suggestion + after);
+            updateStats();
+            updateLangDisplay(getEditorText());
+            scheduleLiveCheck();
+        });
+
+        saveBtn.addEventListener('click', saveCurrent);
+        newBtn.addEventListener('click', newArticle);
+        deleteBtn.addEventListener('click', deleteArticle);
+        exportBtn.addEventListener('click', exportText);
+        autosaveToggle.addEventListener('change', () => {
+            autosaveStatus.textContent = autosaveToggle.checked ? '自動儲存：開' : '自動儲存：關';
+            localStorage.setItem(autosaveKey, autosaveToggle.checked ? 'true' : 'false');
+            saveSettings();
+        });
+        liveCheckToggle.addEventListener('change', () => {
+            if (!liveCheckToggle.checked) {
+                clearHighlights();
+                lastMatches = [];
+                suggestionBox.style.display = 'none';
+            } else {
+                scheduleLiveCheck();
+            }
+            saveSettings();
+        });
+        speakBtn.addEventListener('click', speakText);
+        stopSpeakBtn.addEventListener('click', () => {
+            isSpeakingLoop = false;
+            window.speechSynthesis.cancel();
+            speechStatus.textContent = '狀態：暫停';
+        });
+        speechRate.addEventListener('input', saveSettings);
+        speechPitch.addEventListener('input', saveSettings);
+        searchInput.addEventListener('input', () => {
+            renderList();
+            saveSettings();
+        });
+        sortSelect.addEventListener('change', () => {
+            renderList();
+            saveSettings();
+        });
+        fontSmaller.addEventListener('click', () => {
+            editorFontSize -= 1;
+            applyFontSize();
+            saveSettings();
+        });
+        fontBigger.addEventListener('click', () => {
+            editorFontSize += 1;
+            applyFontSize();
+            saveSettings();
+        });
+        lineSpacingCustom.addEventListener('input', () => {
+            lineSpacingValue = Math.max(0.8, Math.min(parseFloat(lineSpacingCustom.value) || 1.6, 3));
+            applySpacing();
+            saveSettings();
+        });
+        paraBeforeToggle.addEventListener('change', () => {
+            applySpacing();
+            saveSettings();
+        });
+        paraAfterToggle.addEventListener('change', () => {
+            applySpacing();
+            saveSettings();
+        });
+        paraSpaceSize.addEventListener('input', () => {
+            paraSpaceValue = Math.max(0, Math.min(parseFloat(paraSpaceSize.value) || 1.6, 3));
+            applySpacing();
+            saveSettings();
+        });
+        const applyEditorColorsNow = () => {
+            editorBgColor = bgColorPicker.value;
+            applyEditorColors();
+            saveSettings();
+        };
+        bgColorPicker.addEventListener('input', applyEditorColorsNow);
+        bgColorPicker.addEventListener('change', applyEditorColorsNow);
+        textColorPicker.addEventListener('input', () => {
+            const applied = applyTextColorToSelection(textColorPicker.value);
+            if (!applied) {
+                editorTextColor = textColorPicker.value;
+                applyEditorColors();
+                saveSettings();
+            }
+        });
+        textColorPicker.addEventListener('change', () => {
+            const applied = applyTextColorToSelection(textColorPicker.value);
+            if (!applied) {
+                editorTextColor = textColorPicker.value;
+                applyEditorColors();
+                saveSettings();
+            }
+        });
+        const applyHighlightChange = () => {
+            const value = highlightColorPicker.value;
+            const isClear = value.toLowerCase() === '#ffffff';
+            let changed = false;
+            if (isClear) {
+                changed = removeHighlightFromSelection();
+            } else {
+                changed = applyHighlightColorToSelection(value) || applyHighlightToSelection(value);
+            }
+            highlightColor = value;
+            applyHighlightColor();
+            saveSettings();
+            if (!changed) {
+                // keep color as default for next highlight
+            }
+        };
+        highlightColorPicker.addEventListener('input', applyHighlightChange);
+        highlightColorPicker.addEventListener('change', applyHighlightChange);
+        resetColorsBtn.addEventListener('click', () => {
+            editorBgColor = '#ffffff';
+            editorTextColor = '#1f2937';
+            applyEditorColors();
+            saveSettings();
+        });
+        translateBtn.addEventListener('click', translateText);
+        translateInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                translateText();
+            }
+        });
+        function scheduleLiveCheck() {
+            if (liveCheckTimer) clearTimeout(liveCheckTimer);
+            if (!liveCheckToggle.checked) return;
+            liveCheckTimer = setTimeout(() => {
+                // Online checks are manual; live spell check is handled by the browser.
+                reviewStatus.textContent = '線上檢查：等待中（請按開始檢查）';
+            }, 700);
+        }
+
+        contentInput.addEventListener('input', () => {
+            if (isApplyingHighlights) return;
+            clearHighlights();
+            updateStats();
+            updateLangDisplay(getEditorText());
+            setupAutosave();
+            scheduleLiveCheck();
+            updateCaretOffset();
+            scheduleSnapshot();
+        });
+        contentInput.addEventListener('keydown', (event) => {
+            if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLowerCase() === 'z') {
+                event.preventDefault();
+                undoEditor();
+                return;
+            }
+            if ((event.ctrlKey || event.metaKey) && (event.key.toLowerCase() === 'y' || (event.shiftKey && event.key.toLowerCase() === 'z'))) {
+                event.preventDefault();
+                redoEditor();
+                return;
+            }
+            if (event.key === 'Tab' && activeSuggestion) {
+                event.preventDefault();
+                applySuggestionFromBox();
+            }
+        });
+        contentInput.addEventListener('keyup', updateCaretOffset);
+        contentInput.addEventListener('mouseup', updateCaretOffset);
+        contentInput.addEventListener('focus', updateCaretOffset);
+        document.addEventListener('selectionchange', updateCaretOffset);
+        document.addEventListener('selectionchange', () => {
+            const color = getSelectionTextColor();
+            if (color) {
+                textColorPicker.value = color;
+            }
+            const hl = getSelectionHighlightColor();
+            highlightColorPicker.value = hl || '#ffffff';
+        });
+        window.addEventListener('scroll', updateSuggestionBox);
+        window.addEventListener('resize', updateSuggestionBox);
+        document.addEventListener('mousedown', (event) => {
+            const target = event.target;
+            if (target && target.closest('.keep-caret')) {
+                event.preventDefault();
+                restoreSelectionRange();
+            }
+        });
+        titleInput.addEventListener('input', setupAutosave);
+        checkBtn.addEventListener('click', runCheck);
+        fixAllBtn.addEventListener('click', applyAllSuggestions);
+        clearReviewBtn.addEventListener('click', () => { reviewResults.innerHTML = ''; });
+
+        loadArticles();
+        loadAutosaveSetting();
+        loadSettings();
+        renderList();
+        updateStats();
+        updateLangDisplay(getEditorText());
+        applyFontSize();
+        applySpacing();
+        syncSpacingControls();
+        applyEditorColors();
+        applyHighlightColor();
+        updateStorageUsage();
+        pushSnapshot();
+        if (document.queryCommandSupported && document.queryCommandSupported('defaultParagraphSeparator')) {
+            document.execCommand('defaultParagraphSeparator', false, 'div');
+        }
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => {};
+        }
+        const initialTitle = getQueryTitle();
+        if (initialTitle) {
+            const match = articles.find(a => a.title === initialTitle);
+            if (match) {
+                loadArticle(match.id);
+            }
+        }
+
+        window.addEventListener('beforeunload', () => {
+            if (!autosaveToggle.checked) return;
+            if (!getEditorText().trim()) return;
+            saveCurrent();
+        });
+    </script>
+</body>
+</html>

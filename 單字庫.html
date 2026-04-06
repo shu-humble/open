@@ -525,7 +525,25 @@
         const totalScore = words.reduce((sum, word) => sum + (word.score || 0), 0);
         const totalScoreDisplay = document.getElementById('totalScoreDisplay');
         const t = translations[currentLanguage];
-        totalScoreDisplay.textContent = `${t.totalScoreLabel || '總分數'}: ${totalScore}`;
+        const totalWords = words.length;
+        const baseWords = (originalWords || []).length;
+        const delta = totalWords - baseWords;
+        let wordCountDetail = '';
+        if (needsSave && delta !== 0) {
+            const deltaText = delta > 0 ? `+${delta}` : `-${Math.abs(delta)}`;
+            const deltaColor = delta > 0 ? '#0f7a1f' : '#d12f2f';
+            wordCountDetail = formatTemplate(
+                t.wordCountDetailTemplate || '{0}<span style="color:{1}; font-weight: 700;">{2}</span>({3})',
+                baseWords,
+                deltaColor,
+                deltaText,
+                totalWords
+            );
+        }
+        const scoreLabel = t.totalScoreLabel || '總分數';
+        const wordLabel = t.totalWordCountLabel || '總單字數';
+        const wordCountText = wordCountDetail ? `${wordLabel}${wordCountDetail}` : `${wordLabel}${totalWords}`;
+        totalScoreDisplay.innerHTML = `${scoreLabel}: ${totalScore} | ${wordCountText}`;
     }
 
     // 保存當前狀態到撤銷堆疊
@@ -631,6 +649,7 @@
         saveAllButton.classList.add('save-button-clean');
         saveReminderElement.textContent = '';
       }
+      updateTotalScore();
     }
 
     function applyCountModeUI(copyToDetails) {
@@ -943,6 +962,32 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
         }
     }
 
+    function formatTemplate(template, ...args) {
+        return (template || '').replace(/\{(\d+)\}/g, (m, idx) => {
+            const i = Number(idx);
+            return Number.isFinite(i) && args[i] !== undefined ? args[i] : m;
+        });
+    }
+
+    function splitTranslations(text) {
+        return (text || '').split('/').map(t => t.trim()).filter(Boolean);
+    }
+
+    function mergeTranslations(existing, incoming) {
+        const incomingTrim = (incoming || '').trim();
+        if (!incomingTrim) return existing || '';
+        const parts = splitTranslations(existing);
+        if (parts.includes(incomingTrim)) return existing || '';
+        return parts.length > 0 ? `${existing} / ${incomingTrim}` : incomingTrim;
+    }
+
+    function translationContains(existing, incoming) {
+        const incomingTrim = (incoming || '').trim();
+        if (!incomingTrim) return false;
+        const parts = splitTranslations(existing);
+        return parts.includes(incomingTrim);
+    }
+
     // 將單字匯入和數據備份還原功能合併到一個 textarea
     function bulkImportFromTextarea() {
         const t = translations[currentLanguage];
@@ -964,6 +1009,9 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
 
         let addedCount = 0;
         let updatedCount = 0;
+        let mergedCount = 0;
+        let replacedCount = 0;
+        let skippedCount = 0;
 
         // 保存當前狀態到撤銷堆疊
         saveToUndoStack();
@@ -975,20 +1023,75 @@ infoButton.addEventListener('mouseover', function(event) { // 添加 event 參�
                 const word = parts[0];
                 const translation = parts[1];
                 const newWordObj = { word, translation, wrongCount: 0, correctCount: 0, hasBeenTested: false, streakCount: 0, score: 0 }; // 確保新建時有 streakCount 和 score
-                const status = updateOrCreateWord(newWordObj);
-                // 若是更新，保留既有統計；若是新增，updateOrCreateWord 會建立 statsMap 條目
-                if (statsMap[word]) {
-                    // keep
+
+                const existingIndex = words.findIndex(item => item.word === word);
+                if (existingIndex !== -1) {
+                    const existing = words[existingIndex];
+                    if (existing.translation === translation) {
+                        skippedCount++;
+                        continue;
+                    }
+                    const promptText = formatTemplate(
+                        t.bulkImportConflictSameWordPrompt,
+                        word,
+                        existing.translation || '',
+                        translation
+                    );
+                    const choice = (prompt(promptText, '1') || '').trim();
+                    if (choice === '2') {
+                        const merged = mergeTranslations(existing.translation, translation);
+                        existing.translation = merged;
+                        mergedCount++;
+                    } else if (choice === '3') {
+                        existing.translation = translation;
+                        updatedCount++;
+                    } else {
+                        skippedCount++;
+                    }
+                    continue;
                 }
+
+                const sameTranslationIndex = words.findIndex(item => translationContains(item.translation, translation));
+                if (sameTranslationIndex !== -1) {
+                    const existing = words[sameTranslationIndex];
+                    const promptText = formatTemplate(
+                        t.bulkImportConflictSameTranslationPrompt,
+                        translation,
+                        existing.word || '',
+                        word
+                    );
+                    const choice = (prompt(promptText, '2') || '').trim();
+                    if (choice === '1') {
+                        skippedCount++;
+                        continue;
+                    }
+                    if (choice === '3') {
+                        const removed = words[sameTranslationIndex]?.word;
+                        words.splice(sameTranslationIndex, 1);
+                        if (removed && statsMap[removed]) {
+                            delete statsMap[removed];
+                        }
+                        replacedCount++;
+                    }
+                }
+
+                const status = updateOrCreateWord(newWordObj);
                 if (status === 'added') addedCount++;
                 else updatedCount++;
             }
         }
         document.getElementById('dataTextarea').value = '';
         renderWords();
-        if (addedCount > 0 || updatedCount > 0) {
-            markAsNeedsSave();
-            alert(`${t.alertBulkImportSummary} ${addedCount} ${t.alertBulkImportAdded}, ${updatedCount} ${t.alertBulkImportUpdated}.`);
+        const parts = [];
+        if (addedCount > 0) parts.push(`${addedCount} ${t.alertBulkImportAdded}`);
+        if (updatedCount > 0) parts.push(`${updatedCount} ${t.alertBulkImportUpdated}`);
+        if (mergedCount > 0) parts.push(`${mergedCount} ${t.alertBulkImportMerged}`);
+        if (replacedCount > 0) parts.push(`${replacedCount} ${t.alertBulkImportReplaced}`);
+        if (skippedCount > 0) parts.push(`${skippedCount} ${t.alertBulkImportSkipped}`);
+        if (parts.length > 0) {
+            if (addedCount + updatedCount + mergedCount + replacedCount > 0) {
+                markAsNeedsSave();
+            }
         } else {
             alert(t.alertNoValidWordsImported);
         }
@@ -1326,7 +1429,12 @@ function fallbackToTextarea(jsonString, t) {
             alertBulkImportSummary: '批量匯入完成！',
             alertBulkImportAdded: '新增',
             alertBulkImportUpdated: '更新',
+            alertBulkImportMerged: '合併',
+            alertBulkImportReplaced: '覆蓋',
+            alertBulkImportSkipped: '略過',
             alertNoValidWordsImported: '沒有有效單字被匯入或更新。',
+            bulkImportConflictSameWordPrompt: '偵測到重複單字：\n單字：{0}\n現有解釋：{1}\n新解釋：{2}\n請選擇：\n1 保留舊的\n2 合併解釋（舊+新）\n3 覆蓋舊的',
+            bulkImportConflictSameTranslationPrompt: '偵測到重複解釋：\n解釋：{0}\n現有單字：{1}\n新單字：{2}\n請選擇：\n1 保留舊的（略過新單字）\n2 仍然新增\n3 覆蓋舊的（刪除舊單字）',
             alertSaveDone: '儲存成功！',
             confirmDeleteAll: '確定要刪除所有單字嗎？這個動作無法復原！',
             alertDeleteAllDone: '已清空所有單字！',
@@ -1351,6 +1459,8 @@ function fallbackToTextarea(jsonString, t) {
             wrongCountLabel: '答錯次數',
             streakCountLabel: '當前連勝',
             totalScoreLabel: '總分數',
+            totalWordCountLabel: '總單字數量',
+            wordCountDetailTemplate: '{0}<span style="color:{1}; font-weight: 700;">{2}</span>({3})',
             undo: '↶ 撤銷',
             redo: '↷ 下一步',
         },
@@ -1393,7 +1503,12 @@ function fallbackToTextarea(jsonString, t) {
             alertBulkImportSummary: 'Bulk import complete!',
             alertBulkImportAdded: 'added',
             alertBulkImportUpdated: 'updated',
+            alertBulkImportMerged: 'merged',
+            alertBulkImportReplaced: 'replaced',
+            alertBulkImportSkipped: 'skipped',
             alertNoValidWordsImported: 'No valid words were imported or updated.',
+            bulkImportConflictSameWordPrompt: 'Duplicate word detected:\nWord: {0}\nExisting meaning: {1}\nNew meaning: {2}\nChoose:\n1 Keep existing\n2 Merge meanings (existing + new)\n3 Overwrite existing',
+            bulkImportConflictSameTranslationPrompt: 'Duplicate meaning detected:\nMeaning: {0}\nExisting word: {1}\nNew word: {2}\nChoose:\n1 Keep existing (skip new)\n2 Add anyway\n3 Overwrite existing (remove old word)',
             alertSaveDone: 'Saved successfully!',
             confirmDeleteAll: 'Are you sure you want to delete all words? This cannot be undone!',
             alertDeleteAllDone: 'All words have been cleared!',
@@ -1418,6 +1533,8 @@ function fallbackToTextarea(jsonString, t) {
             wrongCountLabel: 'Wrong',
             streakCountLabel: 'Current Streak',
             totalScoreLabel: 'Total Score',
+            totalWordCountLabel: 'Total Words ',
+            wordCountDetailTemplate: '{0}<span style="color:{1}; font-weight: 700;">{2}</span>({3})',
             undo: '↶ Undo',
             redo: '↷ Redo',
         }
@@ -1607,6 +1724,12 @@ function fallbackToTextarea(jsonString, t) {
         originalSettings = normalizeSettings(JSON.parse(JSON.stringify(settings)));
 
         document.getElementById('dataTextarea').addEventListener('input', markAsNeedsSave);
+        document.getElementById('dataTextarea').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+                event.preventDefault();
+                bulkImportFromTextarea();
+            }
+        });
         document.getElementById('wordsPerRound').addEventListener('input', () => {
             const syncCountsInput = document.getElementById('syncCounts');
             if (syncCountsInput && syncCountsInput.checked) {

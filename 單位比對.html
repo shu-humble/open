@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>單位比對</title>
+  <style>
+    :root {
+      --bg-1: #0f1b2d;
+      --bg-2: #1b2b43;
+      --panel: #f6f4f0;
+      --ink: #1a1a1a;
+      --accent: #e5523b;
+      --accent-2: #2b7c85;
+      --muted: #6b6b6b;
+      --border: #d9d2c8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Serif TC", "PingFang TC", "Microsoft JhengHei", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 800px at 20% 10%, #203a5a 0%, transparent 60%),
+        radial-gradient(900px 600px at 80% 30%, #2b4e4a 0%, transparent 55%),
+        linear-gradient(160deg, var(--bg-1), var(--bg-2));
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+    }
+    .wrap {
+      width: min(1200px, 92vw);
+      margin: 32px 0;
+      background: var(--panel);
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      padding: 24px;
+    }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 12px 18px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: 1px;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .controls {
+      margin-left: auto;
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      border: 0;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-add { background: var(--accent); color: #fff; }
+    .btn-clear { background: #eee; color: #333; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .box {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 260px;
+    }
+    .box.dup {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(229, 82, 59, 0.15);
+    }
+    .box-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 700;
+    }
+    .box-head small { color: var(--muted); font-weight: 500; }
+    textarea {
+      width: 100%;
+      flex: 1;
+      resize: vertical;
+      min-height: 200px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 10px;
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      outline: none;
+    }
+    textarea:focus { border-color: var(--accent-2); }
+    .remove {
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 4px 6px;
+    }
+    .result {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 860px) {
+      .result { grid-template-columns: 1fr; }
+    }
+    .panel {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #fff;
+      padding: 14px;
+      min-height: 180px;
+    }
+    .panel h2 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+    }
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .chip {
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #f1ece4;
+      border: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 6px;
+      max-height: 260px;
+      overflow: auto;
+    }
+    .item {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      padding: 6px 8px;
+      border-radius: 10px;
+      background: #faf8f5;
+      border: 1px dashed #e2dcd2;
+      font-size: 14px;
+    }
+    .tag {
+      font-size: 12px;
+      color: #fff;
+      background: var(--accent-2);
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+    .empty {
+      color: var(--muted);
+      font-size: 14px;
+      padding: 8px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>單位比對</h1>
+      <div class="subtitle">每行 = 一個單位。即時比對多個文字框的重複項。</div>
+      <div class="controls">
+        <button class="btn-add" id="addBox">新增文字框</button>
+        <button class="btn-clear" id="clearAll">清空全部</button>
+      </div>
+    </header>
+
+    <section class="grid" id="grid"></section>
+
+    <section class="result">
+      <div class="panel">
+        <h2>總覽</h2>
+        <div class="stats" id="stats"></div>
+        <div class="chips" id="chips"></div>
+      </div>
+      <div class="panel">
+        <h2>重複清單</h2>
+        <ul class="list" id="dupList"></ul>
+        <div class="empty" id="emptyHint">目前沒有重複單位。</div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const grid = document.getElementById("grid");
+    const addBoxBtn = document.getElementById("addBox");
+    const clearAllBtn = document.getElementById("clearAll");
+    const dupList = document.getElementById("dupList");
+    const emptyHint = document.getElementById("emptyHint");
+    const stats = document.getElementById("stats");
+    const chips = document.getElementById("chips");
+
+    const boxes = [];
+
+    function labelFor(index) {
+      const base = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      if (index < base.length) return base[index];
+      return "Box " + (index + 1);
+    }
+
+    function parseLines(text) {
+      return text
+        .split(/\r?\n/)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+    }
+
+    function createBox(initial = "") {
+      const idx = boxes.length;
+      const box = document.createElement("div");
+      box.className = "box";
+
+      const head = document.createElement("div");
+      head.className = "box-head";
+      const title = document.createElement("div");
+      title.textContent = "文字框 " + labelFor(idx);
+      const count = document.createElement("small");
+      count.textContent = "0 個單位";
+
+      const remove = document.createElement("button");
+      remove.className = "remove";
+      remove.textContent = "移除";
+      remove.addEventListener("click", () => {
+        const pos = boxes.indexOf(area);
+        if (pos === -1) return;
+        boxes.splice(pos, 1);
+        box.remove();
+        refreshLabels();
+        compareAll();
+      });
+
+      head.appendChild(title);
+      head.appendChild(count);
+      head.appendChild(remove);
+
+      const area = document.createElement("textarea");
+      area.placeholder = "每行一個單位，例如：\nA001\nA002\nA003";
+      area.value = initial;
+      area.addEventListener("input", () => compareAll());
+
+      box.appendChild(head);
+      box.appendChild(area);
+      grid.appendChild(box);
+
+      boxes.push(area);
+      compareAll();
+    }
+
+    function refreshLabels() {
+      [...grid.children].forEach((box, i) => {
+        const title = box.querySelector(".box-head div");
+        title.textContent = "文字框 " + labelFor(i);
+      });
+    }
+
+    function compareAll() {
+      const allLines = boxes.map((area) => parseLines(area.value));
+      const unitMap = new Map();
+      const counts = [];
+
+      allLines.forEach((lines, i) => {
+        counts[i] = lines.length;
+        const seen = new Set();
+        lines.forEach((unit) => {
+          if (seen.has(unit)) return;
+          seen.add(unit);
+          if (!unitMap.has(unit)) unitMap.set(unit, new Set());
+          unitMap.get(unit).add(i);
+        });
+      });
+
+      const duplicates = [];
+      unitMap.forEach((set, unit) => {
+        if (set.size >= 2) {
+          duplicates.push({ unit, boxes: [...set].sort() });
+        }
+      });
+
+      duplicates.sort((a, b) => a.unit.localeCompare(b.unit, "zh-Hant"));
+
+      [...grid.children].forEach((box, i) => {
+        const count = box.querySelector("small");
+        count.textContent = counts[i] + " 個單位";
+        const hasDup = duplicates.some((d) => d.boxes.includes(i));
+        box.classList.toggle("dup", hasDup);
+      });
+
+      stats.innerHTML = "";
+      const totalUnits = counts.reduce((a, b) => a + b, 0);
+      const totalDup = duplicates.length;
+      const statItems = [
+        "文字框數量：" + boxes.length,
+        "總單位數：" + totalUnits,
+        "重複項目數：" + totalDup,
+      ];
+      statItems.forEach((text) => {
+        const span = document.createElement("div");
+        span.textContent = text;
+        stats.appendChild(span);
+      });
+
+      chips.innerHTML = "";
+      counts.forEach((c, i) => {
+        const chip = document.createElement("div");
+        chip.className = "chip";
+        chip.textContent = labelFor(i) + "：" + c + " 個";
+        chips.appendChild(chip);
+      });
+
+      dupList.innerHTML = "";
+      if (duplicates.length === 0) {
+        emptyHint.style.display = "block";
+      } else {
+        emptyHint.style.display = "none";
+        duplicates.forEach((d) => {
+          const li = document.createElement("li");
+          li.className = "item";
+          const name = document.createElement("div");
+          name.textContent = d.unit;
+          const tag = document.createElement("div");
+          tag.className = "tag";
+          tag.textContent = d.boxes.map((i) => labelFor(i)).join(", ");
+          li.appendChild(name);
+          li.appendChild(tag);
+          dupList.appendChild(li);
+        });
+      }
+    }
+
+    addBoxBtn.addEventListener("click", () => createBox());
+    clearAllBtn.addEventListener("click", () => {
+      boxes.forEach((b) => (b.value = ""));
+      compareAll();
+    });
+
+    createBox();
+    createBox();
+  </script>
+</body>
+</html>

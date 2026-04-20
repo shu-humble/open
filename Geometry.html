@@ -257,23 +257,24 @@ body.desktop-focus .focus-exit-fab {
 <div class="main-content-wrapper">
     <div class="left">
         <font size="5">
-        <a href="open/幾何課本/2nd Semester Assignments 2025-2026.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Assignment Sheet')">Assignment Sheet</a><br>
-        <a href="open/幾何課本/Geometry-01.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 01')">Chapter 01</a><br>
-        <a href="open/幾何課本/Geometry-02.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 02')">Chapter 02</a><br>
-        <a href="open/幾何課本/Geometry-03.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 03')">Chapter 03</a><br>
-        <a href="open/幾何課本/Geometry-04.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 04')">Chapter 04</a><br>
-        <a href="open/幾何課本/Geometry-05.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 05')">Chapter 05</a><br>
-        <a href="open/幾何課本/Geometry-06.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 06')">Chapter 06</a><br>
-        <a href="open/幾何課本/Geometry-07.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 07')">Chapter 07</a><br>
-        <a href="open/幾何課本/Geometry-08.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 08')">Chapter 08</a><br>
-        <a href="open/幾何課本/Geometry-09.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 09')">Chapter 09</a><br>
-        <a href="open/幾何課本/Geometry-10.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 10')">Chapter 10</a><br>
-        <a href="open/幾何課本/Geometry-11.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 11')">Chapter 11</a><br>
-        <a href="open/幾何課本/Geometry-12.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 12')">Chapter 12</a><br>
-        <a href="open/幾何課本/Geometry-13.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 13')">Chapter 13</a><br>
-        <a href="open/幾何課本/Geometry-14.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 14')">Chapter 14</a><br>
-        <a href="open/幾何課本/Geometry-15.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 15')">Chapter 15</a><br>
-        <a href="open/幾何課本/Geometry-16.pdf" class="chapter-link" onclick="loadPDF(event, this.href, 'Chapter 16')">Chapter 16</a><br>
+          <a href="open/幾何課本/1st Semester Assignment Sheet 2025-2026.pdf" class="chapter-link">Assignment 1</a><br>
+        <a href="open/幾何課本/2nd Semester Assignments 2025-2026.pdf" class="chapter-link">Assignment 2</a><br>
+        <a href="open/幾何課本/Geometry-01.pdf" class="chapter-link">Chapter 01</a><br>
+        <a href="open/幾何課本/Geometry-02.pdf" class="chapter-link">Chapter 02</a><br>
+        <a href="open/幾何課本/Geometry-03.pdf" class="chapter-link">Chapter 03</a><br>
+        <a href="open/幾何課本/Geometry-04.pdf" class="chapter-link">Chapter 04</a><br>
+        <a href="open/幾何課本/Geometry-05.pdf" class="chapter-link">Chapter 05</a><br>
+        <a href="open/幾何課本/Geometry-06.pdf" class="chapter-link">Chapter 06</a><br>
+        <a href="open/幾何課本/Geometry-07.pdf" class="chapter-link">Chapter 07</a><br>
+        <a href="open/幾何課本/Geometry-08.pdf" class="chapter-link">Chapter 08</a><br>
+        <a href="open/幾何課本/Geometry-09.pdf" class="chapter-link">Chapter 09</a><br>
+        <a href="open/幾何課本/Geometry-10.pdf" class="chapter-link">Chapter 10</a><br>
+        <a href="open/幾何課本/Geometry-11.pdf" class="chapter-link">Chapter 11</a><br>
+        <a href="open/幾何課本/Geometry-12.pdf" class="chapter-link">Chapter 12</a><br>
+        <a href="open/幾何課本/Geometry-13.pdf" class="chapter-link">Chapter 13</a><br>
+        <a href="open/幾何課本/Geometry-14.pdf" class="chapter-link">Chapter 14</a><br>
+        <a href="open/幾何課本/Geometry-15.pdf" class="chapter-link">Chapter 15</a><br>
+        <a href="open/幾何課本/Geometry-16.pdf" class="chapter-link">Chapter 16</a><br>
         </font>
     </div>
 
@@ -318,6 +319,8 @@ body.desktop-focus .focus-exit-fab {
 (function() {
   const STORAGE_KEY = 'geometry:lastState';
   const TOTALS_VERSION = 2;
+  /** 超過此時間未再開啟同一章節 PDF，則清除該章節儲存的閱讀頁數 */
+  const CHAPTER_PROGRESS_STALE_MS = 7 * 24 * 60 * 60 * 1000;
   let pdfDoc = null;
   let currentPdf = '';
   let currentPage = 1;
@@ -327,6 +330,7 @@ body.desktop-focus .focus-exit-fab {
   let totalsPromise = null;
   let zoomLevel = 1;
   const ocrCache = new Map();
+  let pdfLoadGeneration = 0;
 
   function clearOcrLayer() {
     if (ocrLayer) ocrLayer.innerHTML = '';
@@ -388,6 +392,14 @@ body.desktop-focus .focus-exit-fab {
   function saveState(state) {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) { /* ignore */ }
   }
+  function resetChapterProgress(normalized) {
+    const state = loadState();
+    state.pages = state.pages || {};
+    delete state.pages[normalized];
+    state.chapterVisitAt = state.chapterVisitAt || {};
+    state.chapterVisitAt[normalized] = Date.now();
+    saveState(state);
+  }
   function getMode() {
     return 'book';
   }
@@ -422,15 +434,28 @@ body.desktop-focus .focus-exit-fab {
       return p.startsWith(basePath) ? p.slice(basePath.length) : linkUrl.href;
     } catch (_) { return href; }
   }
+  /** 轉成相對於目前頁面的絕對 URL（會編碼空白等字元），供 PDF.js fetch 使用 */
+  function pdfFetchUrl(relativeOrAbs) {
+    if (!relativeOrAbs) return relativeOrAbs;
+    try {
+      return new URL(relativeOrAbs, window.location.href).href;
+    } catch (_) {
+      return relativeOrAbs;
+    }
+  }
   function isAssignmentLink(a) {
     if (!a) return false;
     const text = (a.textContent || '').toLowerCase();
     const href = (a.getAttribute('href') || a.href || '').toLowerCase();
-    return text.indexOf('assignment') !== -1 || href.indexOf('assignments') !== -1;
+    const textZh = (a.textContent || '');
+    return text.indexOf('assignment') !== -1 || href.indexOf('assignments') !== -1
+      || textZh.indexOf('作業') !== -1;
   }
   function isAssignmentHref(href) {
     const raw = (href || '').toLowerCase();
-    return raw.indexOf('assignment') !== -1 || raw.indexOf('assignments') !== -1;
+    const orig = href || '';
+    return raw.indexOf('assignment') !== -1 || raw.indexOf('assignments') !== -1
+      || orig.indexOf('作業') !== -1;
   }
   function getOffsetForPdf(href) {
     const norm = normalizePath(href || '');
@@ -499,7 +524,7 @@ body.desktop-focus .focus-exit-fab {
       for (let i = 0; i < list.length; i++) {
         const href = list[i];
         try {
-          const doc = await pdfjsLib.getDocument(href).promise;
+          const doc = await pdfjsLib.getDocument(pdfFetchUrl(href)).promise;
           const rawPages = doc.numPages || 0;
           const offset = getOffsetForPdf(href);
           pages[href] = Math.max(0, rawPages - offset);
@@ -566,15 +591,34 @@ body.desktop-focus .focus-exit-fab {
     const mode = getMode();
     if (mode === 'book' && totals && totals.total) {
       const isAssignment = isAssignmentHref(currentPdf);
+      if (isAssignment) {
+        const st = loadState();
+        const saved = st.pages && parseInt(st.pages[currentPdf], 10);
+        const logical = pdfDoc && currentPdf
+          ? Math.max(1, toLogicalPage(currentPdf, currentPage))
+          : (saved && saved >= 1 ? saved : 1);
+        const maxLogical = pdfDoc ? pdfDoc.numPages : '';
+        if (pageInputMain) {
+          pageInputMain.value = logical;
+          pageInputMain.max = maxLogical;
+          pageInputMain.min = 1;
+        }
+        if (pageInputMobile) {
+          pageInputMobile.value = logical;
+          pageInputMobile.max = maxLogical;
+          pageInputMobile.min = 1;
+        }
+        return;
+      }
       const stored = getLastBookPage();
-      const globalPage = (isAssignment ? stored : getGlobalPage()) || stored || 1;
+      const globalPage = getGlobalPage() || stored || 1;
       if (pageInputMain) {
-        if (!(isAssignment && !stored)) pageInputMain.value = globalPage;
+        pageInputMain.value = globalPage;
         pageInputMain.max = totals.total;
         pageInputMain.min = 1;
       }
       if (pageInputMobile) {
-        if (!(isAssignment && !stored)) pageInputMobile.value = globalPage;
+        pageInputMobile.value = globalPage;
         pageInputMobile.max = totals.total;
         pageInputMobile.min = 1;
       }
@@ -710,6 +754,12 @@ body.desktop-focus .focus-exit-fab {
   }
   function handleJump(page) {
     if (getMode() === 'book') {
+      if (isAssignmentHref(currentPdf)) {
+        if (!page || page < 1 || !pdfDoc) return;
+        if (page > pdfDoc.numPages) return;
+        changePage(toPdfPage(currentPdf, page));
+        return;
+      }
       jumpToGlobalPage(page);
       return;
     }
@@ -726,9 +776,18 @@ body.desktop-focus .focus-exit-fab {
     currentPdf = normalized;
     setActiveLink(normalized);
     const state = loadState();
+    state.chapterVisitAt = state.chapterVisitAt || {};
+    const prevVisit = state.chapterVisitAt[normalized];
+    if (typeof prevVisit === 'number' && Date.now() - prevVisit > CHAPTER_PROGRESS_STALE_MS) {
+      state.pages = state.pages || {};
+      delete state.pages[normalized];
+    }
+    state.chapterVisitAt[normalized] = Date.now();
     state.lastPdf = normalized;
     saveState(state);
-    pdfjsLib.getDocument(normalized).promise.then(function(doc) {
+    const loadGen = ++pdfLoadGeneration;
+    pdfjsLib.getDocument(pdfFetchUrl(normalized)).promise.then(function(doc) {
+      if (loadGen !== pdfLoadGeneration) return;
       pdfDoc = doc;
       const savedPage = state.pages && parseInt(state.pages[normalized], 10);
       const offset = getOffsetForPdf(normalized);
@@ -747,6 +806,7 @@ body.desktop-focus .focus-exit-fab {
     setPageInputs();
     renderPage(currentPage);
     }).catch(function(err) {
+      if (loadGen !== pdfLoadGeneration) return;
       console.error('PDF load error', err);
       if (viewer) viewer.textContent = 'Failed to load PDF.';
     });
@@ -795,6 +855,15 @@ body.desktop-focus .focus-exit-fab {
         if (!currentPdf) return;
         const mode = getMode();
         const inputPage = parseInt(pageInputMain && pageInputMain.value, 10);
+        if (mode === 'book' && isAssignmentHref(currentPdf)) {
+          if (inputPage && inputPage >= 1 && pdfDoc && inputPage <= pdfDoc.numPages) {
+            const targetUrl = normalizeForActions(currentPdf) + '#page=' + toPdfPage(currentPdf, inputPage);
+            window.open(targetUrl, '_blank');
+            return;
+          }
+          window.open(normalizeForActions(currentPdf) + '#page=' + currentPage, '_blank');
+          return;
+        }
         if (mode === 'book' && inputPage && inputPage >= 1) {
           ensureTotals().then(function(t) {
             if (!t || !t.total || inputPage > t.total) return;
@@ -925,14 +994,25 @@ body.desktop-focus .focus-exit-fab {
     const select = document.getElementById('chapter-select');
     const openTabBtn = document.getElementById('mobile-open-tab');
     if (!select) return;
+    select.dataset.suppressChapterChange = '1';
     select.innerHTML = '';
     const links = document.querySelectorAll('.chapter-link');
     links.forEach(function(a) {
       const opt = document.createElement('option');
-      opt.value = a.href;
+      const raw = a.getAttribute('href') || a.href;
+      opt.value = normalizePath(raw || '') || raw;
       opt.textContent = (a.textContent || '').trim();
       select.appendChild(opt);
     });
+    if (select.dataset.chapterChangeBound !== '1') {
+      select.dataset.chapterChangeBound = '1';
+      select.addEventListener('change', function() {
+        if (select.dataset.suppressChapterChange === '1') return;
+        const opt = select.options[select.selectedIndex];
+        if (!opt) return;
+        openPdf(opt.value);
+      });
+    }
     if (select.options.length > 0) {
       const state = loadState();
       if (state.lastPdf) {
@@ -944,10 +1024,8 @@ body.desktop-focus .focus-exit-fab {
         select.selectedIndex = 0;
       }
     }
-    select.addEventListener('change', function() {
-      const opt = select.options[select.selectedIndex];
-      if (!opt) return;
-      openPdf(opt.value);
+    requestAnimationFrame(function() {
+      select.dataset.suppressChapterChange = '0';
     });
     if (openTabBtn) {
       openTabBtn.addEventListener('click', function() {
@@ -956,6 +1034,19 @@ body.desktop-focus .focus-exit-fab {
         const mode = getMode();
         const url = normalizeForActions(opt.value);
         const inputPage = parseInt(pageInputMobile && pageInputMobile.value, 10);
+        if (mode === 'book' && isAssignmentHref(opt.value)) {
+          const normalized = normalizePath(opt.value);
+          if (inputPage && inputPage >= 1) {
+            window.open(normalizeForActions(normalized) + '#page=' + toPdfPage(normalized, inputPage), '_blank');
+            return;
+          }
+          const state = loadState();
+          const saved = state.pages && parseInt(state.pages[normalized], 10);
+          const logical = saved && saved >= 1 ? saved : 1;
+          const page = (normalized === currentPdf && currentPage) ? currentPage : toPdfPage(normalized, logical);
+          window.open(url + '#page=' + page, '_blank');
+          return;
+        }
         if (mode === 'book' && inputPage && inputPage >= 1) {
           ensureTotals().then(function(t) {
             if (!t || !t.total || inputPage > t.total) return;
@@ -989,6 +1080,22 @@ body.desktop-focus .focus-exit-fab {
       if (!raw) return;
       const cleaned = normalizePath(raw.trim());
       a.setAttribute('href', cleaned);
+      a.removeAttribute('onclick');
+      const hint = '雙擊：清除此章節進度並回到第一頁。若超過 7 天未開啟此章節，進度會自動重置。';
+      const existing = (a.getAttribute('title') || '').trim();
+      if (!existing) a.setAttribute('title', hint);
+      else if (existing.indexOf('雙擊') === -1) a.setAttribute('title', existing + ' ' + hint);
+      if (a.dataset && a.dataset.geomNavBound === '1') return;
+      if (a.dataset) a.dataset.geomNavBound = '1';
+      a.addEventListener('click', function(e) {
+        e.preventDefault();
+        openPdf(cleaned);
+      });
+      a.addEventListener('dblclick', function(e) {
+        e.preventDefault();
+        resetChapterProgress(cleaned);
+        openPdf(cleaned, 1, true);
+      });
     });
   }
   function setActiveLink(href) {
@@ -1010,8 +1117,8 @@ body.desktop-focus .focus-exit-fab {
     initState.pageMode = 'book';
     saveState(initState);
     bindNav();
-    buildMobileDropdown();
     fixChapterLinks();
+    buildMobileDropdown();
     updateModeUI();
     ensureTotals().then(function() {
       setPageInputs();

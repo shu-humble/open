@@ -284,7 +284,7 @@ body.desktop-focus .focus-exit-fab {
 <div class="mobile-controls">
     <select id="chapter-select" aria-label="Choose chapter"></select>
     <div class="mobile-nav">
-      <input id="page-input" class="page-input" type="number" min="1" placeholder="Page">
+      <input id="page-input" class="page-input" type="number" min="1" step="0.5" placeholder="Page">
     </div>
     <button id="mobile-focus-toggle" class="fs-btn" title="Focus">Focus</button>
     <button id="mobile-open-tab" class="fs-btn">New Tab</button>
@@ -322,7 +322,7 @@ body.desktop-focus .focus-exit-fab {
      <!--  <h3 id="pdf-title"></h3> -->
         <div id="pdf-container">
             <div class="pdf-toolbar">
-              <input id="page-input-main" class="page-input" type="number" min="1" placeholder="Page">
+              <input id="page-input-main" class="page-input" type="number" min="1" step="0.5" placeholder="Page">
                 <button id="prev-page" class="fs-btn">Prev</button>
                 <button id="next-page" class="fs-btn">Next</button>
                 <button id="zoom-out" class="fs-btn" title="Zoom out">A-</button>
@@ -364,7 +364,9 @@ body.desktop-focus .focus-exit-fab {
 <script>
 (function() {
   const STORAGE_KEY = 'geometry:lastState';
-  const TOTALS_VERSION = 2;
+  const TOTALS_VERSION = 3;
+  const SPECIAL_DISPLAY_HALF_PAGE = 560.5;
+  const SPECIAL_RAW_PAGE_START = 561;
   /** 超過此時間未再開啟同一章節 PDF，則清除該章節儲存的閱讀頁數 */
   const CHAPTER_PROGRESS_STALE_MS = 7 * 24 * 60 * 60 * 1000;
   const CHAPTER_CLICK_DELAY_MS = 220;
@@ -548,6 +550,38 @@ body.desktop-focus .focus-exit-fab {
   function toLogicalPage(href, pdfPage) {
     return pdfPage - getOffsetForPdf(href);
   }
+  function toDisplayBookPage(rawPage) {
+    if (!rawPage || rawPage < 1) return 1;
+    if (rawPage < SPECIAL_RAW_PAGE_START) return rawPage;
+    if (rawPage === SPECIAL_RAW_PAGE_START) return SPECIAL_DISPLAY_HALF_PAGE;
+    return rawPage - 1;
+  }
+  function toRawBookPage(displayPage) {
+    if (displayPage == null || displayPage < 1) return null;
+    if (Math.abs(displayPage - SPECIAL_DISPLAY_HALF_PAGE) < 0.001) return SPECIAL_RAW_PAGE_START;
+    if (displayPage >= SPECIAL_RAW_PAGE_START) return displayPage + 1;
+    return displayPage;
+  }
+  function getDisplayBookTotal(rawTotal) {
+    if (!rawTotal) return rawTotal;
+    return toDisplayBookPage(rawTotal);
+  }
+  function isWholeNumber(value) {
+    return Math.abs(value - Math.round(value)) < 0.001;
+  }
+  function isValidBookDisplayPage(value) {
+    if (value == null || value < 1) return false;
+    return isWholeNumber(value) || Math.abs(value - SPECIAL_DISPLAY_HALF_PAGE) < 0.001;
+  }
+  function formatPageValue(value) {
+    if (value == null || value === '') return '';
+    const rounded = Math.round(value * 10) / 10;
+    return String(rounded);
+  }
+  function parsePageValue(value) {
+    const parsed = parseFloat(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
   function getAllChapterLinks() {
     return Array.prototype.slice.call(document.querySelectorAll('.chapter-link'));
   }
@@ -581,7 +615,7 @@ body.desktop-focus .focus-exit-fab {
   }
   function setLastBookPage(value) {
     const state = loadState();
-    const safe = Math.max(1, parseInt(value, 10) || 1);
+    const safe = Math.max(1, parseFloat(value) || 1);
     state.lastBookPage = safe;
     saveState(state);
   }
@@ -626,7 +660,7 @@ body.desktop-focus .focus-exit-fab {
       const count = totals.pages[href] || 0;
       if (href === currentPdf) {
         const logical = Math.max(getMinLogical(currentPdf), toLogicalPage(currentPdf, currentPage));
-        return acc + logical;
+        return toDisplayBookPage(acc + logical);
       }
       acc += count;
     }
@@ -634,12 +668,14 @@ body.desktop-focus .focus-exit-fab {
   }
   function findByGlobalPage(globalPage) {
     if (!totals) return null;
+    const rawGlobalPage = toRawBookPage(globalPage);
+    if (!rawGlobalPage) return null;
     let acc = 0;
     for (let i = 0; i < totals.list.length; i++) {
       const href = totals.list[i];
       const count = totals.pages[href] || 0;
-      if (globalPage <= acc + count) {
-        const page = globalPage - acc;
+      if (rawGlobalPage <= acc + count) {
+        const page = rawGlobalPage - acc;
         if (page < getMinLogical(href)) return null;
         return { href: href, page: page };
       }
@@ -667,51 +703,36 @@ body.desktop-focus .focus-exit-fab {
   function setPageInputs() {
     const mode = getMode();
     if (mode === 'book' && totals && totals.total) {
-      const isAssignment = isAssignmentHref(currentPdf);
-      if (isAssignment) {
-        const st = loadState();
-        const saved = st.pages && parseInt(st.pages[currentPdf], 10);
-        const logical = pdfDoc && currentPdf
-          ? Math.max(1, toLogicalPage(currentPdf, currentPage))
-          : (saved && saved >= 1 ? saved : 1);
-        const maxLogical = pdfDoc ? pdfDoc.numPages : '';
-        if (pageInputMain) {
-          pageInputMain.value = logical;
-          pageInputMain.max = maxLogical;
-          pageInputMain.min = 1;
-        }
-        if (pageInputMobile) {
-          pageInputMobile.value = logical;
-          pageInputMobile.max = maxLogical;
-          pageInputMobile.min = 1;
-        }
-        return;
-      }
       const stored = getLastBookPage();
       const globalPage = getGlobalPage() || stored || 1;
+      const displayMax = getDisplayBookTotal(totals.total);
       if (pageInputMain) {
-        pageInputMain.value = globalPage;
-        pageInputMain.max = totals.total;
+        pageInputMain.value = formatPageValue(globalPage);
+        pageInputMain.max = displayMax;
         pageInputMain.min = 1;
+        pageInputMain.step = '0.5';
       }
       if (pageInputMobile) {
-        pageInputMobile.value = globalPage;
-        pageInputMobile.max = totals.total;
+        pageInputMobile.value = formatPageValue(globalPage);
+        pageInputMobile.max = displayMax;
         pageInputMobile.min = 1;
+        pageInputMobile.step = '0.5';
       }
       return;
     }
     if (mode === 'book') {
       const globalPage = getLastBookPage() || 1;
       if (pageInputMain) {
-        pageInputMain.value = globalPage;
+        pageInputMain.value = formatPageValue(globalPage);
         pageInputMain.max = '';
         pageInputMain.min = 1;
+        pageInputMain.step = '0.5';
       }
       if (pageInputMobile) {
-        pageInputMobile.value = globalPage;
+        pageInputMobile.value = formatPageValue(globalPage);
         pageInputMobile.max = '';
         pageInputMobile.min = 1;
+        pageInputMobile.step = '0.5';
       }
       return;
     }
@@ -719,14 +740,16 @@ body.desktop-focus .focus-exit-fab {
     const logical = Math.max(1, currentPage - offset);
     const maxLogical = pdfDoc ? Math.max(1, pdfDoc.numPages - offset) : '';
     if (pageInputMain) {
-      pageInputMain.value = logical;
+      pageInputMain.value = formatPageValue(logical);
       pageInputMain.max = maxLogical;
       pageInputMain.min = getMinLogical(currentPdf);
+      pageInputMain.step = '1';
     }
     if (pageInputMobile) {
-      pageInputMobile.value = logical;
+      pageInputMobile.value = formatPageValue(logical);
       pageInputMobile.max = maxLogical;
       pageInputMobile.min = getMinLogical(currentPdf);
+      pageInputMobile.step = '1';
     }
   }
   function storePage() {
@@ -824,10 +847,10 @@ body.desktop-focus .focus-exit-fab {
     queueRender(num);
   }
   function jumpToGlobalPage(page) {
-    if (!page || page < 1) return;
+    if (!page || page < 1 || !isValidBookDisplayPage(page)) return;
     ensureTotals().then(function(t) {
       if (!t || !t.total) return;
-      if (page > t.total) return;
+      if (page > getDisplayBookTotal(t.total)) return;
       const target = findByGlobalPage(page);
       if (!target) return;
       openPdf(target.href, target.page);
@@ -835,12 +858,6 @@ body.desktop-focus .focus-exit-fab {
   }
   function handleJump(page) {
     if (getMode() === 'book') {
-      if (isAssignmentHref(currentPdf)) {
-        if (!page || page < 1 || !pdfDoc) return;
-        if (page > pdfDoc.numPages) return;
-        changePage(toPdfPage(currentPdf, page));
-        return;
-      }
       jumpToGlobalPage(page);
       return;
     }
@@ -931,7 +948,7 @@ body.desktop-focus .focus-exit-fab {
       pageInputMain.addEventListener('keydown', function(e) {
         if (e.key !== 'Enter') return;
         e.preventDefault();
-        const page = parseInt(pageInputMain.value, 10);
+        const page = parsePageValue(pageInputMain.value);
         if (!page || page < 1) return;
         handleJump(page);
         pageInputMain.blur();
@@ -941,19 +958,11 @@ body.desktop-focus .focus-exit-fab {
       openTabMain.addEventListener('click', function() {
         if (!currentPdf) return;
         const mode = getMode();
-        const inputPage = parseInt(pageInputMain && pageInputMain.value, 10);
-        if (mode === 'book' && isAssignmentHref(currentPdf)) {
-          if (inputPage && inputPage >= 1 && pdfDoc && inputPage <= pdfDoc.numPages) {
-            const targetUrl = normalizeForActions(currentPdf) + '#page=' + toPdfPage(currentPdf, inputPage);
-            window.open(targetUrl, '_blank');
-            return;
-          }
-          window.open(normalizeForActions(currentPdf) + '#page=' + currentPage, '_blank');
-          return;
-        }
+        const inputPage = parsePageValue(pageInputMain && pageInputMain.value);
         if (mode === 'book' && inputPage && inputPage >= 1) {
+          if (!isValidBookDisplayPage(inputPage)) return;
           ensureTotals().then(function(t) {
-            if (!t || !t.total || inputPage > t.total) return;
+            if (!t || !t.total || inputPage > getDisplayBookTotal(t.total)) return;
             const target = findByGlobalPage(inputPage);
             if (!target) return;
             const targetUrl = normalizeForActions(target.href) + '#page=' + toPdfPage(target.href, target.page);
@@ -993,7 +1002,7 @@ body.desktop-focus .focus-exit-fab {
       pageInputMobile.addEventListener('keydown', function(e) {
         if (e.key !== 'Enter') return;
         e.preventDefault();
-        const page = parseInt(pageInputMobile.value, 10);
+        const page = parsePageValue(pageInputMobile.value);
         if (!page || page < 1) return;
         handleJump(page);
         pageInputMobile.blur();
@@ -1120,23 +1129,11 @@ body.desktop-focus .focus-exit-fab {
         if (!opt) return;
         const mode = getMode();
         const url = normalizeForActions(opt.value);
-        const inputPage = parseInt(pageInputMobile && pageInputMobile.value, 10);
-        if (mode === 'book' && isAssignmentHref(opt.value)) {
-          const normalized = normalizePath(opt.value);
-          if (inputPage && inputPage >= 1) {
-            window.open(normalizeForActions(normalized) + '#page=' + toPdfPage(normalized, inputPage), '_blank');
-            return;
-          }
-          const state = loadState();
-          const saved = state.pages && parseInt(state.pages[normalized], 10);
-          const logical = saved && saved >= 1 ? saved : 1;
-          const page = (normalized === currentPdf && currentPage) ? currentPage : toPdfPage(normalized, logical);
-          window.open(url + '#page=' + page, '_blank');
-          return;
-        }
+        const inputPage = parsePageValue(pageInputMobile && pageInputMobile.value);
         if (mode === 'book' && inputPage && inputPage >= 1) {
+          if (!isValidBookDisplayPage(inputPage)) return;
           ensureTotals().then(function(t) {
-            if (!t || !t.total || inputPage > t.total) return;
+            if (!t || !t.total || inputPage > getDisplayBookTotal(t.total)) return;
             const target = findByGlobalPage(inputPage);
             if (!target) return;
             const targetUrl = normalizeForActions(target.href) + '#page=' + toPdfPage(target.href, target.page);

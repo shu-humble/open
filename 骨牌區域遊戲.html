@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>骨牌區域遊戲</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --line: #e3ddd8;
+      --board-frame: #e2c9bd;
+      --cell-size: min(9.7vw, 68px);
+      --cell-gap: 4px;
+      --ink: #404040;
+      --muted: #777777;
+      --accent: #1f5c87;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Segoe UI", "Noto Sans TC", sans-serif;
+    }
+    button { font: inherit; }
+    .page { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 18px;
+      border-bottom: 1px solid #f0ece8;
+      background: rgba(255, 255, 255, 0.94);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .title-block h1 { margin: 0; font-size: 24px; line-height: 1.1; }
+    .title-block p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+    .toolbar { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+    .tool-btn {
+      border: 1px solid #d8d2cb;
+      background: #fff;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 9px 14px;
+      cursor: pointer;
+    }
+    .tool-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .board-stage { display: grid; place-items: center; padding: 24px 16px 28px; }
+    .board-panel { width: min(100%, 980px); display: grid; justify-items: center; gap: 14px; }
+    .puzzle-meta {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px 12px;
+      font-size: 14px;
+      color: var(--muted);
+      text-align: center;
+    }
+    .status {
+      width: min(100%, 760px);
+      text-align: center;
+      font-size: 15px;
+      line-height: 1.55;
+      color: #5c5c5c;
+      min-height: 46px;
+    }
+    .status strong { display: block; color: #2f2f2f; margin-bottom: 2px; }
+    .board-frame {
+      display: inline-block;
+      background: #f7ece6;
+      border: 6px solid var(--board-frame);
+      border-radius: 20px;
+      padding: 10px;
+      overflow: auto;
+      max-width: 100%;
+    }
+    .board { display: grid; gap: var(--cell-gap); }
+    .void { width: var(--cell-size); height: var(--cell-size); }
+    .cell {
+      position: relative;
+      width: var(--cell-size);
+      height: var(--cell-size);
+      border: 3px dashed transparent;
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.4);
+      padding: 0;
+      cursor: pointer;
+      overflow: visible;
+    }
+    .cell.target { box-shadow: 0 0 0 4px rgba(31, 92, 135, 0.14); }
+    .cell.invalid { outline: 3px solid rgba(206, 75, 75, 0.78); outline-offset: 1px; }
+    .cell.occupied { background: rgba(255, 255, 255, 0.96); }
+    .piece-tag {
+      position: absolute;
+      right: 6px;
+      bottom: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      color: rgba(64, 64, 64, 0.42);
+    }
+    .badge {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 10px;
+      line-height: 1;
+      border-radius: 999px;
+      z-index: 4;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
+    .badge span { transform: none; }
+    .badge-right { right: -14px; top: 50%; margin-top: -14px; }
+    .badge-left { left: -14px; top: 50%; margin-top: -14px; }
+    .badge-top { left: 50%; top: -14px; margin-left: -14px; }
+    .badge-bottom { left: 50%; bottom: -14px; margin-left: -14px; }
+    .badge-top-right { right: -8px; top: -8px; }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px 14px;
+      width: min(100%, 820px);
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .legend-item { display: inline-flex; align-items: center; gap: 7px; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 999px; }
+    .tray-panel {
+      border-top: 1px solid var(--line);
+      padding: 20px 16px 30px;
+      background: #fbfbfb;
+    }
+    .tray-wrap { width: min(100%, 980px); margin: 0 auto; }
+    .tray-head { margin-bottom: 14px; }
+    .tray-head h2 { margin: 0; font-size: 18px; }
+    .tray-head p { margin: 0; font-size: 13px; color: var(--muted); }
+    .tray {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(98px, 1fr));
+      gap: 12px 14px;
+      align-items: start;
+    }
+    .domino {
+      position: relative;
+      min-height: 50px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 2px solid #5a5a5a;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #ffffff 0%, #f3f3f3 100%);
+      box-shadow: 0 3px 0 #b8b8b8;
+      padding: 4px;
+      cursor: pointer;
+    }
+    .domino::before {
+      content: "";
+      position: absolute;
+      top: 7px;
+      bottom: 7px;
+      left: 50%;
+      width: 1px;
+      background: rgba(64, 64, 64, 0.14);
+      transform: translateX(-0.5px);
+    }
+    .domino.selected {
+      border-color: var(--accent);
+      box-shadow: 0 3px 0 #8eb4ce, 0 0 0 4px rgba(31, 92, 135, 0.12);
+    }
+    .domino.used { opacity: 0.38; cursor: default; }
+    .domino.vertical-preview {
+      width: 58px;
+      margin-left: auto;
+      margin-right: auto;
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr 1fr;
+      min-height: 108px;
+    }
+    .domino.vertical-preview::before {
+      left: 7px;
+      right: 7px;
+      top: 50%;
+      bottom: auto;
+      width: auto;
+      height: 1px;
+      transform: translateY(-0.5px);
+    }
+    .domino-half {
+      position: relative;
+      min-height: 40px;
+      display: grid;
+      place-items: center;
+    }
+    .pips {
+      position: relative;
+      display: block;
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      pointer-events: none;
+    }
+    .cell .pips {
+      width: 32px;
+      height: 32px;
+    }
+    .pip {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #575757;
+      transform: translate(-50%, -50%);
+    }
+    .help { margin-top: 14px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .help code {
+      background: #f0ece8;
+      border-radius: 999px;
+      padding: 2px 6px;
+      font-family: inherit;
+    }
+    @media (max-width: 720px) {
+      :root { --cell-size: min(10.6vw, 56px); }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .toolbar { justify-content: flex-start; }
+      .tray { grid-template-columns: repeat(auto-fit, minmax(86px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="title-block">
+        <h1>骨牌區域遊戲</h1>
+        <p>固定 30 格、15 張牌，盤面可挖空，並保證每題至少有一組正解。</p>
+      </div>
+      <div class="toolbar">
+        <button id="new-puzzle-btn" class="tool-btn primary" type="button">重新出題</button>
+        <button id="rotate-btn" class="tool-btn" type="button">橫放</button>
+        <button id="check-btn" class="tool-btn" type="button">檢查盤面</button>
+        <button id="hint-btn" class="tool-btn" type="button">提示一步</button>
+        <button id="reset-btn" class="tool-btn" type="button">重設這題</button>
+        <button id="solve-btn" class="tool-btn" type="button">顯示答案</button>
+      </div>
+    </header>
+
+    <section class="board-stage">
+      <div class="board-panel">
+        <div class="puzzle-meta">
+          <span id="shape-text">盤面大小：-</span>
+          <span id="theme-text">題型：-</span>
+          <span id="remaining-text">剩餘骨牌：-</span>
+          <span id="selection-text">未選取骨牌</span>
+        </div>
+        <div id="status" class="status" aria-live="polite"></div>
+        <div class="board-frame">
+          <div id="board" class="board" aria-label="骨牌盤面"></div>
+        </div>
+        <div id="legend" class="legend"></div>
+      </div>
+    </section>
+
+    <section class="tray-panel">
+      <div class="tray-wrap">
+        <div class="tray-head">
+          <h2>骨牌托盤</h2>
+          <p>先選一張骨牌，再依照目前方向放進盤面。要收回骨牌時，直接點盤面上的任一半。</p>
+        </div>
+        <div id="tray" class="tray"></div>
+        <div class="help">
+          每一題固定有 <code>30</code> 個可用格子，也就是一定要剛好用完 <code>15</code> 張骨牌。盤面形狀不固定，有些位置會挖空，形成不同排法。
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const blueprints = [
+      {
+        id: "twin-bay",
+        name: "Twin Bay",
+        rows: 6,
+        cols: 6,
+        mask: ["011110", "111111", "111011", "111011", "111111", "011110"],
+        slots: [
+          [[0, 1], [0, 2]], [[0, 3], [0, 4]], [[1, 0], [1, 1]],
+          [[1, 2], [1, 3]], [[1, 4], [1, 5]], [[2, 0], [2, 1]],
+          [[2, 2], [3, 2]], [[2, 4], [2, 5]], [[3, 0], [3, 1]],
+          [[3, 4], [3, 5]], [[4, 0], [4, 1]], [[4, 2], [4, 3]],
+          [[4, 4], [4, 5]], [[5, 1], [5, 2]], [[5, 3], [5, 4]]
+        ],
+        regions: [
+          { id: "A", type: "sum", color: "#8f5cdc", badge: "bottom", cells: [[0, 1], [0, 2], [1, 1]] },
+          { id: "B", type: "eq", color: "#df2378", badge: "bottom", cells: [[0, 3], [0, 4]] },
+          { id: "C", type: "gt", color: "#df710f", badge: "right", cells: [[1, 0], [2, 0]] },
+          { id: "D", type: "sum", color: "#1d4f8d", badge: "bottom", cells: [[1, 2], [1, 3], [2, 2], [3, 2]] },
+          { id: "E", type: "sum", color: "#1197aa", badge: "left", cells: [[1, 4], [1, 5], [2, 5]] },
+          { id: "F", type: "lt", color: "#8a5cd8", badge: "right", cells: [[2, 1], [3, 0], [3, 1]] },
+          { id: "G", type: "gt", color: "#6a9300", badge: "left", cells: [[2, 4], [3, 4], [3, 5]] },
+          { id: "H", type: "sum", color: "#5e8d00", badge: "top", cells: [[4, 0], [4, 1], [5, 1]] },
+          { id: "I", type: "eq", color: "#18a2a6", badge: "top", cells: [[4, 2], [4, 3], [5, 2]] },
+          { id: "J", type: "unique", color: "#9365dd", badge: "top", cells: [[4, 4], [4, 5], [5, 3], [5, 4]] }
+        ],
+        solution: [
+          { cells: [[0, 1], [0, 2]], values: [1, 6] },
+          { cells: [[0, 3], [0, 4]], values: [4, 4] },
+          { cells: [[1, 0], [1, 1]], values: [2, 5] },
+          { cells: [[1, 2], [1, 3]], values: [0, 3] },
+          { cells: [[1, 4], [1, 5]], values: [1, 2] },
+          { cells: [[2, 0], [2, 1]], values: [0, 6] },
+          { cells: [[2, 2], [3, 2]], values: [2, 2] },
+          { cells: [[2, 4], [2, 5]], values: [3, 5] },
+          { cells: [[3, 0], [3, 1]], values: [1, 1] },
+          { cells: [[3, 4], [3, 5]], values: [1, 4] },
+          { cells: [[4, 0], [4, 1]], values: [0, 4] },
+          { cells: [[4, 2], [4, 3]], values: [3, 3] },
+          { cells: [[4, 4], [4, 5]], values: [0, 5] },
+          { cells: [[5, 1], [5, 2]], values: [2, 3] },
+          { cells: [[5, 3], [5, 4]], values: [4, 6] }
+        ]
+      },
+      {
+        id: "three-holes",
+        name: "Three Holes",
+        rows: 6,
+        cols: 6,
+        mask: ["011111", "011111", "111110", "111110", "110111", "110111"],
+        slots: [
+          [[0, 1], [0, 2]], [[0, 3], [0, 4]], [[0, 5], [1, 5]],
+          [[1, 1], [1, 2]], [[1, 3], [1, 4]], [[2, 0], [2, 1]],
+          [[2, 2], [2, 3]], [[2, 4], [3, 4]], [[3, 0], [3, 1]],
+          [[3, 2], [3, 3]], [[4, 0], [4, 1]], [[4, 3], [4, 4]],
+          [[4, 5], [5, 5]], [[5, 0], [5, 1]], [[5, 3], [5, 4]]
+        ],
+        regions: [
+          { id: "A", type: "lt", color: "#8f5cdc", badge: "bottom", cells: [[0, 1], [0, 2], [1, 1]] },
+          { id: "B", type: "sum", color: "#df2378", badge: "bottom", cells: [[0, 3], [0, 4], [0, 5], [1, 5]] },
+          { id: "C", type: "eq", color: "#df710f", badge: "right", cells: [[1, 2], [1, 3]] },
+          { id: "D", type: "sum", color: "#1d4f8d", badge: "bottom", cells: [[2, 0], [2, 1], [3, 0], [3, 1]] },
+          { id: "E", type: "gt", color: "#1197aa", badge: "left", cells: [[2, 2], [2, 3], [3, 2], [3, 3]] },
+          { id: "F", type: "sum", color: "#6a9300", badge: "top", cells: [[2, 4], [3, 4], [4, 4]] },
+          { id: "G", type: "unique", color: "#18a2a6", badge: "top", cells: [[4, 0], [4, 1], [5, 0], [5, 1]] },
+          { id: "H", type: "sum", color: "#9365dd", badge: "top", cells: [[4, 3], [4, 5], [5, 3], [5, 4], [5, 5]] }
+        ],
+        solution: [
+          { cells: [[0, 1], [0, 2]], values: [1, 0] },
+          { cells: [[0, 3], [0, 4]], values: [4, 2] },
+          { cells: [[0, 5], [1, 5]], values: [3, 5] },
+          { cells: [[1, 1], [1, 2]], values: [6, 2] },
+          { cells: [[1, 3], [1, 4]], values: [2, 1] },
+          { cells: [[2, 0], [2, 1]], values: [0, 4] },
+          { cells: [[2, 2], [2, 3]], values: [5, 6] },
+          { cells: [[2, 4], [3, 4]], values: [1, 3] },
+          { cells: [[3, 0], [3, 1]], values: [4, 5] },
+          { cells: [[3, 2], [3, 3]], values: [3, 6] },
+          { cells: [[4, 0], [4, 1]], values: [0, 1] },
+          { cells: [[4, 3], [4, 4]], values: [5, 2] },
+          { cells: [[4, 5], [5, 5]], values: [0, 6] },
+          { cells: [[5, 0], [5, 1]], values: [2, 3] },
+          { cells: [[5, 3], [5, 4]], values: [4, 6] }
+        ]
+      },
+      {
+        id: "double-ledge",
+        name: "Double Ledge",
+        rows: 6,
+        cols: 6,
+        mask: ["111100", "111111", "001111", "111111", "111111", "111100"],
+        slots: [
+          [[0, 0], [0, 1]], [[0, 2], [0, 3]], [[1, 0], [1, 1]],
+          [[1, 2], [1, 3]], [[1, 4], [1, 5]], [[2, 2], [2, 3]],
+          [[2, 4], [2, 5]], [[3, 0], [3, 1]], [[3, 2], [3, 3]],
+          [[3, 4], [3, 5]], [[4, 0], [4, 1]], [[4, 2], [4, 3]],
+          [[4, 4], [4, 5]], [[5, 0], [5, 1]], [[5, 2], [5, 3]]
+        ],
+        regions: [
+          { id: "A", type: "sum", color: "#8f5cdc", badge: "bottom", cells: [[0, 0], [0, 1], [1, 0]] },
+          { id: "B", type: "eq", color: "#df2378", badge: "bottom", cells: [[0, 2], [0, 3], [1, 2]] },
+          { id: "C", type: "gt", color: "#df710f", badge: "right", cells: [[1, 4], [1, 5], [2, 5]] },
+          { id: "D", type: "sum", color: "#1d4f8d", badge: "bottom", cells: [[1, 1], [1, 3], [2, 2], [2, 3]] },
+          { id: "E", type: "sum", color: "#1197aa", badge: "left", cells: [[2, 4], [3, 4], [3, 5]] },
+          { id: "F", type: "lt", color: "#8a5cd8", badge: "right", cells: [[3, 0], [3, 1], [4, 0]] },
+          { id: "G", type: "sum", color: "#6a9300", badge: "top", cells: [[3, 2], [3, 3], [4, 2], [4, 3]] },
+          { id: "H", type: "unique", color: "#18a2a6", badge: "top", cells: [[4, 4], [4, 5], [5, 2], [5, 3]] },
+          { id: "I", type: "sum", color: "#9365dd", badge: "top", cells: [[5, 0], [5, 1], [4, 1]] }
+        ],
+        solution: [
+          { cells: [[0, 0], [0, 1]], values: [1, 6] },
+          { cells: [[0, 2], [0, 3]], values: [4, 4] },
+          { cells: [[1, 0], [1, 1]], values: [0, 3] },
+          { cells: [[1, 2], [1, 3]], values: [4, 1] },
+          { cells: [[1, 4], [1, 5]], values: [6, 5] },
+          { cells: [[2, 2], [2, 3]], values: [2, 2] },
+          { cells: [[2, 4], [2, 5]], values: [1, 3] },
+          { cells: [[3, 0], [3, 1]], values: [0, 1] },
+          { cells: [[3, 2], [3, 3]], values: [5, 0] },
+          { cells: [[3, 4], [3, 5]], values: [6, 2] },
+          { cells: [[4, 0], [4, 1]], values: [2, 4] },
+          { cells: [[4, 2], [4, 3]], values: [3, 6] },
+          { cells: [[4, 4], [4, 5]], values: [0, 2] },
+          { cells: [[5, 0], [5, 1]], values: [1, 5] },
+          { cells: [[5, 2], [5, 3]], values: [3, 5] }
+        ]
+      }
+    ];
+
+    const pipLayout = {
+      0: [],
+      1: [[50, 50]],
+      2: [[28, 28], [72, 72]],
+      3: [[28, 28], [50, 50], [72, 72]],
+      4: [[28, 28], [72, 28], [28, 72], [72, 72]],
+      5: [[28, 28], [72, 28], [50, 50], [28, 72], [72, 72]],
+      6: [[28, 24], [72, 24], [28, 50], [72, 50], [28, 76], [72, 76]]
+    };
+
+    const boardEl = document.getElementById("board");
+    const trayEl = document.getElementById("tray");
+    const legendEl = document.getElementById("legend");
+    const statusEl = document.getElementById("status");
+    const shapeText = document.getElementById("shape-text");
+    const themeText = document.getElementById("theme-text");
+    const remainingText = document.getElementById("remaining-text");
+    const selectionText = document.getElementById("selection-text");
+    const newPuzzleBtn = document.getElementById("new-puzzle-btn");
+    const rotateBtn = document.getElementById("rotate-btn");
+    const checkBtn = document.getElementById("check-btn");
+    const hintBtn = document.getElementById("hint-btn");
+    const resetBtn = document.getElementById("reset-btn");
+    const solveBtn = document.getElementById("solve-btn");
+
+    let activePuzzle = null;
+    let boardState = [];
+    let regionByCell = new Map();
+    let activeCells = new Set();
+    let placedPieces = new Map();
+    let selectedPieceId = null;
+    let orientation = "horizontal";
+    let lastPuzzleSignature = "";
+
+    function createDominoSet() {
+      const pieces = [];
+      let counter = 1;
+      for (let a = 0; a <= 6; a += 1) {
+        for (let b = a; b <= 6; b += 1) {
+          pieces.push({ id: `D${counter}`, a, b });
+          counter += 1;
+        }
+      }
+      return pieces;
+    }
+
+    function shuffle(list) {
+      const copy = [...list];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function setStatus(title, message) {
+      statusEl.innerHTML = `<strong>${title}</strong><span>${message}</span>`;
+    }
+
+    function createPips(value) {
+      const box = document.createElement("span");
+      box.className = "pips";
+      pipLayout[value].forEach(([left, top]) => {
+        const pip = document.createElement("span");
+        pip.className = "pip";
+        pip.style.left = `${left}%`;
+        pip.style.top = `${top}%`;
+        box.appendChild(pip);
+      });
+      return box;
+    }
+
+    function createEmptyBoard(rows, cols) {
+      return Array.from({ length: rows }, () => Array.from({ length: cols }, () => null));
+    }
+
+    function makeCellKey(row, col) {
+      return `${row},${col}`;
+    }
+
+    function nextCell(row, col, currentOrientation) {
+      return currentOrientation === "horizontal" ? [row, col + 1] : [row + 1, col];
+    }
+
+    function getPieceOrientation(cells) {
+      return cells[0][0] === cells[1][0] ? "horizontal" : "vertical";
+    }
+
+    function isActiveCell(row, col) {
+      return activeCells.has(makeCellKey(row, col));
+    }
+
+    function buildRegionMaps(puzzle) {
+      regionByCell = new Map();
+      puzzle.regions.forEach((region) => {
+        region.cells.forEach(([row, col], index) => {
+          regionByCell.set(makeCellKey(row, col), { region, anchor: index === 0 });
+        });
+      });
+    }
+
+    function buildActiveCells(puzzle) {
+      activeCells = new Set();
+      puzzle.mask.forEach((line, row) => {
+        [...line].forEach((char, col) => {
+          if (char === "1") activeCells.add(makeCellKey(row, col));
+        });
+      });
+    }
+
+    function deriveRegionLabels(puzzle) {
+      puzzle.regions.forEach((region) => {
+        const values = region.cells.map(([row, col]) => puzzle.solutionGrid[row][col]);
+        const total = values.reduce((sum, value) => sum + value, 0);
+        if (region.type === "sum") {
+          region.label = String(total);
+          region.value = total;
+        } else if (region.type === "eq") {
+          region.label = "=";
+        } else if (region.type === "unique") {
+          region.label = "!=";
+        } else if (region.type === "lt") {
+          region.value = total + 1;
+          region.label = `<${region.value}`;
+        } else if (region.type === "gt") {
+          region.value = Math.max(0, total - 1);
+          region.label = `>${region.value}`;
+        }
+      });
+    }
+
+    function ensureRegionCoverage(puzzle) {
+      const covered = new Set();
+      puzzle.regions.forEach((region) => {
+        region.cells.forEach(([row, col]) => covered.add(makeCellKey(row, col)));
+      });
+
+      let fallbackIndex = 1;
+      puzzle.solution.forEach((piece) => {
+        const missingCells = piece.cells.filter(([row, col]) => !covered.has(makeCellKey(row, col)));
+        if (missingCells.length === 0) {
+          return;
+        }
+        missingCells.forEach(([row, col]) => covered.add(makeCellKey(row, col)));
+        puzzle.regions.push({
+          id: `X${fallbackIndex++}`,
+          type: "sum",
+          color: "#c7b9ae",
+          badge: "top-right",
+          cells: missingCells
+        });
+      });
+    }
+
+    function buildPuzzleFromBlueprint(blueprint) {
+      const puzzle = JSON.parse(JSON.stringify(blueprint));
+      puzzle.solutionGrid = createEmptyBoard(puzzle.rows, puzzle.cols);
+      puzzle.solution.forEach((entry) => {
+        entry.cells.forEach(([row, col], index) => {
+          puzzle.solutionGrid[row][col] = entry.values[index];
+        });
+      });
+      ensureRegionCoverage(puzzle);
+      deriveRegionLabels(puzzle);
+
+      const pieceData = puzzle.solution.map((entry, index) => ({
+        id: `P${index + 1}`,
+        a: entry.values[0],
+        b: entry.values[1],
+        cells: entry.cells
+      }));
+
+      puzzle.solution = pieceData.map((piece) => ({
+        id: piece.id,
+        cells: piece.cells,
+        values: [piece.a, piece.b]
+      }));
+      puzzle.pieces = shuffle(pieceData);
+      return puzzle;
+    }
+
+    function puzzleSignature(puzzle) {
+      const pieces = puzzle.pieces.map((piece) => `${piece.a}${piece.b}`).sort().join("-");
+      const labels = puzzle.regions.map((region) => `${region.id}:${region.label}`).join("|");
+      return `${puzzle.id}/${pieces}/${labels}`;
+    }
+
+    function makeNewPuzzle() {
+      for (let attempt = 0; attempt < 24; attempt += 1) {
+        const blueprint = blueprints[Math.floor(Math.random() * blueprints.length)];
+        const puzzle = buildPuzzleFromBlueprint(blueprint);
+        if (!puzzle) continue;
+        const signature = puzzleSignature(puzzle);
+        if (signature === lastPuzzleSignature) continue;
+        lastPuzzleSignature = signature;
+        return puzzle;
+      }
+      return buildPuzzleFromBlueprint(blueprints[0]);
+    }
+
+    function setupPuzzle(puzzle) {
+      activePuzzle = puzzle;
+      boardState = createEmptyBoard(puzzle.rows, puzzle.cols);
+      placedPieces = new Map();
+      selectedPieceId = null;
+      orientation = "horizontal";
+      buildActiveCells(puzzle);
+      buildRegionMaps(puzzle);
+      render();
+      setStatus("New Puzzle", "This puzzle always uses 30 playable cells and all 15 dominoes.");
+    }
+
+    function getPiece(pieceId) {
+      return activePuzzle.pieces.find((piece) => piece.id === pieceId);
+    }
+
+    function computeViolations() {
+      const violations = [];
+      const badCells = new Set();
+      activePuzzle.regions.forEach((region) => {
+        const values = [];
+        const occupied = [];
+        region.cells.forEach(([row, col]) => {
+          const cell = boardState[row][col];
+          if (cell) {
+            values.push(cell.value);
+            occupied.push(makeCellKey(row, col));
+          }
+        });
+        const total = values.reduce((sum, value) => sum + value, 0);
+        const filled = values.length === region.cells.length;
+        let problem = "";
+        if (region.type === "sum") {
+          if (total > region.value || (filled && total !== region.value)) {
+            problem = `Region ${region.id} needs sum ${region.value}; current ${total}.`;
+          }
+        } else if (region.type === "eq") {
+          if (new Set(values).size > 1) {
+            problem = `Region ${region.id} requires all values equal.`;
+          }
+        } else if (region.type === "unique") {
+          if (new Set(values).size !== values.length) {
+            problem = `Region ${region.id} cannot repeat values.`;
+          }
+        } else if (region.type === "lt") {
+          if (total >= region.value) {
+            problem = `Region ${region.id} must stay below ${region.value}; current ${total}.`;
+          }
+        } else if (region.type === "gt") {
+          if (filled && total <= region.value) {
+            problem = `Region ${region.id} must be above ${region.value}; current ${total}.`;
+          }
+        }
+        if (problem) {
+          violations.push(problem);
+          occupied.forEach((key) => badCells.add(key));
+        }
+      });
+      return { violations, badCells };
+    }
+
+    function renderLegend() {
+      legendEl.innerHTML = "";
+      activePuzzle.regions.forEach((region) => {
+        const item = document.createElement("span");
+        item.className = "legend-item";
+        item.innerHTML = `<span class="legend-dot" style="background:${region.color}"></span><span>Region ${region.id}: ${region.label}</span>`;
+        legendEl.appendChild(item);
+      });
+    }
+
+    function renderMeta() {
+      const remaining = activePuzzle.pieces.length - placedPieces.size;
+      shapeText.textContent = `Board: ${activePuzzle.rows} x ${activePuzzle.cols} / 30 cells`;
+      themeText.textContent = `Theme: ${activePuzzle.name}`;
+      remainingText.textContent = `Dominoes left: ${remaining} / 15`;
+      rotateBtn.textContent = orientation === "horizontal" ? "Rotate: Horizontal" : "Rotate: Vertical";
+      if (selectedPieceId) {
+        const piece = getPiece(selectedPieceId);
+        selectionText.textContent = `Selected ${piece.id} (${piece.a}|${piece.b})`;
+      } else {
+        selectionText.textContent = "No domino selected";
+      }
+    }
+
+    function getRegionEdges(row, col) {
+      const here = regionByCell.get(makeCellKey(row, col));
+      const color = here ? here.region.color : "#cccccc";
+      function edgeFor(otherRow, otherCol) {
+        const other = regionByCell.get(makeCellKey(otherRow, otherCol));
+        const sameRegion = here && other && here.region.id === other.region.id;
+        return sameRegion ? "1px solid rgba(90,90,90,0.12)" : `3px dashed ${color}`;
+      }
+      return {
+        top: !isActiveCell(row - 1, col) ? `3px dashed ${color}` : edgeFor(row - 1, col),
+        right: !isActiveCell(row, col + 1) ? `3px dashed ${color}` : edgeFor(row, col + 1),
+        bottom: !isActiveCell(row + 1, col) ? `3px dashed ${color}` : edgeFor(row + 1, col),
+        left: !isActiveCell(row, col - 1) ? `3px dashed ${color}` : edgeFor(row, col - 1)
+      };
+    }
+
+    function makeBadge(region) {
+      const badge = document.createElement("span");
+      badge.className = `badge badge-${region.badge || "top-right"}`;
+      badge.style.background = region.color;
+      const text = document.createElement("span");
+      text.textContent = region.label;
+      badge.appendChild(text);
+      return badge;
+    }
+
+    function renderBoard() {
+      const result = computeViolations();
+      boardEl.innerHTML = "";
+      boardEl.style.gridTemplateColumns = `repeat(${activePuzzle.cols}, var(--cell-size))`;
+      for (let row = 0; row < activePuzzle.rows; row += 1) {
+        for (let col = 0; col < activePuzzle.cols; col += 1) {
+          if (!isActiveCell(row, col)) {
+            const voidCell = document.createElement("div");
+            voidCell.className = "void";
+            boardEl.appendChild(voidCell);
+            continue;
+          }
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "cell";
+          const entry = boardState[row][col];
+          const meta = regionByCell.get(makeCellKey(row, col));
+          const edges = getRegionEdges(row, col);
+          const cellColor = meta ? meta.region.color : "#d9d2cb";
+          button.style.background = `${cellColor}3b`;
+          button.style.borderTop = edges.top;
+          button.style.borderRight = edges.right;
+          button.style.borderBottom = edges.bottom;
+          button.style.borderLeft = edges.left;
+          if (selectedPieceId && !entry) button.classList.add("target");
+          if (result.badCells.has(makeCellKey(row, col))) button.classList.add("invalid");
+          if (entry) {
+            button.classList.add("occupied");
+            button.appendChild(createPips(entry.value));
+            const tag = document.createElement("span");
+            tag.className = "piece-tag";
+            tag.textContent = entry.pieceId;
+            button.appendChild(tag);
+          }
+          if (meta && meta.anchor) button.appendChild(makeBadge(meta.region));
+          button.addEventListener("click", () => handleCellClick(row, col));
+          boardEl.appendChild(button);
+        }
+      }
+    }
+
+    function renderTray() {
+      trayEl.innerHTML = "";
+      activePuzzle.pieces.forEach((piece) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "domino";
+        if (piece.id === selectedPieceId) {
+          button.classList.add("selected");
+          if (orientation === "vertical") button.classList.add("vertical-preview");
+        }
+        if (placedPieces.has(piece.id)) button.classList.add("used");
+        const first = document.createElement("span");
+        const second = document.createElement("span");
+        first.className = "domino-half";
+        second.className = "domino-half";
+        first.appendChild(createPips(piece.a));
+        second.appendChild(createPips(piece.b));
+        button.append(first, second);
+        button.addEventListener("click", () => {
+          if (placedPieces.has(piece.id)) {
+            setStatus("Info", "This domino is already on the board. Click it on the board to pick it up.");
+            return;
+          }
+          if (selectedPieceId === piece.id) {
+            orientation = orientation === "horizontal" ? "vertical" : "horizontal";
+            setStatus("Rotate", `${piece.id} switched to ${orientation}.`);
+          } else {
+            selectedPieceId = piece.id;
+            setStatus("Select", `${piece.id} selected. Click it again to rotate 90 degrees.`);
+          }
+          renderMeta();
+          renderTray();
+          renderBoard();
+        });
+        trayEl.appendChild(button);
+      });
+    }
+
+    function render() {
+      renderMeta();
+      renderLegend();
+      renderTray();
+      renderBoard();
+    }
+
+    function removePiece(pieceId) {
+      const placement = placedPieces.get(pieceId);
+      if (!placement) return;
+      placement.cells.forEach(([row, col]) => {
+        boardState[row][col] = null;
+      });
+      placedPieces.delete(pieceId);
+      selectedPieceId = pieceId;
+    }
+
+    function handleCellClick(row, col) {
+      const occupied = boardState[row][col];
+      if (occupied) {
+        removePiece(occupied.pieceId);
+        setStatus("Info", `Picked up ${occupied.pieceId}.`);
+        render();
+        return;
+      }
+      if (!selectedPieceId) {
+        setStatus("Info", "Pick a domino from the tray first.");
+        return;
+      }
+      placeSelectedPiece(row, col);
+    }
+
+    function placeSelectedPiece(row, col) {
+      const piece = getPiece(selectedPieceId);
+      const [row2, col2] = nextCell(row, col, orientation);
+      if (!isActiveCell(row, col) || !isActiveCell(row2, col2)) {
+        setStatus("Place Failed", "A domino must cover two adjacent playable cells.");
+        return;
+      }
+      if (boardState[row][col] || boardState[row2][col2]) {
+        setStatus("Place Failed", "One of those cells is already occupied.");
+        return;
+      }
+      boardState[row][col] = { pieceId: piece.id, value: piece.a };
+      boardState[row2][col2] = { pieceId: piece.id, value: piece.b };
+      placedPieces.set(piece.id, { cells: [[row, col], [row2, col2]], orientation });
+      selectedPieceId = null;
+      const result = computeViolations();
+      if (result.violations.length > 0) {
+        setStatus("Conflict", result.violations[0]);
+      } else if (isSolved()) {
+        setStatus("Solved", "Board filled, all dominoes used, and every region rule is satisfied.");
+      } else {
+        setStatus("Info", "Domino placed.");
+      }
+      render();
+    }
+
+    function activeCellCount() {
+      return activeCells.size;
+    }
+
+    function filledCellCount() {
+      let count = 0;
+      activeCells.forEach((key) => {
+        const [row, col] = key.split(",").map(Number);
+        if (boardState[row][col]) count += 1;
+      });
+      return count;
+    }
+
+    function isSolved() {
+      if (filledCellCount() !== activeCellCount()) return false;
+      if (placedPieces.size !== activePuzzle.pieces.length) return false;
+      return computeViolations().violations.length === 0;
+    }
+
+    function resetCurrentPuzzle() {
+      boardState = createEmptyBoard(activePuzzle.rows, activePuzzle.cols);
+      placedPieces.clear();
+      selectedPieceId = null;
+      orientation = "horizontal";
+      render();
+      setStatus("Reset", "Current puzzle was reset.");
+    }
+
+    function checkBoard() {
+      const result = computeViolations();
+      if (result.violations.length > 0) {
+        renderBoard();
+        setStatus("Check", result.violations.join(" "));
+        return;
+      }
+      if (filledCellCount() !== activeCellCount()) {
+        setStatus("Check", "There are still empty cells on the board.");
+        return;
+      }
+      if (placedPieces.size !== activePuzzle.pieces.length) {
+        setStatus("Check", "Some dominoes are still unused.");
+        return;
+      }
+      setStatus("Check", "Everything looks correct.");
+    }
+
+    function findHintTarget() {
+      return activePuzzle.solution.find((piece) => !placedPieces.has(piece.id));
+    }
+
+    function showHint() {
+      const hint = findHintTarget();
+      if (!hint) {
+        setStatus("Hint", "All dominoes are already on the board.");
+        return;
+      }
+      selectedPieceId = hint.id;
+      orientation = getPieceOrientation(hint.cells);
+      const piece = getPiece(hint.id);
+      const [row, col] = hint.cells[0];
+      render();
+      setStatus("Hint", `Try ${piece.id} (${piece.a}|${piece.b}) from row ${row + 1}, col ${col + 1} in ${orientation} mode.`);
+    }
+
+    function applySolution() {
+      resetCurrentPuzzle();
+      activePuzzle.solution.forEach((piece) => {
+        piece.cells.forEach(([row, col], index) => {
+          boardState[row][col] = { pieceId: piece.id, value: piece.values[index] };
+        });
+        placedPieces.set(piece.id, { cells: piece.cells, orientation: getPieceOrientation(piece.cells) });
+      });
+      selectedPieceId = null;
+      render();
+      setStatus("Answer", "Built-in solution shown.");
+    }
+
+    rotateBtn.addEventListener("click", () => {
+      orientation = orientation === "horizontal" ? "vertical" : "horizontal";
+      renderMeta();
+      renderTray();
+    });
+
+    newPuzzleBtn.addEventListener("click", () => {
+      const puzzle = makeNewPuzzle();
+      if (!puzzle) {
+        setStatus("System", "Generator failed this turn. Click again.");
+        return;
+      }
+      setupPuzzle(puzzle);
+    });
+
+    checkBtn.addEventListener("click", checkBoard);
+    hintBtn.addEventListener("click", showHint);
+    resetBtn.addEventListener("click", resetCurrentPuzzle);
+    solveBtn.addEventListener("click", applySolution);
+
+    setupPuzzle(makeNewPuzzle());
+  </script>
+</body>
+</html>

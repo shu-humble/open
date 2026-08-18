@@ -1,0 +1,27 @@
+{
+  "id": "./單字庫.html",
+  "name": "單字庫 · Word Bank",
+  "short_name": "單字庫",
+  "description": "管理、備份與整理個人單字庫。",
+  "lang": "zh-Hant",
+  "start_url": "./單字庫.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f4f7fb",
+  "theme_color": "#f4f7fb",
+  "icons": [
+    {
+      "src": "wordbank-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "wordbank-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

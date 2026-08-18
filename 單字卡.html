@@ -1,10 +1,17 @@
 ﻿<!DOCTYPE html>
-<html lang="UTF-8">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="單字卡">
     <title></title>
     <link rel="icon" href="https://www.svgrepo.com/show/335618/quiz-submissions.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="flashcards-apple-touch-icon.png">
+    <link rel="manifest" href="flashcards-manifest.webmanifest">
     <style>
         :root {
             --bg: #edf2ff;
@@ -42,7 +49,12 @@
             color: var(--text);
             transition: background-color 0.3s, color 0.3s, background-image 0.3s;
             min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            box-sizing: border-box;
         }
+        *, *::before, *::after { box-sizing: border-box; }
+        [hidden] { display: none !important; }
         .game-container {
             max-width: 860px;
             margin: auto;
@@ -106,6 +118,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            overflow-wrap: anywhere;
+            -webkit-tap-highlight-color: transparent;
         }
         .word:active { cursor: grabbing; }
         .word.used {
@@ -178,6 +192,8 @@
             cursor: pointer;
             box-shadow: 0 12px 26px rgba(37,99,235,0.28);
             transition: background-color 0.2s, transform 0.15s, box-shadow 0.2s;
+            min-height: 42px;
+            touch-action: manipulation;
         }
         .button:hover {
             transform: translateY(-1px);
@@ -248,6 +264,14 @@
             transition: background-color 0.2s;
         }
         .help-button:hover { background-color: var(--accent-strong); }
+        .help-button:focus-visible,
+        .button:focus-visible,
+        .ios-install-trigger:focus-visible,
+        .ios-install-action:focus-visible,
+        .ios-install-close:focus-visible {
+            outline: 3px solid color-mix(in srgb, var(--accent) 55%, white);
+            outline-offset: 3px;
+        }
         .rules-modal {
             display: none;
             position: fixed;
@@ -275,14 +299,314 @@
             background-color: var(--panel);
             color: var(--text);
         }
+
+        .ios-install-trigger {
+            position: fixed;
+            top: 20px;
+            right: 62px;
+            width: 36px;
+            height: 32px;
+            padding: 0;
+            border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+            border-radius: 10px;
+            background: var(--panel);
+            color: var(--accent);
+            box-shadow: 0 8px 22px rgba(15, 23, 42, 0.16);
+            cursor: pointer;
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+        }
+        .ios-install-trigger:not([hidden]) { display: flex; }
+        .ios-install-trigger { font-size: 22px; font-weight: 800; }
+
+        .ios-install-nudge {
+            position: fixed;
+            right: max(14px, env(safe-area-inset-right));
+            bottom: max(14px, env(safe-area-inset-bottom));
+            left: max(14px, env(safe-area-inset-left));
+            z-index: 1100;
+            max-width: 520px;
+            margin-left: auto;
+            padding: 12px;
+            border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border));
+            border-radius: 18px;
+            background: color-mix(in srgb, var(--panel) 94%, transparent);
+            color: var(--text);
+            box-shadow: 0 18px 48px rgba(15, 23, 42, 0.24);
+            -webkit-backdrop-filter: blur(18px);
+            backdrop-filter: blur(18px);
+        }
+        .ios-install-nudge:not([hidden]) {
+            display: grid;
+            grid-template-columns: 42px minmax(0, 1fr) auto;
+            gap: 10px;
+            align-items: center;
+        }
+        .ios-install-nudge-icon,
+        .ios-install-app-icon {
+            display: block;
+            object-fit: cover;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 8px 18px rgba(37,99,235,0.25);
+        }
+        .ios-install-nudge-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            font-weight: 800;
+        }
+        .ios-install-nudge-copy { min-width: 0; }
+        .ios-install-nudge-copy strong,
+        .ios-install-nudge-copy span { display: block; }
+        .ios-install-nudge-copy strong { font-size: 0.95rem; line-height: 1.3; }
+        .ios-install-nudge-copy span { margin-top: 2px; color: var(--muted); font-size: 0.8rem; line-height: 1.35; }
+        .ios-install-nudge-actions { display: flex; align-items: center; gap: 4px; }
+        .ios-install-action,
+        .ios-install-close {
+            min-height: 42px;
+            border: 0;
+            border-radius: 11px;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .ios-install-action {
+            padding: 0 13px;
+            font-weight: 700;
+        }
+        .ios-install-action.primary { background: var(--accent); color: white; }
+        .ios-install-action.secondary { background: color-mix(in srgb, var(--accent) 10%, var(--panel)); color: var(--accent); }
+        .ios-install-close {
+            width: 42px;
+            padding: 0;
+            background: transparent;
+            color: var(--muted);
+            font-size: 1.35rem;
+        }
+
+        .ios-install-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1200;
+            padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+            background: rgba(4, 10, 24, 0.58);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            overflow-y: auto;
+        }
+        .ios-install-modal:not([hidden]) { display: grid; place-items: center; }
+        .ios-install-dialog {
+            width: min(100%, 430px);
+            max-height: calc(100dvh - max(32px, env(safe-area-inset-top) + env(safe-area-inset-bottom)));
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            background: var(--panel);
+            color: var(--text);
+            box-shadow: 0 28px 80px rgba(4, 10, 24, 0.38);
+        }
+        .ios-install-dialog-header {
+            display: grid;
+            grid-template-columns: 54px minmax(0, 1fr) 42px;
+            gap: 12px;
+            align-items: center;
+        }
+        .ios-install-app-icon { width: 54px; height: 54px; border-radius: 15px; font-size: 1.2rem; font-weight: 800; }
+        .ios-install-eyebrow { margin: 0 0 2px; color: var(--accent); font-size: 0.74rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+        .ios-install-dialog h2 { margin: 0; font-size: 1.25rem; line-height: 1.25; }
+        .ios-install-intro { margin: 16px 0; color: var(--muted); font-size: 0.94rem; line-height: 1.55; }
+        .ios-install-steps { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+        .ios-install-steps li {
+            display: grid;
+            grid-template-columns: 36px minmax(0, 1fr);
+            gap: 11px;
+            align-items: center;
+            padding: 11px;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            background: color-mix(in srgb, var(--accent) 5%, var(--panel));
+        }
+        .ios-install-step-icon {
+            display: grid;
+            place-items: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 11px;
+            background: var(--panel);
+            color: var(--accent);
+            box-shadow: 0 4px 12px rgba(15,23,42,0.09);
+            font-weight: 800;
+        }
+        .ios-install-steps strong,
+        .ios-install-steps span { display: block; }
+        .ios-install-steps strong { font-size: 0.94rem; }
+        .ios-install-steps span { margin-top: 2px; color: var(--muted); font-size: 0.82rem; line-height: 1.4; }
+        .ios-install-tip { margin: 14px 0 0; padding: 10px 12px; border-radius: 12px; background: rgba(22,163,74,0.1); color: var(--muted); font-size: 0.82rem; }
+        .ios-install-dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 16px; }
+        body.ios-install-open { overflow: hidden; }
+
+        @media (max-width: 700px) {
+            body {
+                padding: calc(env(safe-area-inset-top) + 66px) max(9px, env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 18px) max(9px, env(safe-area-inset-left));
+                line-height: 1.45;
+            }
+            .game-container {
+                width: 100%;
+                padding: 13px 10px 14px;
+                border-radius: 16px;
+                box-shadow: 0 8px 26px rgba(17,24,39,0.14);
+            }
+            .game-container h1 { margin: 0 0 5px; font-size: clamp(1.45rem, 7vw, 1.9rem); line-height: 1.2; }
+            .instructions { margin: 0 0 11px; font-size: 0.92rem; line-height: 1.45; }
+            .section-block { padding: 7px; margin-bottom: 7px; }
+            .section-divider { margin: 3px 0 7px; }
+            .words, .targets {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px;
+                justify-content: initial;
+                margin: 0;
+            }
+            .word, .target {
+                width: 100%;
+                height: auto;
+                min-width: 0;
+                min-height: clamp(88px, 27vw, 112px);
+                margin: 0;
+                padding: 8px 6px;
+                border-radius: 12px;
+                font-size: clamp(0.86rem, 3.8vw, 1rem);
+                box-shadow: 0 5px 15px rgba(37,99,235,0.18);
+            }
+            .target .original-translation { font-size: 0.86em; line-height: 1.25; }
+            .buttons {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px;
+                margin-top: 10px;
+            }
+            .button {
+                width: 100%;
+                min-width: 0;
+                min-height: 46px;
+                margin: 0;
+                padding: 9px 8px;
+                font-size: 0.9rem;
+                line-height: 1.25;
+                overflow-wrap: anywhere;
+            }
+            .speech-controls { display: grid; gap: 9px; margin-top: 13px; font-size: 0.88rem; }
+            .speech-controls label { width: 100%; min-width: 0; }
+            .speech-controls input[type="range"] { flex: 1 1 120px; min-width: 90px; width: auto; min-height: 32px; }
+            .speech-controls select { flex: 1 1 auto; min-width: 0; max-width: 100%; min-height: 42px; }
+            .result, .answers { margin-top: 12px; padding: 10px; overflow-wrap: anywhere; }
+            .help-button,
+            .ios-install-trigger {
+                top: calc(env(safe-area-inset-top) + 10px);
+                width: 44px;
+                height: 44px;
+                border-radius: 14px;
+            }
+            .help-button { right: max(10px, env(safe-area-inset-right)); }
+            .ios-install-trigger { right: calc(max(10px, env(safe-area-inset-right)) + 54px); }
+            .rules-modal { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+            .rules-content {
+                width: 100%;
+                height: 100%;
+                max-width: none;
+                max-height: none;
+                margin: 0;
+                padding: 8px;
+                border-radius: 0;
+                overscroll-behavior: contain;
+            }
+            .rules-content iframe { display: block; }
+            .ios-install-nudge:not([hidden]) { grid-template-columns: 42px minmax(0, 1fr); }
+            .ios-install-nudge-actions { grid-column: 1 / -1; }
+            .ios-install-nudge-actions .ios-install-action { flex: 1; }
+        }
+
+        @media (max-width: 370px) {
+            .game-container { padding-inline: 8px; }
+            .words, .targets { gap: 6px; }
+            .word, .target { min-height: 84px; padding: 6px 4px; font-size: 0.84rem; }
+            .button { font-size: 0.84rem; }
+            .ios-install-dialog { padding: 16px; border-radius: 20px; }
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .target.has-word .delete-btn {
+                display: block;
+                top: -6px;
+                right: -6px;
+                width: 34px;
+                height: 34px;
+                font-size: 20px;
+            }
+        }
+
+        @media (display-mode: standalone) {
+            .ios-install-trigger,
+            .ios-install-nudge { display: none !important; }
+        }
     </style>
 </head>
 <body>
     <button class="help-button" onclick="toggleRules()">?</button>
+    <button class="ios-install-trigger" id="iosInstallTrigger" type="button" onclick="openIosInstallHelp()" aria-haspopup="dialog" aria-controls="iosInstallModal" aria-expanded="false" aria-label="加入 iPhone 主畫面" hidden>
+        <span aria-hidden="true">↥</span>
+    </button>
     <div class="rules-modal" id="rulesModal" onclick="closeRules(event)">
         <div class="rules-content">
             <iframe src="規則.html" style="width: 100%; height: 100%; border: none;"></iframe>
         </div>
+    </div>
+
+    <aside class="ios-install-nudge" id="iosInstallNudge" aria-label="加入主畫面提示" hidden>
+        <img class="ios-install-nudge-icon" src="flashcards-apple-touch-icon.png" alt="">
+        <div class="ios-install-nudge-copy">
+            <strong id="iosInstallNudgeTitle">放到 iPhone 主畫面</strong>
+            <span id="iosInstallNudgeText">下次可像 App 一樣直接開啟單字卡。</span>
+        </div>
+        <div class="ios-install-nudge-actions">
+            <button class="ios-install-action primary" id="iosInstallLearnButton" type="button" onclick="openIosInstallHelp()">查看步驟</button>
+            <button class="ios-install-close" id="iosInstallDismissButton" type="button" onclick="dismissIosInstallNudge()" aria-label="關閉安裝提示">×</button>
+        </div>
+    </aside>
+
+    <div class="ios-install-modal" id="iosInstallModal" onclick="closeIosInstallFromBackdrop(event)" hidden>
+        <section class="ios-install-dialog" role="dialog" aria-modal="true" aria-labelledby="iosInstallTitle" aria-describedby="iosInstallIntro">
+            <header class="ios-install-dialog-header">
+                <img class="ios-install-app-icon" src="flashcards-apple-touch-icon.png" alt="">
+                <div>
+                    <p class="ios-install-eyebrow">iPhone · iPad</p>
+                    <h2 id="iosInstallTitle">加入主畫面</h2>
+                </div>
+                <button class="ios-install-close" id="iosInstallModalClose" type="button" onclick="closeIosInstallHelp()" aria-label="關閉">×</button>
+            </header>
+            <p class="ios-install-intro" id="iosInstallIntro">免下載 App。加入後會有專屬圖示，並以全螢幕方式快速開啟。</p>
+            <ol class="ios-install-steps">
+                <li>
+                    <span class="ios-install-step-icon" aria-hidden="true">1</span>
+                    <div><strong id="iosInstallStep1Title">使用 Safari 開啟</strong><span id="iosInstallStep1Text">若目前在其他 App 內，請先用 Safari 開啟此頁。</span></div>
+                </li>
+                <li>
+                    <span class="ios-install-step-icon" aria-hidden="true">↥</span>
+                    <div><strong id="iosInstallStep2Title">點一下「分享」</strong><span id="iosInstallStep2Text">在 Safari 下方工具列找到方框向上箭頭。</span></div>
+                </li>
+                <li>
+                    <span class="ios-install-step-icon" aria-hidden="true">＋</span>
+                    <div><strong id="iosInstallStep3Title">選擇「加入主畫面」</strong><span id="iosInstallStep3Text">確認名稱後按右上角「新增」即可完成。</span></div>
+                </li>
+            </ol>
+            <p class="ios-install-tip" id="iosInstallTip">提示：若選單中沒看到，請向下滑或點「編輯動作」加入。</p>
+            <div class="ios-install-dialog-actions">
+                <button class="ios-install-action secondary" id="iosInstallLaterButton" type="button" onclick="closeIosInstallHelp()">稍後</button>
+                <button class="ios-install-action primary" id="iosInstallDoneButton" type="button" onclick="acknowledgeIosInstallHelp()">知道了</button>
+            </div>
+        </section>
     </div>
     <div class="game-container">
         <h1 id="title"></h1>
@@ -344,7 +668,24 @@
             confirmSubmitPartial: "還有 {count} 個空格未填寫，確定要提交嗎？",
             speechRate: "語速",
             speechVolume: "音量",
-            speechVoice: "語音來源"
+            speechVoice: "語音來源",
+            iosInstallButton: "加入 iPhone 主畫面",
+            iosInstallNudgeTitle: "放到 iPhone 主畫面",
+            iosInstallNudgeText: "下次可像 App 一樣直接開啟單字卡。",
+            iosInstallLearn: "查看步驟",
+            iosInstallDismiss: "關閉安裝提示",
+            iosInstallTitle: "加入主畫面",
+            iosInstallIntro: "免下載 App。加入後會有專屬圖示，並以全螢幕方式快速開啟。",
+            iosInstallStep1Title: "使用 Safari 開啟",
+            iosInstallStep1Text: "若目前在其他 App 內，請先用 Safari 開啟此頁。",
+            iosInstallStep2Title: "點一下「分享」",
+            iosInstallStep2Text: "在 Safari 下方工具列找到方框向上箭頭。",
+            iosInstallStep3Title: "選擇「加入主畫面」",
+            iosInstallStep3Text: "確認名稱後按右上角「新增」即可完成。",
+            iosInstallTip: "提示：若選單中沒看到，請向下滑或點「編輯動作」加入。",
+            iosInstallLater: "稍後",
+            iosInstallDone: "知道了",
+            iosInstallClose: "關閉"
           },
           en: {
             title: "Word Matching Game",
@@ -366,7 +707,24 @@
             confirmSubmitPartial: "There are {count} empty spaces. Are you sure you want to submit?",
             speechRate: "Speech rate",
             speechVolume: "Volume",
-            speechVoice: "Voice provider"
+            speechVoice: "Voice provider",
+            iosInstallButton: "Add to iPhone Home Screen",
+            iosInstallNudgeTitle: "Add to your Home Screen",
+            iosInstallNudgeText: "Open your flashcards like an app next time.",
+            iosInstallLearn: "Show me",
+            iosInstallDismiss: "Dismiss install tip",
+            iosInstallTitle: "Add to Home Screen",
+            iosInstallIntro: "No app download needed. Add a dedicated icon and open flashcards in a clean, full-screen view.",
+            iosInstallStep1Title: "Open in Safari",
+            iosInstallStep1Text: "If you are viewing this inside another app, open the page in Safari first.",
+            iosInstallStep2Title: "Tap Share",
+            iosInstallStep2Text: "Find the square-and-arrow icon in Safari's toolbar.",
+            iosInstallStep3Title: "Choose Add to Home Screen",
+            iosInstallStep3Text: "Confirm the name, then tap Add in the top-right corner.",
+            iosInstallTip: "Tip: If the option is hidden, scroll down or choose Edit Actions.",
+            iosInstallLater: "Later",
+            iosInstallDone: "Got it",
+            iosInstallClose: "Close"
           }
         };
 
@@ -752,6 +1110,7 @@
             localStorage.setItem('currentLanguage', lang);
             const t = translations[currentLanguage];
 
+            document.documentElement.lang = lang === 'en' ? 'en' : 'zh-Hant';
             document.title = t.title;
             document.getElementById('title').textContent = t.title;
             document.getElementById('instructions').textContent = t.instructions;
@@ -766,6 +1125,7 @@
             if (rateText) rateText.textContent = t.speechRate;
             if (volText) volText.textContent = t.speechVolume;
             if (voiceText) voiceText.textContent = t.speechVoice;
+            updateIosInstallCopy();
 
             document.querySelector('button[onclick="switchLanguage(\'zh\')"]').style.display = (lang === 'zh' ? 'none' : 'inline-block');
             document.querySelector('button[onclick="switchLanguage(\'en\')"]').style.display = (lang === 'en' ? 'none' : 'inline-block');
@@ -1198,6 +1558,127 @@
             window.open('單字庫.html', '_blank');
         }
 
+        const IOS_INSTALL_DISMISSED_KEY = 'flashcardsIosInstallHintDismissed';
+        let lastIosInstallFocus = null;
+
+        function isAppleMobileDevice() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        }
+
+        function isStandaloneDisplay() {
+            return window.navigator.standalone === true ||
+                window.matchMedia('(display-mode: standalone)').matches;
+        }
+
+        function wasIosInstallHintDismissed() {
+            try {
+                return localStorage.getItem(IOS_INSTALL_DISMISSED_KEY) === 'true';
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function rememberIosInstallHintDismissed() {
+            try {
+                localStorage.setItem(IOS_INSTALL_DISMISSED_KEY, 'true');
+            } catch (error) {}
+        }
+
+        function updateIosInstallCopy() {
+            const t = translations[currentLanguage] || translations.zh;
+            const copyById = {
+                iosInstallNudgeTitle: t.iosInstallNudgeTitle,
+                iosInstallNudgeText: t.iosInstallNudgeText,
+                iosInstallLearnButton: t.iosInstallLearn,
+                iosInstallTitle: t.iosInstallTitle,
+                iosInstallIntro: t.iosInstallIntro,
+                iosInstallStep1Title: t.iosInstallStep1Title,
+                iosInstallStep1Text: t.iosInstallStep1Text,
+                iosInstallStep2Title: t.iosInstallStep2Title,
+                iosInstallStep2Text: t.iosInstallStep2Text,
+                iosInstallStep3Title: t.iosInstallStep3Title,
+                iosInstallStep3Text: t.iosInstallStep3Text,
+                iosInstallTip: t.iosInstallTip,
+                iosInstallLaterButton: t.iosInstallLater,
+                iosInstallDoneButton: t.iosInstallDone
+            };
+            Object.entries(copyById).forEach(([id, copy]) => {
+                const element = document.getElementById(id);
+                if (element) element.textContent = copy;
+            });
+
+            const trigger = document.getElementById('iosInstallTrigger');
+            const dismiss = document.getElementById('iosInstallDismissButton');
+            const close = document.getElementById('iosInstallModalClose');
+            const nudge = document.getElementById('iosInstallNudge');
+            if (trigger) trigger.setAttribute('aria-label', t.iosInstallButton);
+            if (dismiss) dismiss.setAttribute('aria-label', t.iosInstallDismiss);
+            if (close) close.setAttribute('aria-label', t.iosInstallClose);
+            if (nudge) nudge.setAttribute('aria-label', t.iosInstallNudgeTitle);
+        }
+
+        function setupIosInstallUi() {
+            const trigger = document.getElementById('iosInstallTrigger');
+            const nudge = document.getElementById('iosInstallNudge');
+            const modal = document.getElementById('iosInstallModal');
+            if (!trigger || !nudge || !modal) return;
+
+            const shouldOfferInstallHelp = isAppleMobileDevice() && !isStandaloneDisplay();
+            trigger.hidden = !shouldOfferInstallHelp;
+            nudge.hidden = !shouldOfferInstallHelp || wasIosInstallHintDismissed();
+            if (!shouldOfferInstallHelp) {
+                modal.hidden = true;
+                document.body.classList.remove('ios-install-open');
+            }
+            updateIosInstallCopy();
+        }
+
+        function openIosInstallHelp() {
+            const modal = document.getElementById('iosInstallModal');
+            const nudge = document.getElementById('iosInstallNudge');
+            const trigger = document.getElementById('iosInstallTrigger');
+            if (!modal) return;
+
+            lastIosInstallFocus = document.activeElement;
+            if (nudge) nudge.hidden = true;
+            modal.hidden = false;
+            document.body.classList.add('ios-install-open');
+            if (trigger) trigger.setAttribute('aria-expanded', 'true');
+            window.requestAnimationFrame(() => {
+                const closeButton = document.getElementById('iosInstallModalClose');
+                if (closeButton) closeButton.focus();
+            });
+        }
+
+        function closeIosInstallHelp() {
+            const modal = document.getElementById('iosInstallModal');
+            const trigger = document.getElementById('iosInstallTrigger');
+            if (!modal || modal.hidden) return;
+
+            modal.hidden = true;
+            document.body.classList.remove('ios-install-open');
+            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+            if (lastIosInstallFocus && typeof lastIosInstallFocus.focus === 'function') {
+                lastIosInstallFocus.focus();
+            }
+        }
+
+        function closeIosInstallFromBackdrop(event) {
+            if (event.target === event.currentTarget) closeIosInstallHelp();
+        }
+
+        function dismissIosInstallNudge() {
+            const nudge = document.getElementById('iosInstallNudge');
+            rememberIosInstallHintDismissed();
+            if (nudge) nudge.hidden = true;
+        }
+
+        function acknowledgeIosInstallHelp() {
+            rememberIosInstallHintDismissed();
+            closeIosInstallHelp();
+        }
+
         function toggleRules() {
             const modal = document.getElementById('rulesModal');
             modal.style.display = 'block';
@@ -1225,6 +1706,7 @@
                 if (modal.style.display === 'block') {
                     modal.style.display = 'none';
                 }
+                closeIosInstallHelp();
             }
         });
 
@@ -1244,6 +1726,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             currentLanguage = localStorage.getItem('currentLanguage') || 'zh';
             switchLanguage(currentLanguage);
+            setupIosInstallUi();
 
             const isDarkMode = localStorage.getItem('darkMode') === 'true';
             if (isDarkMode) {

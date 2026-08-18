@@ -1,25 +1,107 @@
 ﻿<!DOCTYPE html>
-<html lang="UTF-8">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f7fb">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="單字庫">
+  <link rel="manifest" href="wordbank-manifest.webmanifest">
+  <link rel="apple-touch-icon" sizes="180x180" href="wordbank-apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="wordbank-icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="wordbank-icon-512.png">
   <title></title>
   <style>
-  body {
-   font-family: Arial, sans-serif;
-    margin: 0px 10px 10px 10px;
+  :root {
+    --page-bg: #f4f7fb;
+    --surface: #ffffff;
+    --surface-soft: #f7f9fc;
+    --text: #182230;
+    --muted: #667085;
+    --line: #dfe5ec;
+    --accent: #176b57;
+    --accent-strong: #0f5747;
+    --accent-soft: #e9f6f1;
+    --danger: #c93434;
+    --shadow: 0 10px 30px rgba(30, 48, 66, 0.10);
   }
+  * {
+    box-sizing: border-box;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+    color: var(--text);
+    background: var(--page-bg);
+    margin: 0;
+    padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+    min-height: 100vh;
+    min-height: 100dvh;
+    line-height: 1.5;
+    -webkit-tap-highlight-color: transparent;
+  }
+    [hidden] {
+      display: none !important;
+    }
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 0 0 12px;
+    }
+    .page-heading h1 {
+      margin: 0;
+      font-size: clamp(1.75rem, 4vw, 2.35rem);
+      line-height: 1.15;
+      letter-spacing: -0.025em;
+    }
+    #saveReminder {
+      color: #a83232;
+      font-weight: 650;
+      margin: 6px 0 0;
+    }
+    #saveReminder:empty {
+      display: none;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .ios-install-button {
+      border: 1px solid #b9d8cd;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      font-weight: 700;
+    }
+    .ios-install-button .apple-mark {
+      font-size: 1.1em;
+      line-height: 1;
+    }
     .container {
       display: flex;
       gap: 10px;
+      align-items: flex-start;
     }
     .left-panel {
       flex: 1;
+      min-width: 0;
     }
     .right-panel {
       flex: 1;
       position: sticky;
-      margin-top: -5.0em;
+      margin-top: 0;
       align-self: flex-start;
+      min-width: 0;
     }
     .word-list {
       max-height: 70vh;
@@ -119,6 +201,16 @@
     cursor: pointer;
     transition: background-color 0.3s ease, opacity 0.3s ease, color 0.3s ease, border-color 0.3s ease;
     border-radius: 3px;
+    font: inherit;
+    touch-action: manipulation;
+  }
+
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 3px solid rgba(23, 107, 87, 0.28);
+    outline-offset: 2px;
   }
 
   .save-button-dirty {
@@ -146,6 +238,10 @@
       padding: 5px;
       margin: 5px 0;
       width: 200px;
+    }
+    input, textarea, select {
+      max-width: 100%;
+      font: inherit;
     }
     textarea {
       width: 100%;
@@ -202,19 +298,537 @@
     padding: 4px 8px;
     border-radius: 3px;
   }
+
+  .ios-install-banner {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 12px;
+    width: min(100%, 760px);
+    margin: 0 auto 14px;
+    padding: 12px 14px;
+    color: #123c32;
+    background: linear-gradient(135deg, #f0faf6 0%, #e3f4ed 100%);
+    border: 1px solid #bfdfd3;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(21, 84, 68, 0.10);
+  }
+  .ios-install-banner__icon,
+  .ios-install-hero__icon {
+    display: block;
+    object-fit: cover;
+    color: #fff;
+    background: linear-gradient(145deg, #1b7d65, #0e4f41);
+    box-shadow: 0 7px 18px rgba(14, 79, 65, 0.22);
+  }
+  .ios-install-banner__icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    font-size: 1.35rem;
+    font-weight: 750;
+  }
+  .ios-install-banner__copy {
+    min-width: 0;
+  }
+  .ios-install-banner__copy strong,
+  .ios-install-banner__copy span {
+    display: block;
+  }
+  .ios-install-banner__copy span {
+    margin-top: 1px;
+    color: #4e6f66;
+    font-size: 0.9rem;
+  }
+  .ios-install-banner__action,
+  .ios-install-banner__close {
+    min-height: 40px;
+    border-radius: 12px;
+  }
+  .ios-install-banner__action {
+    color: #fff;
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    font-weight: 700;
+  }
+  .ios-install-banner__close {
+    width: 40px;
+    padding: 0;
+    color: #4e6f66;
+    background: transparent;
+    border: 0;
+    font-size: 1.35rem;
+  }
+
+  .ios-install-dialog {
+    width: min(calc(100% - 32px), 440px);
+    max-height: min(720px, calc(100dvh - 32px));
+    padding: 0;
+    color: var(--text);
+    background: var(--surface);
+    border: 0;
+    border-radius: 24px;
+    box-shadow: 0 24px 80px rgba(18, 34, 48, 0.28);
+    overflow: auto;
+  }
+  .ios-install-dialog::backdrop {
+    background: rgba(12, 25, 35, 0.48);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+  }
+  .ios-install-dialog__close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 1;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    color: #52606d;
+    background: rgba(245, 247, 250, 0.92);
+    border: 1px solid #e2e7ec;
+    border-radius: 50%;
+    font-size: 1.4rem;
+  }
+  .ios-install-hero {
+    padding: 28px 26px 20px;
+    text-align: center;
+    background: linear-gradient(180deg, #edf8f4 0%, #fff 100%);
+  }
+  .ios-install-hero__icon {
+    width: 72px;
+    height: 72px;
+    margin: 2px auto 15px;
+    border-radius: 20px;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.08em;
+  }
+  .ios-install-hero h2 {
+    margin: 0;
+    font-size: 1.45rem;
+    letter-spacing: -0.02em;
+  }
+  .ios-install-hero p {
+    margin: 7px auto 0;
+    max-width: 32em;
+    color: var(--muted);
+  }
+  .ios-install-steps {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 6px 24px 22px;
+    list-style: none;
+    counter-reset: install-step;
+  }
+  .ios-install-step {
+    counter-increment: install-step;
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    min-height: 52px;
+    padding: 10px 12px;
+    background: var(--surface-soft);
+    border: 1px solid var(--line);
+    border-radius: 15px;
+  }
+  .ios-install-step::before {
+    content: counter(install-step);
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    color: #fff;
+    background: var(--accent);
+    border-radius: 50%;
+    font-weight: 800;
+  }
+  .ios-install-step strong,
+  .ios-install-step span {
+    display: block;
+  }
+  .ios-install-step span {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .ios-install-dialog__footer {
+    padding: 0 24px max(24px, env(safe-area-inset-bottom));
+  }
+  .ios-install-dialog__done {
+    width: 100%;
+    min-height: 48px;
+    color: #fff;
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 14px;
+    font-weight: 750;
+  }
+
+  @media (max-width: 760px) {
+    body {
+      padding-top: max(12px, env(safe-area-inset-top));
+      padding-right: max(12px, env(safe-area-inset-right));
+      padding-bottom: max(18px, env(safe-area-inset-bottom));
+      padding-left: max(12px, env(safe-area-inset-left));
+    }
+    .page-header {
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .page-heading {
+      min-width: 0;
+    }
+    .page-heading h1 {
+      font-size: clamp(1.55rem, 7vw, 2rem);
+    }
+    #saveReminder {
+      font-size: 0.86rem;
+      line-height: 1.35;
+    }
+    .header-actions {
+      flex-shrink: 0;
+    }
+    .header-actions button {
+      min-height: 44px;
+      border-radius: 12px;
+    }
+    .ios-install-button__label {
+      display: none;
+    }
+    .container {
+      display: block;
+      overflow: visible;
+    }
+    .left-panel,
+    .right-panel {
+      width: 100%;
+    }
+    .right-panel {
+      position: static;
+      margin-top: 16px;
+    }
+    .panel-card,
+    .right-panel {
+      padding: 16px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 6px 20px rgba(30, 48, 66, 0.07);
+    }
+    .panel-card + hr {
+      display: none;
+    }
+    .panel-card + .panel-card,
+    hr + .panel-card,
+    .save-buttons {
+      margin-top: 14px;
+    }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 1.18rem;
+      line-height: 1.3;
+    }
+    textarea {
+      display: block;
+      min-height: 172px;
+      margin: 0 0 12px;
+      padding: 12px;
+      border: 1px solid #cbd4de;
+      border-radius: 13px;
+      font-size: 16px;
+      line-height: 1.5;
+      resize: vertical;
+    }
+    .panel-card > br {
+      display: none;
+    }
+    button,
+    input[type="text"],
+    input[type="number"],
+    select {
+      min-height: 44px;
+      font-size: 16px;
+    }
+    button {
+      padding: 9px 13px;
+      color: var(--text);
+      background: #fff;
+      border: 1px solid #cbd4de;
+      border-radius: 11px;
+    }
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+    #bulkImportBtn {
+      color: #fff;
+      background: var(--accent);
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      margin: 4px 0;
+      padding: 8px 10px;
+      border: 1px solid #cbd4de;
+      border-radius: 11px;
+      background: #fff;
+    }
+    input[type="checkbox"] {
+      width: 22px;
+      height: 22px;
+      margin: 0 7px 0 0;
+      vertical-align: middle;
+      accent-color: var(--accent);
+    }
+    label {
+      line-height: 1.4;
+    }
+    label:has(input[type="checkbox"]) {
+      display: flex;
+      align-items: center;
+      min-height: 44px;
+    }
+    .bulk-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    #bulkImportBtn {
+      grid-column: 1 / -1;
+    }
+    .count-main,
+    .smart-main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+    }
+    .count-main input[type="number"] {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
+    .count-main > label {
+      grid-column: 1;
+      grid-row: 1;
+    }
+    .count-main > button {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    .count-details,
+    .smart-details {
+      padding: 8px 0 0;
+    }
+    .count-details > div {
+      display: grid;
+      gap: 2px;
+    }
+    #toggleCountModeBtn,
+    #toggleSmartSystemBtn {
+      min-width: 72px;
+    }
+    .save-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 14px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 6px 20px rgba(30, 48, 66, 0.07);
+    }
+    .save-buttons button {
+      width: 100%;
+      margin: 0;
+    }
+    #saveAllButton,
+    #clearAllWordsButton {
+      grid-column: 1 / -1;
+    }
+    .sort-toolbar {
+      display: grid !important;
+      grid-template-columns: auto minmax(0, 1fr) 46px;
+      align-items: center;
+      gap: 8px !important;
+      margin-bottom: 12px !important;
+    }
+    .sort-toolbar select {
+      min-width: 0;
+      margin: 0;
+    }
+    #sortDirectionBtn {
+      width: 46px;
+      min-height: 44px;
+      padding: 0 !important;
+    }
+    #totalScoreDisplay {
+      grid-column: 1 / -1;
+      margin: 0 !important;
+      padding: 9px 11px;
+      color: var(--accent-strong) !important;
+      background: var(--accent-soft);
+      border-radius: 11px;
+      font-size: 0.9rem;
+      overflow-wrap: anywhere;
+    }
+    .word-list {
+      display: grid;
+      gap: 8px;
+      max-height: none;
+      overflow: visible;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+    }
+    .word-item {
+      align-items: stretch;
+      gap: 8px;
+      min-width: 0;
+      padding: 10px;
+      background: var(--surface-soft);
+      border: 1px solid var(--line);
+      border-radius: 13px;
+    }
+    .word-item:last-child {
+      border-bottom: 1px solid var(--line);
+    }
+    .word-item-info {
+      min-width: 0;
+      align-items: flex-start;
+      gap: 7px;
+    }
+    .word-info-text {
+      min-width: 0;
+      padding-top: 3px;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .info-button {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      font-size: 16px;
+    }
+    .word-item-actions {
+      align-items: flex-start;
+    }
+    .word-item-actions button {
+      min-height: 40px;
+      padding: 7px 10px;
+    }
+    .stats-tooltip {
+      max-width: min(260px, calc(100vw - 24px));
+      padding: 10px 12px;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+    }
+    .ios-install-banner {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 10px;
+      padding: 11px;
+    }
+    .ios-install-banner__action {
+      grid-column: 2 / -1;
+      width: 100%;
+    }
+    .ios-install-banner__close {
+      grid-column: 3;
+      grid-row: 1;
+    }
+    .ios-install-dialog {
+      width: calc(100% - 16px);
+      max-width: none;
+      max-height: calc(100dvh - max(16px, env(safe-area-inset-top)) - max(8px, env(safe-area-inset-bottom)));
+      margin: auto auto max(8px, env(safe-area-inset-bottom));
+      border-radius: 24px 24px 20px 20px;
+    }
+    .ios-install-hero {
+      padding: 26px 22px 18px;
+    }
+    .ios-install-steps {
+      padding: 4px 16px 18px;
+    }
+    .ios-install-dialog__footer {
+      padding-right: 16px;
+      padding-left: 16px;
+    }
+  }
+
+  @media (max-width: 390px) {
+    .header-actions {
+      gap: 6px;
+    }
+    .header-actions button {
+      padding-right: 10px;
+      padding-left: 10px;
+    }
+    .bulk-actions,
+    .save-buttons {
+      grid-template-columns: 1fr;
+    }
+    .bulk-actions > *,
+    .save-buttons > *,
+    #bulkImportBtn,
+    #saveAllButton,
+    #clearAllWordsButton {
+      grid-column: 1;
+    }
+    .sort-toolbar {
+      grid-template-columns: 1fr 46px;
+    }
+    .sort-toolbar label {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+    }
+  }
   </style>
 </head>
 <body>
-  <h1 id="mainTitle"></h1>
-  <p id="saveReminder"></p>
-  <button id="langToggleBtn" onclick="toggleLanguage()">🌐 切換語言</button>
+  <header class="page-header">
+    <div class="page-heading">
+      <h1 id="mainTitle"></h1>
+      <p id="saveReminder" role="status" aria-live="polite"></p>
+    </div>
+    <div class="header-actions">
+      <button type="button" id="iosInstallButton" class="ios-install-button" hidden>
+        <span class="apple-mark" aria-hidden="true"></span>
+        <span class="ios-install-button__label" id="iosInstallButtonLabel">加入主畫面</span>
+      </button>
+      <button type="button" id="langToggleBtn" onclick="toggleLanguage()">🌐 切換語言</button>
+    </div>
+  </header>
+
+  <section id="iosInstallBanner" class="ios-install-banner" aria-labelledby="iosInstallBannerTitle" hidden>
+    <img class="ios-install-banner__icon" src="wordbank-apple-touch-icon.png" alt="">
+    <div class="ios-install-banner__copy">
+      <strong id="iosInstallBannerTitle">把單字庫放上主畫面</strong>
+      <span id="iosInstallBannerText">像 App 一樣快速開啟，並獲得更完整的全螢幕體驗。</span>
+    </div>
+    <button type="button" id="iosInstallLearnMore" class="ios-install-banner__action">查看步驟</button>
+    <button type="button" id="iosInstallBannerClose" class="ios-install-banner__close" aria-label="關閉提示">×</button>
+  </section>
+
   <div class="container">
 
     <div class="left-panel">
-      <div>
+      <div class="panel-card">
         <h2 id="bulkAndBackupTitle"></h2>
         <textarea id="dataTextarea" rows="10" cols="50"></textarea><br>
-        <div>
+        <div class="bulk-actions">
             <button onclick="bulkImportFromTextarea()" id="bulkImportBtn"></button>
             <button onclick="exportAllData()" id="exportDataBtn"></button>
             <button onclick="importAllData()" id="importDataBtn"></button>
@@ -223,7 +837,7 @@
 
       <hr>
 
-      <div>
+      <div class="panel-card">
         <h2 id="gameSettingsTitle"></h2>
         <div class="count-setting">
           <div class="count-main">
@@ -299,7 +913,7 @@
 
     <div class="right-panel">
       <h2 id="wordListSectionTitle"></h2>
-      <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+      <div class="sort-toolbar" style="margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
           <label for="sortOrder" id="sortOrderLabel"></label>
           <select id="sortOrder" onchange="renderWords()">
             <option value="accuracy" id="proficiencyRateLabelOption"></option>
@@ -316,6 +930,38 @@
       </div>
     </div>
   </div>
+
+  <dialog id="iosInstallDialog" class="ios-install-dialog" aria-labelledby="iosInstallDialogTitle">
+    <button type="button" id="iosInstallDialogClose" class="ios-install-dialog__close" aria-label="關閉">×</button>
+    <div class="ios-install-hero">
+      <img class="ios-install-hero__icon" src="wordbank-apple-touch-icon.png" alt="">
+      <h2 id="iosInstallDialogTitle">將單字庫加入主畫面</h2>
+      <p id="iosInstallDialogIntro">從 Safari 加入後，就能用自己的圖示快速開啟。</p>
+    </div>
+    <ol class="ios-install-steps">
+      <li class="ios-install-step">
+        <div>
+          <strong id="iosInstallStep1Title">使用 Safari 開啟</strong>
+          <span id="iosInstallStep1Text">若目前在其他 App，請先選擇「在 Safari 中打開」。</span>
+        </div>
+      </li>
+      <li class="ios-install-step">
+        <div>
+          <strong id="iosInstallStep2Title">點一下分享按鈕</strong>
+          <span id="iosInstallStep2Text">在 Safari 工具列尋找方框向上箭頭的圖示。</span>
+        </div>
+      </li>
+      <li class="ios-install-step">
+        <div>
+          <strong id="iosInstallStep3Title">選擇「加入主畫面」</strong>
+          <span id="iosInstallStep3Text">確認名稱後按右上角的「加入」即可。</span>
+        </div>
+      </li>
+    </ol>
+    <div class="ios-install-dialog__footer">
+      <button type="button" id="iosInstallDone" class="ios-install-dialog__done">知道了</button>
+    </div>
+  </dialog>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
@@ -830,7 +1476,7 @@
             noWordsMessageDiv.style.display = 'block';
         } else {
             noWordsMessageDiv.style.display = 'none';
-            wordList.style.display = 'block';
+            wordList.style.display = '';
             wordList.innerHTML = '';
             
             // 更新總分數顯示
@@ -864,52 +1510,60 @@
                 // 獲取按鈕和 tooltip 元素，以便添加事件監聽器和動態調整位置
                 const infoButton = infoSpan.querySelector('.info-button');
                 const statsTooltip = infoSpan.querySelector('.stats-tooltip');
+                let tooltipPinned = false;
 
-                // 滑鼠移入事件：顯示 tooltip 並動態調整位置
-// 滑鼠移入事件：顯示 tooltip 並動態調整位置
-infoButton.addEventListener('mouseover', function(event) { // 添加 event 參數
-    statsTooltip.style.display = 'block'; // 先顯示，以便計算尺寸
-    statsTooltip.style.opacity = '1';
+                infoButton.type = 'button';
+                infoButton.setAttribute('aria-label', t.wordStatsButtonLabel || '顯示單字統計');
+                infoButton.setAttribute('aria-expanded', 'false');
 
-    const buttonRect = infoButton.getBoundingClientRect();
-    const tooltipRect = statsTooltip.getBoundingClientRect();
-    const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+                const showStatsTooltip = () => {
+                    statsTooltip.style.display = 'block';
+                    statsTooltip.style.opacity = '1';
 
-    // 預設將提示框放在按鈕右邊一點 (這裡的 left/top 是相對於整個視窗的)
-    let left = buttonRect.right + 5; // 距離按鈕右邊 5 像素
-    let top = buttonRect.top; // 與按鈕頂部對齊
+                    const buttonRect = infoButton.getBoundingClientRect();
+                    const tooltipRect = statsTooltip.getBoundingClientRect();
+                    const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+                    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+                    const edgeGap = 8;
+                    let left = buttonRect.right + 6;
+                    let top = buttonRect.top;
 
-    // 檢查提示框是否會超出瀏覽器右邊界
-    if (left + tooltipRect.width + 10 > viewportWidth) {
-        // 如果超出右邊界，嘗試放在按鈕左邊
-        left = buttonRect.left - tooltipRect.width - 5; // 距離按鈕左邊 5 像素
-        if (left < 0) { // 如果放在左邊還會超出左邊界，就靠左對齊
-            left = 5;
-        }
-    }
+                    if (left + tooltipRect.width + edgeGap > viewportWidth) {
+                        left = Math.max(edgeGap, buttonRect.left - tooltipRect.width - 6);
+                    }
+                    if (top + tooltipRect.height + edgeGap > viewportHeight) {
+                        top = Math.max(edgeGap, viewportHeight - tooltipRect.height - edgeGap);
+                    }
 
-    // 檢查提示框是否會超出瀏覽器下邊界
-    if (top + tooltipRect.height + 10 > viewportHeight) {
-        // 如果超出下邊界，嘗試放在按鈕上方
-        top = viewportHeight - tooltipRect.height - 10; // 距離瀏覽器底部 10 像素
-        if (top < 0) { // 如果放在上面還會超出上邊界，就靠上對齊
-            top = 5;
-        }
-    }
+                    statsTooltip.style.left = `${left}px`;
+                    statsTooltip.style.top = `${top}px`;
+                    infoButton.setAttribute('aria-expanded', 'true');
+                };
 
-    // 將計算出的位置應用到提示框上
-    statsTooltip.style.left = `${left}px`;
-    statsTooltip.style.top = `${top}px`;
-});
-
-                // 滑鼠移出事件：隱藏 tooltip
-                infoButton.addEventListener('mouseleave', function() {
+                const hideStatsTooltip = () => {
                     statsTooltip.style.opacity = '0';
-                    // 延遲隱藏，確保過渡效果完成
-                    setTimeout(() => {
-                        statsTooltip.style.display = 'none';
-                    }, 200); // 與 CSS transition-duration 保持一致
+                    statsTooltip.style.display = 'none';
+                    infoButton.setAttribute('aria-expanded', 'false');
+                };
+
+                infoButton.addEventListener('pointerenter', event => {
+                    if (event.pointerType === 'mouse') showStatsTooltip();
+                });
+                infoButton.addEventListener('pointerleave', event => {
+                    if (event.pointerType === 'mouse' && !tooltipPinned) hideStatsTooltip();
+                });
+                infoButton.addEventListener('focus', showStatsTooltip);
+                infoButton.addEventListener('blur', () => {
+                    if (!tooltipPinned) hideStatsTooltip();
+                });
+                infoButton.addEventListener('click', event => {
+                    event.stopPropagation();
+                    tooltipPinned = !tooltipPinned;
+                    if (tooltipPinned) {
+                        showStatsTooltip();
+                    } else {
+                        hideStatsTooltip();
+                    }
                 });
 
                 div.appendChild(infoSpan); // 將 infoSpan 添加到 div
@@ -1463,6 +2117,21 @@ function fallbackToTextarea(jsonString, t) {
             wordCountDetailTemplate: '{0}<span style="color:{1}; font-weight: 700;">{2}</span>({3})',
             undo: '↶ 撤銷',
             redo: '↷ 下一步',
+            wordStatsButtonLabel: '顯示單字統計',
+            iosInstallButton: '加入主畫面',
+            iosInstallBannerTitle: '把單字庫放上主畫面',
+            iosInstallBannerText: '像 App 一樣快速開啟，並獲得更完整的全螢幕體驗。',
+            iosInstallLearnMore: '查看步驟',
+            iosInstallCloseLabel: '關閉提示',
+            iosInstallDialogTitle: '將單字庫加入主畫面',
+            iosInstallDialogIntro: '從 Safari 加入後，就能用自己的圖示快速開啟。',
+            iosInstallStep1Title: '使用 Safari 開啟',
+            iosInstallStep1Text: '若目前在其他 App，請先選擇「在 Safari 中打開」。',
+            iosInstallStep2Title: '點一下分享按鈕',
+            iosInstallStep2Text: '在 Safari 工具列尋找方框向上箭頭的圖示。',
+            iosInstallStep3Title: '選擇「加入主畫面」',
+            iosInstallStep3Text: '確認名稱後按右上角的「加入」即可。',
+            iosInstallDone: '知道了',
         },
         en: {
             title: 'Word Management',
@@ -1537,6 +2206,21 @@ function fallbackToTextarea(jsonString, t) {
             wordCountDetailTemplate: '{0}<span style="color:{1}; font-weight: 700;">{2}</span>({3})',
             undo: '↶ Undo',
             redo: '↷ Redo',
+            wordStatsButtonLabel: 'Show word statistics',
+            iosInstallButton: 'Add to Home Screen',
+            iosInstallBannerTitle: 'Keep Word Bank on your Home Screen',
+            iosInstallBannerText: 'Open it like an app and enjoy a cleaner full-screen experience.',
+            iosInstallLearnMore: 'Show steps',
+            iosInstallCloseLabel: 'Dismiss tip',
+            iosInstallDialogTitle: 'Add Word Bank to your Home Screen',
+            iosInstallDialogIntro: 'Add it from Safari for quick access with its own icon.',
+            iosInstallStep1Title: 'Open this page in Safari',
+            iosInstallStep1Text: 'If you are in another app, choose “Open in Safari” first.',
+            iosInstallStep2Title: 'Tap the Share button',
+            iosInstallStep2Text: 'Look for the square with an upward arrow in Safari’s toolbar.',
+            iosInstallStep3Title: 'Choose “Add to Home Screen”',
+            iosInstallStep3Text: 'Confirm the name, then tap “Add” in the top-right corner.',
+            iosInstallDone: 'Got it',
         }
     };
 
@@ -1581,6 +2265,7 @@ function fallbackToTextarea(jsonString, t) {
     function updateLanguage() {
         const t = translations[currentLanguage];
 
+        document.documentElement.lang = currentLanguage === 'zh' ? 'zh-Hant' : 'en';
         document.title = t.title;
         document.getElementById('mainTitle').textContent = t.title;
         document.getElementById('bulkAndBackupTitle').textContent = t.bulkAndBackupTitle;
@@ -1654,6 +2339,30 @@ function fallbackToTextarea(jsonString, t) {
 
         document.getElementById('langToggleBtn').textContent = '🌐 ' + (currentLanguage === 'zh' ? 'English' : '中文');
 
+        const iosInstallTextMap = {
+            iosInstallButtonLabel: t.iosInstallButton,
+            iosInstallBannerTitle: t.iosInstallBannerTitle,
+            iosInstallBannerText: t.iosInstallBannerText,
+            iosInstallLearnMore: t.iosInstallLearnMore,
+            iosInstallDialogTitle: t.iosInstallDialogTitle,
+            iosInstallDialogIntro: t.iosInstallDialogIntro,
+            iosInstallStep1Title: t.iosInstallStep1Title,
+            iosInstallStep1Text: t.iosInstallStep1Text,
+            iosInstallStep2Title: t.iosInstallStep2Title,
+            iosInstallStep2Text: t.iosInstallStep2Text,
+            iosInstallStep3Title: t.iosInstallStep3Title,
+            iosInstallStep3Text: t.iosInstallStep3Text,
+            iosInstallDone: t.iosInstallDone
+        };
+        Object.entries(iosInstallTextMap).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) element.textContent = value;
+        });
+        document.getElementById('iosInstallButton')?.setAttribute('aria-label', t.iosInstallButton);
+        document.getElementById('iosInstallButton')?.setAttribute('title', t.iosInstallButton);
+        document.getElementById('iosInstallBannerClose')?.setAttribute('aria-label', t.iosInstallCloseLabel);
+        document.getElementById('iosInstallDialogClose')?.setAttribute('aria-label', t.iosInstallCloseLabel);
+
         populateSpeechLanguageOptions();
         updateSpeechLanguageAvailability();
         applyCountModeUI(false);
@@ -1661,6 +2370,86 @@ function fallbackToTextarea(jsonString, t) {
 
         renderWords();
         updateSaveButtonState();
+    }
+
+    const IOS_INSTALL_DISMISSED_KEY = 'wordBankIosInstallTipDismissedV1';
+
+    function isAppleTouchDevice() {
+        const userAgent = navigator.userAgent || '';
+        const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+        const isTouchMac = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+        return isIOS || isTouchMac;
+    }
+
+    function isRunningStandalone() {
+        return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    }
+
+    function openIosInstallDialog() {
+        const dialog = document.getElementById('iosInstallDialog');
+        if (!dialog || dialog.open) return;
+        if (typeof dialog.showModal === 'function') {
+            dialog.showModal();
+        } else {
+            dialog.setAttribute('open', '');
+        }
+    }
+
+    function closeIosInstallDialog() {
+        const dialog = document.getElementById('iosInstallDialog');
+        if (!dialog || !dialog.open) return;
+        if (typeof dialog.close === 'function') {
+            dialog.close();
+        } else {
+            dialog.removeAttribute('open');
+        }
+    }
+
+    function rememberIosInstallTipDismissed() {
+        document.getElementById('iosInstallBanner').hidden = true;
+        try {
+            localStorage.setItem(IOS_INSTALL_DISMISSED_KEY, 'true');
+        } catch (error) {
+            // Private browsing or restricted storage should not block the help UI.
+        }
+    }
+
+    function initializeIosInstallHelp() {
+        if (!isAppleTouchDevice() || isRunningStandalone()) return;
+
+        const installButton = document.getElementById('iosInstallButton');
+        const banner = document.getElementById('iosInstallBanner');
+        const learnMoreButton = document.getElementById('iosInstallLearnMore');
+        const bannerCloseButton = document.getElementById('iosInstallBannerClose');
+        const dialog = document.getElementById('iosInstallDialog');
+        const dialogCloseButton = document.getElementById('iosInstallDialogClose');
+        const doneButton = document.getElementById('iosInstallDone');
+        let wasDismissed = false;
+
+        try {
+            wasDismissed = localStorage.getItem(IOS_INSTALL_DISMISSED_KEY) === 'true';
+        } catch (error) {
+            wasDismissed = false;
+        }
+
+        installButton.hidden = false;
+        banner.hidden = wasDismissed;
+
+        installButton.addEventListener('click', openIosInstallDialog);
+        learnMoreButton.addEventListener('click', openIosInstallDialog);
+        bannerCloseButton.addEventListener('click', rememberIosInstallTipDismissed);
+        dialogCloseButton.addEventListener('click', closeIosInstallDialog);
+        doneButton.addEventListener('click', () => {
+            rememberIosInstallTipDismissed();
+            closeIosInstallDialog();
+        });
+        dialog.addEventListener('click', event => {
+            if (event.target !== dialog) return;
+            const rect = dialog.getBoundingClientRect();
+            const isOutside = event.clientX < rect.left || event.clientX > rect.right ||
+                event.clientY < rect.top || event.clientY > rect.bottom;
+            if (isOutside) closeIosInstallDialog();
+        });
     }
 
     // ***** 修改點 9: 從主遊戲頁面接收訊息以更新語言和模式 *****
@@ -1769,6 +2558,7 @@ function fallbackToTextarea(jsonString, t) {
         applyCountModeUI(false);
         applySmartSystemUI(true);
         updateLanguage(); // 這會觸發第一次 renderWords()
+        initializeIosInstallHelp();
     });
 </script>
 </body>

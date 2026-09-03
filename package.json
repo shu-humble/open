@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "vite --host",
-    "build": "vite build"
+    "build": "vite build",
+    "icons:schedule": "node scripts/update-schedule-icons.cjs"
   },
   "dependencies": {
     "express": "^5.1.0"

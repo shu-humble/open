@@ -10,783 +10,542 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Games">
-  <link rel="icon" href="https://static.vecteezy.com/system/resources/thumbnails/017/744/677/small_2x/video-game-icon-png.png">
+  <link rel="icon" href="games-icon-192.png">
   <link rel="apple-touch-icon" sizes="180x180" href="games-apple-touch-icon.png">
-  <link rel="manifest" href="games-manifest.webmanifest">
-  <style>
-    /* 全局設置 */
-    * {
-      box-sizing: border-box; /* 所有元素都使用 border-box 模型 */
-    }
-
-    /* 全局文字和行高配置 */
-    body, table, td, a, span, b {
-      font-size: 1.8vw;
-      line-height: 1.2em;
-      vertical-align: middle;
-    }
-
-    /* 页面背景 */
-    body {
-      background-color: transparent;
-      background-image: url('Game桌布.jpg');
-      color: #000055;
-      margin: 0;
-      padding: 20px;
-      min-height: 100vh;
-      background-size: cover;
-      background-position: center center;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-      position: relative;
-      overflow: auto;
-    }
-
-    /* 表格样式 */
-    table {
-      width: 90%;
-      background-color: rgba(51, 160, 102, 0.37);
-      border-collapse: collapse;
-      margin: 0.5em auto;
-      border-radius: clamp(5px, 1vw, 10px);
-      overflow: hidden;
-    }
-
-    td {
-      display: table-cell;
-      width: 33%;
-      border: 1px solid black;
-      padding: 10px;
-      vertical-align: top;
-      max-width: 30vw;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    
-    }
-
-    /* 链接样式 */
-    a {
-      color: #ffffff;
-      text-decoration: none;
-      display: inline-block;
-      margin: 2px 0;
-      max-width: 100%;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    a:visited { color: #ffff00; }
-    a:hover   { color: #ff0000; }
-
-
-
-
-    /* 标题样式 */
-    .section-title {
-      font-size: 2.0vw;
-      color: #ffff00;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-    .toggle-section-gap {
-      height: 12px;
-    }
-
-    /* 图标／圖片高度＝文字高度 */
-    .icon-img,
-    #toggle-battlecats-btn img,
-    #toggle-freefire-btn img,
-    #toggle-other-btn img {
-      height: 1em;
-      width: auto;
-      vertical-align: middle;
-      margin: 0 0.2em;
-      border-radius: clamp(2px,.5vw,4px); /*弧角*/
-    }
-
-    /* 按钮样式 */
-    #toggle-battlecats-btn,
-    #toggle-freefire-btn,
-    #toggle-other-btn {
-      background: transparent;
-      border: none;
-      padding: 0;
-      outline: none;
-      box-shadow: none;
-      cursor: pointer;
-      font-size: 1.8vw;
-      line-height: 1em;
-      vertical-align: middle;
-      margin-bottom: 5px;
-    }
-
-    /* 語言切換按鈕樣式 */
-    #lang-toggle-btn {
-        position: fixed; /* 固定在頁面上 */
-        top: 20px;       /* 距離頂部 20px */
-        right: 20px;     /* 距離右側 20px */
-        background-color: rgba(0, 0, 0, 0.5); /* 半透明背景 */
-        border: none;
-        padding: 5px;
-        border-radius: 5px;
-        cursor: pointer;
-        z-index: 1000; /* 確保按鈕在最上層 */
-    }
-
-    #lang-toggle-btn img {
-        height: 40px; /* 調整圖片大小 */
-        width: 40px;
-        vertical-align: middle;
-    }
-
-    /* 手机版（≤768px） */
-    @media (max-width: 768px) {
-      body, table, td, a, span, b {
-        font-size: 15px;
-        line-height: 1.2em;
-        white-space: normal;
-        overflow: visible;
-        text-overflow: clip;
-      }
-      table { width: 95%; }
-      td {
-        display: block;
-        width: 100%;
-        max-width: 100%;
-      }
-      .section-title {
-        font-size: 20px;
-        margin-bottom: 5px;
-      }
-      .icon-img,
-      #toggle-battlecats-btn img,
-      #toggle-freefire-btn img,
-      #toggle-other-btn img {
-        height: 1em;
-      }
-      #toggle-battlecats-btn,
-      #toggle-freefire-btn,
-      #toggle-other-btn {
-        font-size: 15px;
-        line-height: 1em;
-      }
-      #lang-toggle-btn {
-          top: 10px;
-          right: 10px;
-      }
-      #lang-toggle-btn img {
-          height: 30px;
-          width: 30px;
-      }
-    }
-
-    /* 更小螢幕（≤480px） */
-    @media (max-width: 480px) {
-      body { padding: 10px; }
-      table { width: 100%; }
-    }
-
-    /* 設定中心 */
-    .visually-hidden {
-      position: absolute !important;
-      width: 1px !important;
-      height: 1px !important;
-      padding: 0 !important;
-      margin: -1px !important;
-      overflow: hidden !important;
-      clip: rect(0 0 0 0) !important;
-      white-space: nowrap !important;
-      border: 0 !important;
-    }
-
-    [hidden] {
-      display: none !important;
-    }
-
-    #games-settings-button {
-      position: fixed;
-      top: max(14px, env(safe-area-inset-top));
-      left: max(14px, env(safe-area-inset-left));
-      z-index: 10010;
-      display: grid;
-      width: 46px;
-      height: 46px;
-      place-items: center;
-      padding: 0;
-      border: 1px solid rgba(255, 255, 255, 0.45);
-      border-radius: 14px;
-      background: rgba(15, 37, 30, 0.82);
-      color: #fff;
-      box-shadow: 0 5px 18px rgba(0, 0, 0, 0.3);
-      font: 700 25px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      cursor: pointer;
-      -webkit-backdrop-filter: blur(12px);
-      backdrop-filter: blur(12px);
-    }
-
-    #games-settings-button:hover,
-    #games-settings-button:focus-visible {
-      background: rgba(22, 67, 51, 0.96);
-      outline: 3px solid rgba(255, 255, 255, 0.42);
-      outline-offset: 2px;
-    }
-
-    .games-settings-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 10020;
-      background: rgba(7, 15, 12, 0.58);
-      -webkit-backdrop-filter: blur(2px);
-      backdrop-filter: blur(2px);
-    }
-
-    .games-settings-panel {
-      position: fixed;
-      top: max(72px, calc(env(safe-area-inset-top) + 58px));
-      left: max(14px, env(safe-area-inset-left));
-      z-index: 10021;
-      width: min(490px, calc(100vw - 28px));
-      max-height: calc(100dvh - 88px - env(safe-area-inset-bottom));
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      padding: 0 18px 18px;
-      border: 1px solid rgba(255, 255, 255, 0.55);
-      border-radius: 20px;
-      background: rgba(250, 252, 250, 0.98);
-      color: #17221d;
-      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.4);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      text-align: left;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .games-settings-panel *,
-    .games-settings-panel *::before,
-    .games-settings-panel *::after {
-      box-sizing: border-box;
-    }
-
-    .games-settings-panel__header {
-      position: sticky;
-      top: 0;
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin: 0 -18px;
-      padding: 16px 18px 12px;
-      border-bottom: 1px solid #dde5df;
-      background: rgba(250, 252, 250, 0.97);
-      -webkit-backdrop-filter: blur(10px);
-      backdrop-filter: blur(10px);
-    }
-
-    .games-settings-panel h2,
-    .games-settings-panel h3,
-    .games-settings-panel h4,
-    .games-settings-panel p {
-      max-width: none;
-      white-space: normal;
-      overflow: visible;
-      text-overflow: clip;
-    }
-
-    .games-settings-panel h2 {
-      margin: 0;
-      color: #163c2d;
-      font-size: 23px;
-      line-height: 1.2;
-    }
-
-    .games-settings-panel h3 {
-      margin: 0 0 5px;
-      color: #173d2f;
-      font-size: 17px;
-      line-height: 1.3;
-    }
-
-    .games-settings-panel h4 {
-      margin: 16px 0 4px;
-      color: #2b4438;
-      font-size: 15px;
-      line-height: 1.3;
-    }
-
-    .games-settings-close {
-      display: grid;
-      width: 42px;
-      height: 42px;
-      flex: 0 0 42px;
-      place-items: center;
-      padding: 0;
-      border: 0;
-      border-radius: 50%;
-      background: #e7eee9;
-      color: #213a2f;
-      font: 500 28px/1 system-ui, sans-serif;
-      cursor: pointer;
-    }
-
-    .games-settings-panel__intro {
-      margin: 13px 2px 2px;
-      color: #5b6a62;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .games-settings-card {
-      margin-top: 13px;
-      padding: 14px;
-      border: 1px solid #dce5df;
-      border-radius: 15px;
-      background: #f4f8f5;
-    }
-
-    .games-settings-description {
-      margin: 0 0 10px;
-      color: #5c6962;
-      font-size: 13px;
-      line-height: 1.48;
-    }
-
-    .games-settings-panel label {
-      display: block;
-      margin: 10px 0 5px;
-      color: #273a31;
-      font-size: 13px;
-      font-weight: 750;
-      line-height: 1.35;
-    }
-
-    .games-settings-panel input,
-    .games-settings-panel select {
-      width: 100%;
-      min-height: 44px;
-      padding: 9px 11px;
-      border: 1px solid #aebdb4;
-      border-radius: 10px;
-      background: #fff;
-      color: #17221d;
-      font: 16px/1.3 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    .games-settings-panel input:focus,
-    .games-settings-panel select:focus {
-      border-color: #247b55;
-      outline: 3px solid rgba(36, 123, 85, 0.2);
-    }
-
-    .games-settings-actions,
-    .wallpaper-actions,
-    .link-local-image-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .games-settings-action,
-    .wallpaper-picker {
-      display: inline-flex;
-      min-height: 42px;
-      align-items: center;
-      justify-content: center;
-      padding: 9px 13px;
-      border: 0;
-      border-radius: 10px;
-      font: 750 14px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      cursor: pointer;
-    }
-
-    .games-settings-action--primary,
-    .wallpaper-picker {
-      background: #1d704d;
-      color: #fff;
-    }
-
-    .games-settings-action--secondary {
-      background: #e1e9e3;
-      color: #263b31;
-    }
-
-    .games-settings-action--danger {
-      background: #fbe5e2;
-      color: #a12b20;
-    }
-
-    .games-settings-action:focus-visible,
-    .wallpaper-picker:focus-visible,
-    .games-settings-close:focus-visible {
-      outline: 3px solid rgba(36, 123, 85, 0.27);
-      outline-offset: 2px;
-    }
-
-    .wallpaper-file-input {
-      position: absolute;
-      width: 1px !important;
-      height: 1px !important;
-      min-height: 0 !important;
-      padding: 0 !important;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .wallpaper-picker {
-      margin: 0 !important;
-    }
-
-    .wallpaper-preview {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16 / 7;
-      overflow: hidden;
-      border: 1px solid rgba(0, 0, 0, 0.16);
-      border-radius: 12px;
-      background: #173d2f url('Game桌布.jpg') center / cover no-repeat;
-    }
-
-    .wallpaper-preview::after {
-      position: absolute;
-      right: 8px;
-      bottom: 8px;
-      padding: 4px 7px;
-      border-radius: 7px;
-      background: rgba(0, 0, 0, 0.62);
-      color: #fff;
-      content: "桌布預覽";
-      font-size: 11px;
-      line-height: 1;
-    }
-
-    .settings-status {
-      min-height: 19px;
-      margin: 8px 0 0;
-      color: #59675f;
-      font-size: 12px;
-      line-height: 1.45;
-    }
-
-    .settings-status.is-success { color: #176b43; }
-    .settings-status.is-error { color: #ad2f24; }
-
-    .link-image-preview-row {
-      display: flex;
-      min-height: 48px;
-      align-items: center;
-      gap: 10px;
-      margin-top: 9px;
-      padding: 7px 9px;
-      border-radius: 10px;
-      background: #e8efea;
-      color: #5c6962;
-      font-size: 12px;
-      line-height: 1.35;
-    }
-
-    .link-image-preview-row img {
-      width: 34px;
-      height: 34px;
-      flex: 0 0 34px;
-      object-fit: contain;
-      border-radius: 8px;
-      background: #fff;
-    }
-
-    .link-local-image-actions {
-      align-items: center;
-      margin-top: 8px;
-    }
-
-    .link-local-image-status {
-      flex: 1 1 150px;
-      min-width: 0;
-      color: #5c6962;
-      font-size: 12px;
-      line-height: 1.4;
-    }
-
-    .link-editor-lock-note {
-      margin: 8px 0 0;
-      color: #68756e;
-      font-size: 12px;
-      line-height: 1.4;
-    }
-
-    .settings-divider {
-      height: 1px;
-      margin: 17px 0 0;
-      border: 0;
-      background: #d6e0da;
-    }
-
-    .home-screen-layout {
-      display: grid;
-      grid-template-columns: 58px minmax(0, 1fr);
-      gap: 12px;
-      align-items: start;
-    }
-
-    .home-screen-icon {
-      width: 58px;
-      height: 58px;
-      border-radius: 13px;
-      background: #173d2f;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
-    }
-
-    .home-screen-steps {
-      margin: 7px 0 0;
-      padding-left: 20px;
-      color: #34483e;
-      font-size: 13px;
-      line-height: 1.55;
-    }
-
-    .home-screen-state {
-      display: inline-flex;
-      margin-top: 9px;
-      padding: 5px 8px;
-      border-radius: 999px;
-      background: #e4ece7;
-      color: #365145;
-      font-size: 12px;
-      font-weight: 750;
-      line-height: 1.2;
-    }
-
-    .home-screen-state.is-installed {
-      background: #dcefe3;
-      color: #176b43;
-    }
-
-    .custom-games-section {
-      width: 90%;
-      margin: 12px auto;
-      padding: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.28);
-      border-radius: 14px;
-      background: rgba(17, 69, 48, 0.76);
-      text-align: left;
-      -webkit-backdrop-filter: blur(8px);
-      backdrop-filter: blur(8px);
-    }
-
-    .custom-games-section h2 {
-      margin: 0 0 9px;
-      color: #fff5a8;
-      font: 750 1.35rem/1.25 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    .custom-games-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 8px;
-    }
-
-    .custom-games-list a {
-      display: flex;
-      min-height: 44px;
-      align-items: center;
-      gap: 7px;
-      padding: 9px 10px;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.13);
-      color: #fff;
-      font: 650 15px/1.3 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      white-space: normal;
-      overflow-wrap: anywhere;
-    }
-
-    .custom-games-list img {
-      width: 24px;
-      height: 24px;
-      flex: 0 0 24px;
-      object-fit: contain;
-      border-radius: 5px;
-    }
-
-    body.games-settings-open {
-      overflow: hidden;
-    }
-
-    /* 手機：將長清單壓成容易點按的緊湊連結晶片。 */
-    @media (max-width: 768px) {
-      html {
-        -webkit-text-size-adjust: 100%;
-      }
-
-      body {
-        min-height: 100dvh;
-        padding: calc(66px + env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) calc(18px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
-        background-attachment: scroll;
-        background-position: center top;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      }
-
-      table,
-      table tbody,
-      table tr {
-        display: block;
-        width: 100%;
-      }
-
-      table {
-        margin: 0 auto;
-        border: 0;
-        border-radius: 0;
-        background: transparent;
-        overflow: visible;
-      }
-
-      td {
-        display: block;
-        width: 100% !important;
-        max-width: none;
-        margin: 0 0 10px;
-        padding: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.24);
-        border-radius: 15px;
-        background: rgba(18, 74, 51, 0.75);
-        box-shadow: 0 5px 18px rgba(0, 0, 0, 0.17);
-        white-space: normal;
-        overflow: visible;
-        -webkit-backdrop-filter: blur(7px);
-        backdrop-filter: blur(7px);
-      }
-
-      td > br {
-        display: none;
-      }
-
-      td a,
-      #battlecats-details a,
-      #freefire-details a,
-      #other-details a {
-        display: inline-flex;
-        min-height: 40px;
-        max-width: 100%;
-        align-items: center;
-        gap: 4px;
-        margin: 3px 2px;
-        padding: 7px 9px;
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.12);
-        color: #fff;
-        font-size: 15px;
-        line-height: 1.3;
-        white-space: normal;
-        overflow-wrap: anywhere;
-      }
-
-      td a:visited { color: #fff6a8; }
-
-      .section-title {
-        display: block;
-        margin: 7px 2px 5px;
-        color: #fff36d;
-        font-size: 19px;
-        line-height: 1.25;
-      }
-
-      td > .section-title:first-child {
-        margin-top: 0;
-      }
-
-      #sudoku-links {
-        display: block;
-        margin: 6px 2px;
-        white-space: normal;
-      }
-
-      #toggle-battlecats-btn,
-      #toggle-freefire-btn,
-      #toggle-other-btn {
-        width: 42px;
-        height: 42px;
-        margin: 0 0 0 2px;
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.13);
-        font-size: 16px;
-      }
-
-      .toggle-section-gap {
-        height: 7px;
-      }
-
-      #lang-toggle-btn {
-        top: max(10px, env(safe-area-inset-top));
-        right: max(10px, env(safe-area-inset-right));
-        display: grid;
-        width: 46px;
-        height: 46px;
-        place-items: center;
-        padding: 5px;
-        border-radius: 14px;
-      }
-
-      #lang-toggle-btn img {
-        width: 32px;
-        height: 32px;
-      }
-
-      #games-settings-button {
-        top: max(10px, env(safe-area-inset-top));
-        left: max(10px, env(safe-area-inset-left));
-      }
-
-      .games-settings-panel {
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100dvh;
-        max-height: none;
-        padding: 0 max(13px, env(safe-area-inset-right)) calc(18px + env(safe-area-inset-bottom)) max(13px, env(safe-area-inset-left));
-        border: 0;
-        border-radius: 0;
-      }
-
-      .games-settings-panel__header {
-        margin: 0 calc(-1 * max(13px, env(safe-area-inset-right))) 0 calc(-1 * max(13px, env(safe-area-inset-left)));
-        padding: calc(10px + env(safe-area-inset-top)) max(13px, env(safe-area-inset-right)) 10px max(13px, env(safe-area-inset-left));
-      }
-
-      .games-settings-card {
-        padding: 13px;
-      }
-
-      .custom-games-section {
-        width: 100%;
-        margin: 10px auto 0;
-      }
-
-      .custom-games-list {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 390px) {
-      .custom-games-list {
-        grid-template-columns: 1fr;
-      }
-
-      .home-screen-layout {
-        grid-template-columns: 48px minmax(0, 1fr);
-      }
-
-      .home-screen-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 11px;
-      }
-    }
+  <link rel="manifest" href="games-manifest.webmanifest" vite-ignore>
+  <!-- 編輯導覽：① 下方樣式 ② 設定介面 ③ 遊戲連結與分類 ④ 檔案末尾的功能程式。全部在本檔編輯。 -->
+  <!-- ① 外觀樣式：調整顏色、間距和手機版請看這裡。 -->
+  <style id="games-styles">
+/*
+ * Games 外觀設定
+ * 1. 全頁與遊戲清單  2. 設定面板  3. 隱藏清單與手機版
+ * 色彩、欄數與間距集中在這裡，不需要更動 JavaScript。
+ */
+:root {
+  color-scheme: dark;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #f3f8f3;
+  --panel: rgba(13, 43, 33, .92);
+  --line: rgba(208, 235, 219, .2);
+  --accent: #e6f49e;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding: 14px 80px 36px;
+  background: #143c2d url('Game桌布.jpg') center / cover fixed no-repeat;
+  font-size: 15px;
+  line-height: 1.5;
+}
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.games-header, .games-catalog, .catalog-empty { max-width: 1240px; margin: 0 auto; }
+.games-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  margin-bottom: 10px;
+}
+.games-header h1 { margin: 0; font-size: 25px; line-height: 1.2; }
+.catalog-toolbar { display: flex; flex: 1; min-width: 0; align-items: center; gap: 12px; }
+.catalog-toolbar select { min-height: 36px; min-width: 0; width: 210px; max-width: 100%; border: 1px solid var(--line); border-radius: 7px; background: #234e3b; color: #fff; padding: 4px 8px; }
+#games-catalog-count { margin-left: auto; color: var(--accent); font-size: 13px; white-space: nowrap; }
+.games-catalog { font-size: clamp(16px, 1.8vw, 25px); line-height: 1.2; }
+/* 恢復原本的三欄表格；每欄可放多個分類，分類間不會產生等高卡片的空隙。 */
+.games-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  background: rgba(51, 160, 102, .37);
+  border: 1px solid #000;
+}
+.catalog-column { width: 33.333%; padding: 10px; border: 1px solid #000; vertical-align: top; }
+.game-category { min-width: 0; margin: 0 0 16px; padding: 0; }
+.game-category:last-child { margin-bottom: 0; }
+.game-category h2 { color: #ffff00; font-size: clamp(18px, 2vw, 28px); font-weight: 700; margin: 0 0 6px; line-height: 1.2; }
+/* 玩家專用資源：保留標題內的官網和獨立箭頭，內容預設收合。 */
+.category-heading { display: flex; align-items: center; gap: .15em; margin-bottom: 6px; }
+.category-heading h2 { min-width: 0; margin: 0; }
+.category-title-link { display: inline-flex; align-items: center; gap: .2em; max-width: 100%; }
+.category-title-link:hover { color: #ffeb8a; }
+.category-title-toggle, .category-title-fallback { display: block; max-width: 100%; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; }
+.category-toggle { flex: 0 0 auto; display: inline-grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 4px; background: transparent; color: #ffff00; }
+.category-toggle:hover { background: rgba(255, 255, 255, .12); }
+.category-arrow { display: block; font-size: 16px; line-height: 1; }
+.category-toggle[aria-expanded="true"] .category-arrow { transform: rotate(90deg); }
+.game-links { display: block; }
+/* 像舊版電腦畫面一樣逐行排連結，使用小圖示與緊湊行距。 */
+.game-links > a, .link-group > a {
+  display: flex;
+  align-items: center;
+  gap: .2em;
+  min-width: 0;
+  margin: 3px 0;
+  padding: 0;
+  color: #fff;
+  line-height: 1.2;
+}
+.game-links a:visited { color: #ffff00; }
+.game-links a:hover { color: #ff0000; }
+/* 同站的衍生入口接在主站後面；保留各自的連結 ID，仍可單獨編輯與隱藏。 */
+.link-group { display: flex; flex-wrap: wrap; align-items: center; gap: .25em; margin: 3px 0; }
+.link-group > a { margin: 0; max-width: 100%; }
+.link-branch > .icon-slot { display: none; }
+.link-group > a[data-has-previous="true"]::before { content: "—"; }
+.link-group--variants > a[data-has-previous="true"]::before { content: "／"; }
+.link-group-label::after { content: "："; }
+.link-group:not(.link-group--variants) > .link-branch[data-has-previous="false"]::before { content: attr(data-link-context); }
+.link-text { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
+.icon-slot {
+  display: inline-flex;
+  flex: 0 0 1em;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  overflow: hidden;
+  border-radius: 3px;
+  background: rgba(226, 245, 232, .09);
+  border: 1px solid rgba(226, 245, 232, .09);
+}
+.icon-slot img { display: block; width: 100%; height: 100%; object-fit: contain; font-size: 0; }
+#games-catalog a[data-suppressed="true"] { display: none !important; }
+.custom-games-section { margin-top: 0; }
+.catalog-empty { background: var(--panel); border-radius: 12px; padding: 22px; }
+#lang-toggle-btn {
+  position: fixed; top: max(14px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right));
+  z-index: 10010; min-width: 60px; height: 46px; border: 1px solid var(--line); border-radius: 14px;
+  background: #153c2d; color: #fff; font-size: 13px; font-weight: 700;
+}
+body.games-settings-open { overflow: hidden; }
+.games-settings-panel { color-scheme: light; }
+
+/* 2. 設定中心：桌布、連結編輯、安裝。 */
+/* 設定中心 */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+#games-settings-button {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  left: max(14px, env(safe-area-inset-left));
+  z-index: 10010;
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 14px;
+  background: rgba(15, 37, 30, 0.82);
+  color: #fff;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.3);
+  font: 700 25px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+#games-settings-button:hover,
+#games-settings-button:focus-visible {
+  background: rgba(22, 67, 51, 0.96);
+  outline: 3px solid rgba(255, 255, 255, 0.42);
+  outline-offset: 2px;
+}
+
+.games-settings-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10020;
+  background: rgba(7, 15, 12, 0.58);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
+.games-settings-panel {
+  position: fixed;
+  top: max(72px, calc(env(safe-area-inset-top) + 58px));
+  left: max(14px, env(safe-area-inset-left));
+  z-index: 10021;
+  width: min(490px, calc(100vw - 28px));
+  max-height: calc(100dvh - 88px - env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 18px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 20px;
+  background: rgba(250, 252, 250, 0.98);
+  color: #17221d;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.4);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-align: left;
+  -webkit-overflow-scrolling: touch;
+}
+
+.games-settings-panel *,
+.games-settings-panel *::before,
+.games-settings-panel *::after {
+  box-sizing: border-box;
+}
+
+.games-settings-panel__header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 -18px;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid #dde5df;
+  background: rgba(250, 252, 250, 0.97);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.games-settings-panel h2,
+.games-settings-panel h3,
+.games-settings-panel h4,
+.games-settings-panel p {
+  max-width: none;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.games-settings-panel h2 {
+  margin: 0;
+  color: #163c2d;
+  font-size: 23px;
+  line-height: 1.2;
+}
+
+.games-settings-panel h3 {
+  margin: 0 0 5px;
+  color: #173d2f;
+  font-size: 17px;
+  line-height: 1.3;
+}
+
+.games-settings-panel h4 {
+  margin: 16px 0 4px;
+  color: #2b4438;
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.games-settings-close {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #e7eee9;
+  color: #213a2f;
+  font: 500 28px/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.games-settings-panel__intro {
+  margin: 13px 2px 2px;
+  color: #5b6a62;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.games-settings-card {
+  margin-top: 13px;
+  padding: 14px;
+  border: 1px solid #dce5df;
+  border-radius: 15px;
+  background: #f4f8f5;
+}
+
+.games-settings-description {
+  margin: 0 0 10px;
+  color: #5c6962;
+  font-size: 13px;
+  line-height: 1.48;
+}
+
+.games-settings-panel label {
+  display: block;
+  margin: 10px 0 5px;
+  color: #273a31;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.games-settings-panel input,
+.games-settings-panel select {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 11px;
+  border: 1px solid #aebdb4;
+  border-radius: 10px;
+  background: #fff;
+  color: #17221d;
+  font: 16px/1.3 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.games-settings-panel input:focus,
+.games-settings-panel select:focus {
+  border-color: #247b55;
+  outline: 3px solid rgba(36, 123, 85, 0.2);
+}
+
+.games-settings-actions,
+.wallpaper-actions,
+.link-local-image-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.games-settings-action,
+.wallpaper-picker {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 13px;
+  border: 0;
+  border-radius: 10px;
+  font: 750 14px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  cursor: pointer;
+}
+
+.games-settings-action--primary,
+.wallpaper-picker {
+  background: #1d704d;
+  color: #fff;
+}
+
+.games-settings-action--secondary {
+  background: #e1e9e3;
+  color: #263b31;
+}
+
+.games-settings-action--danger {
+  background: #fbe5e2;
+  color: #a12b20;
+}
+
+.games-settings-action:focus-visible,
+.wallpaper-picker:focus-visible,
+.games-settings-close:focus-visible {
+  outline: 3px solid rgba(36, 123, 85, 0.27);
+  outline-offset: 2px;
+}
+
+.wallpaper-file-input {
+  position: absolute;
+  width: 1px !important;
+  height: 1px !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.wallpaper-picker {
+  margin: 0 !important;
+}
+
+.wallpaper-preview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 12px;
+  background: #173d2f url('Game桌布.jpg') center / cover no-repeat;
+}
+
+.wallpaper-preview::after {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 4px 7px;
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.62);
+  color: #fff;
+  content: attr(data-empty-label);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.settings-status {
+  min-height: 19px;
+  margin: 8px 0 0;
+  color: #59675f;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.settings-status.is-success { color: #176b43; }
+.settings-status.is-error { color: #ad2f24; }
+
+.link-image-preview-row {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 10px;
+  margin-top: 9px;
+  padding: 7px 9px;
+  border-radius: 10px;
+  background: #e8efea;
+  color: #5c6962;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.link-image-preview-row img {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.link-local-image-actions {
+  align-items: center;
+  margin-top: 8px;
+}
+
+.link-local-image-status {
+  flex: 1 1 150px;
+  min-width: 0;
+  color: #5c6962;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.link-editor-lock-note {
+  margin: 8px 0 0;
+  color: #68756e;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.settings-divider {
+  height: 1px;
+  margin: 17px 0 0;
+  border: 0;
+  background: #d6e0da;
+}
+
+.home-screen-layout {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.home-screen-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 13px;
+  background: #173d2f;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
+}
+
+.home-screen-steps {
+  margin: 7px 0 0;
+  padding-left: 20px;
+  color: #34483e;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.home-screen-state {
+  display: inline-flex;
+  margin-top: 9px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #e4ece7;
+  color: #365145;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.home-screen-state.is-installed {
+  background: #dcefe3;
+  color: #176b43;
+}
+
+/* 3. 隱藏連結管理與手機版。 */
+.games-settings-panel .settings-check { display: flex; align-items: center; gap: 9px; margin: 12px 0; line-height: 1.5; }
+.games-settings-panel .settings-check input { width: 19px; height: 19px; min-height: 19px; padding: 0; flex: 0 0 19px; accent-color: #1d704d; }
+.availability-note { margin: 10px 0; color: #52665a; font-size: 12px; }
+.availability-note summary { cursor: pointer; padding: 6px 0; }
+.availability-note p { line-height: 1.6; margin: 6px 0; }
+.hidden-links-list { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 10px; }
+.hidden-links-list li { min-width: 0; border: 1px solid #d5e0d8; border-radius: 10px; background: #fff; padding: 10px; }
+.hidden-links-list a { display: block; color: #1d6345; font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
+.hidden-links-list small { display: block; color: #65736b; font-size: 12px; margin-top: 4px; overflow-wrap: anywhere; }
+.hidden-links-list button { font-size: 12px; min-height: 40px; }
+.games-settings-action:disabled { opacity: .5; cursor: wait; }
+@media (max-width: 1100px) {
+  body { padding: 14px 24px 36px; }
+  .games-header { margin-left: 56px; margin-right: 70px; }
+}
+@media (max-width: 768px) {
+  html { -webkit-text-size-adjust: 100%; }
+  body { padding: calc(12px + env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); background-attachment: scroll; }
+  .games-header { flex-direction: column; align-items: stretch; gap: 5px; margin: 0 66px 10px 52px; padding: 6px 8px; }
+  .games-header h1 { font-size: 18px; }
+  .catalog-toolbar { gap: 6px; }
+  .catalog-toolbar select { flex: 1; min-height: 32px; width: 0; padding: 4px; font-size: 12px; }
+  #games-catalog-count { font-size: 11px; }
+  /* 手機沿用相同表格與文字清單，只把三欄依序排成一欄。 */
+  .games-catalog { font-size: 16px; }
+  .games-table, .games-table tbody, .games-table tr { display: block; width: 100%; }
+  .catalog-column { display: block; width: 100%; border: 0; padding: 12px; }
+  .catalog-column ~ .catalog-column { border-top: 1px solid #000; }
+  .game-category { margin-bottom: 16px; }
+  .game-category h2 { font-size: 20px; }
+  .game-links > a { margin: 4px 0; line-height: 1.3; }
+  .link-text { white-space: normal; overflow-wrap: anywhere; line-height: 1.3; }
+  #games-settings-button, #lang-toggle-btn { top: max(12px, env(safe-area-inset-top)); }
+  .games-settings-panel { top: 0; left: 0; width: 100%; height: 100dvh; max-height: none; border: 0; border-radius: 0; padding: 0 14px calc(24px + env(safe-area-inset-bottom)); }
+  .games-settings-panel__header { margin: 0 -14px; padding: calc(12px + env(safe-area-inset-top)) 14px 12px; }
+  .games-settings-card { padding: 12px; }
+  .home-screen-layout { grid-template-columns: 46px minmax(0, 1fr); }
+  .home-screen-icon { width: 46px; height: 46px; }
+}
   </style>
-
+  <base target="_blank">
 </head>
-<base target="_blank">
 <body>
-
   <button id="games-settings-button" type="button" aria-controls="games-settings-panel" aria-expanded="false">
     <span aria-hidden="true">⚙</span>
     <span class="visually-hidden">開啟設定</span>
@@ -799,6 +558,28 @@
       <button id="games-settings-close" class="games-settings-close" type="button" aria-label="關閉設定">×</button>
     </header>
     <p class="games-settings-panel__intro">桌布、遊戲連結與主畫面捷徑都可在這裡管理；個人設定只保存在目前裝置的瀏覽器。</p>
+
+    <!-- 隱藏只影響本裝置的顯示，原始連結仍留在下方 HTML。 -->
+    <section class="games-settings-card" aria-labelledby="games-visibility-title">
+      <h3 id="games-visibility-title">連線檢查與隱藏</h3>
+      <p class="games-settings-description">需要時按「檢查一次」，不會在開啟頁面或背景自動檢查。超過 3 秒標示回應較慢，8 秒仍沒有回應就停止等待並標示逾時。</p>
+      <label class="settings-check"><input id="games-auto-hide" type="checkbox" checked> 檢查後隱藏連續兩次失敗的連結</label>
+      <details class="availability-note"><summary>哪些情況無法判斷？</summary><p>這裡只測第一次回應，無法測完整遊戲載入時間。網站先回傳頁面、之後卡住，或回傳登入頁、封鎖提示頁時，仍需直接開啟確認。較慢、逾時和無法判定的連結會列出來，由你決定是否隱藏；圖片載入失敗不代表網站無法訪問。</p></details>
+      <div class="games-settings-actions">
+        <button id="games-check-now" class="games-settings-action games-settings-action--primary" type="button">檢查一次</button>
+        <button id="games-reset-visibility" class="games-settings-action games-settings-action--secondary" type="button">清除手動隱藏與顯示偏好</button>
+      </div>
+      <p id="games-check-status" class="settings-status" role="status" aria-live="polite"></p>
+      <p id="games-availability-summary" class="games-settings-description" aria-live="polite"></p>
+      <div id="games-review-results" hidden>
+        <h4>需要確認的連結</h4>
+        <ul id="games-check-results" class="hidden-links-list"></ul>
+      </div>
+      <p class="games-settings-description">隱藏的連結會從主頁移除，只在下方清單保留入口；按「恢復顯示」才會回到主頁。</p>
+      <h4>已隱藏的連結（<span id="games-hidden-count">0</span>）</h4>
+      <ul id="games-hidden-list" class="hidden-links-list"></ul>
+      <p id="games-hidden-empty" class="games-settings-description">目前沒有隱藏的連結。</p>
+    </section>
 
     <section class="games-settings-card" aria-labelledby="games-wallpaper-title">
       <h3 id="games-wallpaper-title">頁面桌布</h3>
@@ -837,12 +618,13 @@
         </div>
 
         <div class="link-image-preview-row">
-          <img id="games-link-image-preview" alt="連結圖示預覽" hidden>
+          <img id="games-link-image-preview" alt="" hidden>
           <span id="games-link-image-preview-text">未指定圖片時，會使用網站圖示。</span>
         </div>
 
         <div class="games-settings-actions">
           <button class="games-settings-action games-settings-action--primary" type="submit">儲存變更</button>
+          <button id="games-link-hide" class="games-settings-action games-settings-action--secondary" type="button">隱藏此連結</button>
           <button id="games-link-restore" class="games-settings-action games-settings-action--secondary" type="button">還原此原始連結</button>
           <button id="games-link-delete" class="games-settings-action games-settings-action--danger" type="button" hidden>刪除此自訂連結</button>
         </div>
@@ -856,7 +638,7 @@
 
       <hr class="settings-divider">
       <h4>新增我的連結</h4>
-      <p class="games-settings-description">新增後會出現在頁面下方的「我的連結」，之後仍可從上方選單編輯或刪除。</p>
+      <p class="games-settings-description">新增後會出現在貓咪大戰爭上方的「我的連結」，之後仍可從上方選單編輯或刪除。</p>
       <form id="games-link-add-form">
         <label for="games-new-link-label">顯示名稱</label>
         <input id="games-new-link-label" type="text" maxlength="100" required autocomplete="off" placeholder="例如：我的遊戲">
@@ -875,7 +657,7 @@
         </div>
 
         <div class="link-image-preview-row">
-          <img id="games-new-link-image-preview" alt="新連結圖示預覽" hidden>
+          <img id="games-new-link-image-preview" alt="" hidden>
           <span id="games-new-link-image-preview-text">未指定圖片時，會使用網站圖示。</span>
         </div>
 
@@ -904,1280 +686,1729 @@
     </section>
   </aside>
 
-  <button id="lang-toggle-btn">
-    <img src="https://img.icons8.com/color/512/google-translate.png" alt="Language Toggle">
-  </button>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // 標題和固定文字的翻譯對應
-        const translations = {
-            'Playables': { 'zh': '遊戲角落', 'en': 'Playables' },
-            'Gaming Platform': { 'zh': '遊戲平台', 'en': 'Gaming Platform' },
-            'Gun Games': { 'zh': '射擊遊戲', 'en': 'Gun Games' },
-            'Single-player game': { 'zh': '單人遊戲', 'en': 'Single-player game' },
-            'The Battle Cats': { 'zh': '貓咪大戰爭', 'en': 'The Battle Cats' },
-            'Other': { 'zh': '其他', 'en': 'Other' },
-            'Sudoku': { 'zh': '數獨', 'en': 'Sudoku' },
-            'Classic': { 'zh': '經典', 'en': 'Classic' },
-            'Killer': { 'zh': '殺手', 'en': 'Killer' },
-            'Universe': { 'zh': '宇宙', 'en': 'Universe' },
-            '寶可夢圖鑑': { 'zh': '寶可夢圖鑑', 'en': 'Pokedex' },
-            '排位': { 'zh': '排位', 'en': 'Rank' },
-            '壁紙': { 'zh': '壁紙', 'en': 'Wallpaper' },
-            '我的戰場': { 'zh': '我的戰場', 'en': 'Craftland' },
-            'Free Fire': { 'zh': 'Free Fire', 'en': 'Free Fire'},
-            'Puzzle Game': { 'zh': '益智遊戲', 'en': 'Puzzle Game' },
-        };
+  <button id="lang-toggle-btn" type="button" aria-label="切換中英文 / Switch language">中 / EN</button>
 
-        // 核心的語言應用函數
-        function applyLanguage(langCode) {
-            // 處理特製化連結 (雙語名字)
-            document.querySelectorAll('.雙語名字').forEach(link => {
-                if (langCode === 'zh') {
-                    const zhHref = link.getAttribute('data-zh-href');
-                    if (zhHref) {
-                        link.href = zhHref;
-                    }
-                } else { // 英文模式
-                    const enHref = link.getAttribute('data-en-href');
-                    if (enHref) {
-                        link.href = enHref;
-                    }
-                }
-                // 處理連結文字的翻譯，目標是內部 span
-                const originalText = link.getAttribute('data-original-text');
-                const linkTextSpan = link.querySelector('.link-text'); // 查找 .link-text span
-                if (originalText && translations[originalText] && linkTextSpan) {
-                    linkTextSpan.textContent = translations[originalText][langCode];
-                }
-            });
+  <header class="games-header">
+    <h1>Games</h1>
+    <div class="catalog-toolbar">
+      <label class="visually-hidden" for="games-category-filter">瀏覽分類</label>
+      <select id="games-category-filter"><option value="all">所有分類</option></select>
+      <span id="games-catalog-count" aria-live="polite"></span>
+    </div>
+  </header>
 
-            // 更新標題
-            document.querySelectorAll('.section-title').forEach(titleElement => {
-                const originalText = titleElement.getAttribute('data-original-text');
-                if (originalText && translations[originalText]) {
-                    titleElement.textContent = translations[originalText][langCode];
-                }
-            });
+  <!--
+    日後新增：複製一個 <a>，填入唯一 data-link-id、href 與顯示文字。
+    data-icon 可指定圖片；不填會嘗試自動圖示，失敗只留方形空位。
+    data-zh-href / data-en-href：可選的中英文網址。
+    data-zh-label / data-en-label：可選的中英文名稱。
+    original-001 ～ original-059 為舊版固定 ID，請勿重編，避免既有個人設定對錯連結。
+    調整分類：移動整個 section；調整連結：移動整個 a。玩家專用資源收在 category-details 內；一般遊戲直接顯示。
+  -->
+  <main id="games-catalog" class="games-catalog">
+    <!-- 桌機：三欄緊湊表格。手機：同一份內容依欄位順序排成單欄。 -->
+    <table class="games-table" role="presentation">
+      <tbody>
+        <tr>
+          <!-- 第 1 欄：可搬動整個 section 來調整分類。 -->
+          <td class="catalog-column">
+            <!-- 多人與派對：移動下方整個 <a> 即可調整連結順序。 -->
+            <section class="game-category" id="category-party" aria-labelledby="heading-party">
+              <h2 id="heading-party" data-zh-label="多人與派對" data-en-label="Multiplayer &amp; Party">多人與派對</h2>
+              <div class="game-links">
+                <a data-link-id="original-030" href="https://garticphone.com/">Gartic Phone</a>
+                <a data-link-id="original-026" href="https://www.worldguessr.com/">World Guessr</a>
+                <a data-link-id="original-025" href="https://quickdraw.withgoogle.com/">Quick Draw</a>
+                <a data-link-id="original-029" href="https://paperio.site/">Paper</a>
+                <a data-link-id="original-014" href="https://agargame.io/hot-games" data-icon="https://agargame.io/cache/data/image/options/agar-io-logo1-m144x144.png">Agar.io</a>
+                <a data-link-id="original-004" href="https://Roblox.com" data-icon="https://images.rbxcdn.com/7c5fe83dffa97250aaddd54178900ea7.png">Roblox</a>
+              </div>
+            </section>
 
-            // 更新 Sudoku 連結的顯示文字
-            const sudokuSpan = document.getElementById('sudoku-links');
-            if (sudokuSpan) {
-                // 改用 data-original-text 來選取連結
-                const classicLink = sudokuSpan.querySelector('a[data-original-text="Classic"]');
-                const killerLink = sudokuSpan.querySelector('a[data-original-text="Killer"]');
+            <!-- 遊戲平台：移動下方整個 <a> 即可調整連結順序。 -->
+            <section class="game-category" id="category-platforms" aria-labelledby="heading-platforms">
+              <h2 id="heading-platforms" data-zh-label="遊戲平台" data-en-label="Game Collections">遊戲平台</h2>
+              <div class="game-links">
+                <a data-link-id="original-007" href="https://poki.com/">Poki</a>
+                <a data-link-id="original-006" href="https://www.crazygames.com/" data-icon="https://imgs.crazygames.com/favicons/favicon-transparent.png">Crazy Games</a>
+                <a data-link-id="i-gamer" href="https://www.i-gamer.net/" data-zh-label="遊戲天堂" data-en-label="i-Gamer">遊戲天堂</a>
+                <a data-link-id="hueseek" href="https://hueseek.cn/">HueSeek</a>
+                <a data-link-id="original-001" href="https://www.youtube.com/playables" data-zh-label="遊戲角落" data-en-label="Playables">遊戲角落</a>
+                <a data-link-id="original-005" href="https://sites.google.com/site/populardoodlegames">Google Doodles Game</a>
+                <a data-link-id="original-009" href="https://kuioo.tw/" data-zh-href="https://kuioo.tw/" data-en-href="https://kuioo.com">Kuioo</a>
+                <a data-link-id="original-003" href="https://www.msn.com/zh-tw/play" data-zh-href="https://www.msn.com/zh-tw/play" data-en-href="https://www.msn.com/en-xl/play">MSN</a>
+                <a data-link-id="original-002" href="https://www.facebook.com/gaming/play/">Facebook Gaming</a>
+                <a data-link-id="original-015" href="https://gamebol.com/">Gamebol</a>
+                <a data-link-id="original-008" href="https://g123.jp/">G123</a>
+                <a data-link-id="original-013" href="https://gameforge.com">Gameforge</a>
+              </div>
+            </section>
 
-                if (classicLink && killerLink) { // 確保連結存在
-                    const classicOriginalText = classicLink.getAttribute('data-original-text');
-                    const killerOriginalText = killerLink.getAttribute('data-original-text');
-                    const sudokuTitleOriginalText = sudokuSpan.querySelector('b').getAttribute('data-original-text');
+            <!-- 懷舊與模擬：移動下方整個 <a> 即可調整連結順序。 -->
+            <section class="game-category" id="category-retro" aria-labelledby="heading-retro">
+              <h2 id="heading-retro" data-zh-label="懷舊與模擬" data-en-label="Retro &amp; Emulation">懷舊與模擬</h2>
+              <div class="game-links">
+                <a data-link-id="original-010" href="https://classicgamezone.com/">Retro Games</a>
+                <a data-link-id="original-012" href="https://zaixianwan.app/" data-icon="https://zaixianwan.app/pwa-192x192.png">老遊戲在線玩</a>
+                <a data-link-id="original-016" href="https://emupedia.net/beta/">Emupedia</a>
+              </div>
+            </section>
+          </td>
+          <!-- 第 2 欄：可搬動整個 section 來調整分類。 -->
+          <td class="catalog-column">
+            <!-- 益智與解謎：移動下方整個 <a> 即可調整連結順序。 -->
+            <section class="game-category" id="category-puzzles" aria-labelledby="heading-puzzles">
+              <h2 id="heading-puzzles" data-zh-label="益智與解謎" data-en-label="Puzzles &amp; Logic">益智與解謎</h2>
+              <div class="game-links">
+                <a data-link-id="original-033" href="骨牌區域遊戲.html" data-zh-label="骨牌區域遊戲" data-en-label="Domino Regions">骨牌區域遊戲</a>
+                <a data-link-id="jigsaw-planet" href="https://www.jigsawplanet.com/" data-zh-label="Jigsaw Planet 拼圖" data-en-label="Jigsaw Planet">Jigsaw Planet 拼圖</a>
+                <div class="link-group link-group--variants">
+                  <span class="link-group-label" data-zh-label="數獨" data-en-label="Sudoku">數獨</span>
+                  <a class="link-branch" data-link-context="數獨" data-link-id="original-043" href="https://sudoku.com/" data-zh-label="經典" data-en-label="Classic">經典</a>
+                  <a class="link-branch" data-link-context="數獨" data-link-id="original-044" href="https://sudoku.com/killer/" data-zh-label="殺手" data-en-label="Killer">殺手</a>
+                </div>
+                <a data-link-id="original-031" href="https://hex.frvr.com/" data-icon="https://m.media-amazon.com/images/I/71J9hUa5wML.png">Hex FRVR</a>
+                <a data-link-id="original-042" href="https://kbhgames.com/game/her-trees">Her Trees - The Puzzle House</a>
+                <a data-link-id="original-024" href="https://www.google.com/logos/2024/moon/r3/moon.html" data-icon="https://www.gstatic.com/marketing-cms/73/c1/bcf7a6274cadb0fd07d2efb588cd/screenshot-2024-10-22-4-50-44-pm.png">Rise of the Half Moon</a>
+                <a data-link-id="original-041" href="https://www.nytimes.com/game">NYTimes</a>
+                <a data-link-id="original-011" href="https://www.jxgame.net/" data-zh-label="精選益智小遊戲" data-en-label="JX Game" data-icon="https://www.jxgame.net/skin/icon-32.png">精選益智小遊戲</a>
+              </div>
+            </section>
 
-                    let sudokuTitleText = sudokuTitleOriginalText;
-                    let classicLinkText = classicOriginalText;
-                    let killerLinkText = killerOriginalText;
+            <!-- 棋盤與紙牌：移動下方整個 <a> 即可調整連結順序。 -->
+            <section class="game-category" id="category-board" aria-labelledby="heading-board">
+              <h2 id="heading-board" data-zh-label="棋盤與紙牌" data-en-label="Board &amp; Card Games">棋盤與紙牌</h2>
+              <div class="game-links">
+                <a data-link-id="original-036" href="https://www.chess.com/" data-icon="https://www.chess.com/bundles/web/favicons/favicon.5d6cb047.svg">Chess</a>
+                <div class="link-group">
+                  <a data-link-id="original-037" href="https://lichess.org/">Lichess</a>
+                  <a class="link-branch" data-link-context="Lichess" data-link-id="original-038" href="https://lichess.org/training" data-zh-label="謎題" data-en-label="Puzzles">謎題</a>
+                </div>
+                <a data-link-id="original-035" href="黑白棋 .html" data-zh-label="黑白棋 Reversi" data-en-label="Reversi" data-icon="黑白棋 icon.png">黑白棋 Reversi</a>
+                <a data-link-id="original-034" href="http://www.solitaired.com" data-icon="https://solitaired.com/images/logo.png">Solitaired</a>
+                <a data-link-id="original-039" href="https://wintrchess.com/analysis">Wintrchess</a>
+                <a data-link-id="original-040" href="https://www.chessigma.com/">Chessigma</a>
+              </div>
+            </section>
 
-                    if (translations[sudokuTitleOriginalText]) {
-                        sudokuTitleText = translations[sudokuTitleOriginalText][langCode];
-                    }
-                    if (translations[classicOriginalText]) {
-                        classicLinkText = translations[classicOriginalText][langCode];
-                    }
-                    if (translations[killerOriginalText]) {
-                        killerLinkText = translations[killerOriginalText][langCode];
-                    }
+            <!-- 動作、射擊與放置：移動下方整個 <a> 即可調整連結順序。 -->
+            <section class="game-category" id="category-action" aria-labelledby="heading-action">
+              <h2 id="heading-action" data-zh-label="動作、射擊與放置" data-en-label="Action, Shooters &amp; Idle">動作、射擊與放置</h2>
+              <div class="game-links">
+                <a data-link-id="original-027" href="https://player03.com/run/3/beta/" data-icon="https://player03.com/run/3/beta/favicon.png">Run 3</a>
+                <a data-link-id="original-028" href="https://poki.com/en/g/level-devil" data-icon="https://img.gamedistribution.com/3ffc5c0944f54f06afb212ca7d80bb00-512x512.jpg">Level Devil</a>
+                <a data-link-id="original-020" href="https://deadshot.io/">DEADSHOT</a>
+                <a data-link-id="original-021" href="https://venge.io">VENGE.io</a>
+                <a data-link-id="original-022" href="https://shellshock.io" data-icon="https://shellshock.io/favicon192.png">Shell Shockers</a>
+                <a data-link-id="plants-zombies" href="https://game.moe.ms/" data-zh-label="植物大戰殭屍" data-en-label="Plants vs. Zombies">植物大戰殭屍</a>
+                <a data-link-id="original-023" href="https://orteil.dashnet.org/cookieclicker/" data-icon="https://cdn.dashnet.org/cookieclicker/img/perfectCookie.png">Cookie Clicker</a>
+              </div>
+            </section>
+          </td>
+          <!-- 第 3 欄：可搬動整個 section 來調整分類。 -->
+          <td class="catalog-column">
+            <!-- 程式與學習：移動下方整個 <a> 即可調整連結順序。 -->
+            <section class="game-category" id="category-learning" aria-labelledby="heading-learning">
+              <h2 id="heading-learning" data-zh-label="程式與學習" data-en-label="Create &amp; Learn">程式與學習</h2>
+              <div class="game-links">
+                <a data-link-id="vex-vr" href="https://vr.vex.com/">VEXcode VR</a>
+                <a data-link-id="original-017" href="https://scratch.mit.edu/" data-icon="https://upload.wikimedia.org/wikipedia/commons/7/75/Scratch.logo.S.png">Scratch</a>
+                <a data-link-id="original-018" href="https://packager.turbowarp.org/">Scratch to html</a>
+                <a data-link-id="original-019" href="https://stretch3.github.io/">Stretch3</a>
+                <a data-link-id="original-032" href="https://www.edclub.com/sportal/program-3.game">Edclub</a>
+              </div>
+            </section>
 
-                    // 直接更新文字內容，而不是重新設置 innerHTML
-                    sudokuSpan.querySelector('b[data-original-text="Sudoku"]').textContent = sudokuTitleText;
-                    classicLink.textContent = classicLinkText;
-                    killerLink.textContent = killerLinkText;
-                }
-            }
+            <!-- 個人連結與其他分類一樣排列，固定放在貓咪大戰爭之前。 -->
+            <section id="custom-games-section" class="game-category custom-games-section" aria-labelledby="custom-games-title" hidden>
+              <h2 id="custom-games-title" data-zh-label="我的連結" data-en-label="My links">我的連結</h2>
+              <div id="custom-games-list" class="game-links custom-games-list"></div>
+            </section>
+
+            <!-- 玩家資源預設收合。同一 data-collapse-group 一次只展開一組。
+                 官網藏在標題：單擊收合、雙擊開啟；原有連結 ID 保持不變。 -->
+            <section class="game-category" id="category-battlecats" aria-labelledby="heading-battlecats" data-collapse-group="player-resources">
+              <div class="category-heading">
+                <h2 id="heading-battlecats">
+                  <a id="battlecats-title" class="category-title-link" data-category-toggle aria-controls="battlecats-details" aria-expanded="false" data-link-id="battlecats-official" href="https://battlecats.club/tw/" data-zh-href="https://battlecats.club/tw/" data-en-href="https://battlecats.club/en" data-zh-label="貓咪大戰爭" data-en-label="The Battle Cats" data-icon="https://battlecats.club/wp-content/themes/nyanko/img/index/icon_x@3x.png" title="單擊展開／收合；雙擊開啟官網">貓咪大戰爭</a>
+                  <!-- 官網被隱藏時，仍保留可收合的標題，供其他攻略連結使用。 -->
+                  <button class="category-title-fallback" type="button" data-category-toggle aria-controls="battlecats-details" aria-expanded="false" hidden></button>
+                </h2>
+                <button id="toggle-battlecats-btn" class="category-toggle" type="button" data-category-toggle aria-controls="battlecats-details" aria-expanded="false" aria-label="展開貓咪大戰爭"><span class="category-arrow" aria-hidden="true">▶</span></button>
+              </div>
+              <div id="battlecats-details" class="game-links category-details" hidden>
+                <a data-link-id="original-045" href="https://battlecats-db.com/">超絕攻略網</a>
+                <a data-link-id="original-046" href="https://battlecatsinfo.github.io">貓咪大戰爭中文資訊網站</a>
+                <a data-link-id="original-047" href="https://forum.gamer.com.tw/G1.php?bsn=23772&amp;parent=0" data-icon="https://i2.bahamut.com.tw/favicon.svg">巴哈姆特-根目錄</a>
+                <a data-link-id="original-048" href="https://battle-cats.fandom.com/">The Battle Cats Wiki</a>
+                <a data-link-id="original-049" href="https://wikiwiki.jp/bccharadata/">History</a>
+                <a data-link-id="original-050" href="https://jarjarblink.github.io/INFORMANT/" data-icon="https://jarjarblink.github.io/INFORMANT/static/favicon.ico">更新日誌</a>
+                <a data-link-id="original-051" href="https://jarjarblink.github.io/JDB/" data-icon="https://jarjarblink.github.io/JDB/static/favicon.ico">JAR角色資料</a>
+                <a data-link-id="original-052" href="https://internet-coffee.github.io/GrandAbyss_Calculator/">迷宮計算器</a>
+              </div>
+            </section>
+
+            <!-- 攻略與遊戲內工具收在箭頭下，官網保留在標題內。 -->
+            <section class="game-category" id="category-freefire" aria-labelledby="heading-freefire" data-collapse-group="player-resources">
+              <div class="category-heading">
+                <h2 id="heading-freefire">
+                  <a id="freefire-title" class="category-title-link" data-category-toggle aria-controls="freefire-details" aria-expanded="false" data-link-id="freefire-official" href="https://ff.garena.com/zh" data-zh-href="https://ff.garena.com/zh" data-en-href="https://ff.garena.com/en" data-zh-label="Free Fire" data-en-label="Free Fire" data-icon="https://static.wikia.nocookie.net/garena-freefire/images/a/a9/GarenaFreeFire_WonderLand.png" title="單擊展開／收合；雙擊開啟官網">Free Fire</a>
+                  <button class="category-title-fallback" type="button" data-category-toggle aria-controls="freefire-details" aria-expanded="false" hidden></button>
+                </h2>
+                <button id="toggle-freefire-btn" class="category-toggle" type="button" data-category-toggle aria-controls="freefire-details" aria-expanded="false" aria-label="展開 Free Fire"><span class="category-arrow" aria-hidden="true">▶</span></button>
+              </div>
+              <div id="freefire-details" class="game-links category-details" hidden>
+                <a data-link-id="original-053" href="https://garenafreefire.fandom.com/wiki/Free_Fire_Wiki">Free Fire Wiki</a>
+                <a data-link-id="original-054" href="https://ff.garena.com/zh/wallpaper" data-zh-href="https://ff.garena.com/zh/wallpaper" data-en-href="https://ff.garena.com/en/wallpaper" data-zh-label="Free Fire 桌布" data-en-label="Free Fire Wallpaper">Free Fire 桌布</a>
+                <a data-link-id="original-055" href="https://rankguide.sea.freefiremobile.com/?lang=zh-tw" data-zh-href="https://rankguide.sea.freefiremobile.com/?lang=zh-tw" data-en-href="https://rankguide.sea.freefiremobile.com/?lang=en" data-zh-label="排位指南" data-en-label="Rank Guide">排位指南</a>
+                <a data-link-id="original-056" href="https://ffcraftland.garena.com/" data-zh-label="我的戰場" data-en-label="Craftland">我的戰場</a>
+                <a data-link-id="original-057" href="https://ff.garena.com/universe/zh" data-zh-href="https://ff.garena.com/universe/zh" data-en-href="https://ff.garena.com/universe/en" data-zh-label="Free Fire 宇宙" data-en-label="Free Fire Universe">Free Fire 宇宙</a>
+              </div>
+            </section>
+
+            <!-- 其他特定遊戲玩家會用到的圖鑑、譜面等資源，也預設收合。 -->
+            <section class="game-category" id="category-resources" aria-labelledby="heading-resources" data-collapse-group="player-resources">
+              <div class="category-heading">
+                <h2 id="heading-resources"><button class="category-title-toggle" type="button" data-category-toggle aria-controls="other-details" aria-expanded="false"><span data-zh-label="圖鑑與遊戲資源" data-en-label="Game Resources">圖鑑與遊戲資源</span></button></h2>
+                <button id="toggle-other-btn" class="category-toggle" type="button" data-category-toggle aria-controls="other-details" aria-expanded="false" aria-label="展開圖鑑與遊戲資源"><span class="category-arrow" aria-hidden="true">▶</span></button>
+              </div>
+              <div id="other-details" class="game-links category-details" hidden>
+                <a data-link-id="original-059" href="https://tw.portal-pokemon.com/play/pokedex" data-zh-href="https://tw.portal-pokemon.com/play/pokedex" data-en-href="https://www.pokemon.com/us/pokedex" data-zh-label="寶可夢圖鑑" data-en-label="Pokédex" data-icon="https://png.pngtree.com/png-clipart/20240404/original/pngtree-3d-pokemon-ball-png-image_14754359.png">寶可夢圖鑑</a>
+                <a data-link-id="original-058" href="https://beatsaver.com/">Beat Saver</a>
+              </div>
+            </section>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+  </main>
+  <p id="games-catalog-empty" class="catalog-empty" hidden>此分類的連結目前都已隱藏。可到設定查看並重新檢查。</p>
+  <noscript><p class="catalog-empty">啟用 JavaScript 後即可使用分類篩選、設定與手動連線檢查。</p></noscript>
+<!-- ④ 功能程式。連結清單仍在上方 HTML，不必到 JavaScript 裡找網址。 -->
+
+<script id="games-catalog-script">
+/*
+ * 頁面共用功能：語言、分類、玩家資源收合、圖示。
+ * 連結清單直接編輯 Games.html，這裡不保存網站清單或封鎖名單。
+ */
+(() => {
+  'use strict';
+
+  function getLanguage() {
+    try { return localStorage.getItem('userLang') === 'en' ? 'en' : 'zh'; }
+    catch { return 'zh'; }
+  }
+
+
+  // 設定介面的中英文對照集中在這裡；連結名稱與使用者輸入不套用翻譯。
+  const interfaceTranslations = {
+  "Games 設定": "Games settings",
+  "開啟設定": "Open settings",
+  "關閉設定": "Close settings",
+  "桌布、遊戲連結與主畫面捷徑都可在這裡管理；個人設定只保存在目前裝置的瀏覽器。": "Manage your wallpaper, links, and home screen shortcut here. Your preferences are saved only in this browser.",
+  "連線檢查與隱藏": "Connection checks and hidden links",
+  "需要時按「檢查一次」，不會在開啟頁面或背景自動檢查。超過 3 秒標示回應較慢，8 秒仍沒有回應就停止等待並標示逾時。": "Click “Check once” when needed. Checks never start automatically or run on a schedule. Responses taking over 3 seconds are marked slow; requests time out after 8 seconds.",
+  "檢查後隱藏連續兩次失敗的連結": "Hide links after two failed attempts",
+  "哪些情況無法判斷？": "What cannot be checked?",
+  "這裡只測第一次回應，無法測完整遊戲載入時間。網站先回傳頁面、之後卡住，或回傳登入頁、封鎖提示頁時，仍需直接開啟確認。較慢、逾時和無法判定的連結會列出來，由你決定是否隱藏；圖片載入失敗不代表網站無法訪問。": "This checks the initial response, not the time needed to load the whole game. A site may respond with a login or blocked page, or get stuck later. Open it to confirm. Slow, timed-out, and uncertain links are listed for you to review. A missing icon does not mean the site is unavailable.",
+  "檢查一次": "Check once",
+  "停止檢查": "Stop checking",
+  "再測一次": "Check again",
+  "清除手動隱藏與顯示偏好": "Clear visibility preferences",
+  "需要確認的連結": "Links to review",
+  "隱藏的連結會從主頁移除，只在下方清單保留入口；按「恢復顯示」才會回到主頁。": "Hidden links disappear from the main page. You can access them below or click “Restore” to show them again.",
+  "已隱藏的連結（": "Hidden links (",
+  "）": ")",
+  "目前沒有隱藏的連結。": "There are no hidden links.",
+  "頁面桌布": "Wallpaper",
+  "從相簿或裝置選擇圖片。圖片不會上傳，最大 20 MB。": "Choose an image from your device. Images are not uploaded. Maximum size: 20 MB.",
+  "目前桌布預覽": "Current wallpaper preview",
+  "桌布預覽": "Wallpaper preview",
+  "選擇圖片": "Choose image",
+  "恢復預設桌布": "Reset wallpaper",
+  "連結與圖片": "Links and images",
+  "選擇原有或自訂連結後，可替換名稱、網址與圖示。圖片網址留白時會嘗試顯示該網站的圖示。": "Select a link to change its name, URL, or icon. Leave the image URL blank to use the website’s icon.",
+  "選擇要編輯的連結": "Choose a link to edit",
+  "顯示名稱": "Display name",
+  "連結網址": "Link URL",
+  "圖片網址": "Image URL",
+  "圖片網址（可留白）": "Image URL (optional)",
+  "從裝置選圖": "Choose from device",
+  "移除裝置圖片": "Remove device image",
+  "也可以選擇手機相簿或裝置中的圖片。": "You can also choose an image from your phone or device.",
+  "未指定圖片時，會使用網站圖示。": "The website icon is used when no image is specified.",
+  "儲存變更": "Save changes",
+  "隱藏此連結": "Hide this link",
+  "恢復顯示此連結": "Restore this link",
+  "恢復顯示": "Restore",
+  "還原此原始連結": "Reset this original link",
+  "刪除此自訂連結": "Delete this custom link",
+  "網站原本的連結可以編輯與還原，但不能刪除。": "Original links can be edited and reset, but cannot be deleted.",
+  "還原全部原始連結": "Reset all original links",
+  "新增我的連結": "Add a personal link",
+  "我的連結": "My links",
+  "新增後會出現在貓咪大戰爭上方的「我的連結」，之後仍可從上方選單編輯或刪除。": "New links appear in “My links” above The Battle Cats. You can edit or delete them using the selector above.",
+  "例如：我的遊戲": "For example: My game",
+  "新增連結": "Add link",
+  "Games 主畫面圖示": "Games home screen icon",
+  "加入 iPhone／iPad 主畫面": "Add to your iPhone/iPad home screen",
+  "請使用 Safari 開啟本頁，再依序操作：": "Open this page in Safari, then:",
+  "點 Safari 的「分享」按鈕": "Tap Safari’s Share button",
+  "選擇「加入主畫面」": "Choose Add to Home Screen",
+  "確認名稱後點「加入」": "Confirm the name and tap Add",
+  "正在檢查…": "Checking…",
+  "安裝 Games": "Install Games",
+  "瀏覽分類": "Browse categories",
+  "此分類的連結目前都已隱藏。可到設定查看並重新檢查。": "All links in this category are hidden. View or check them in settings.",
+  "已從主畫面開啟": "Opened from the home screen",
+  "可從 Safari 加入主畫面": "Use Safari to add to your home screen",
+  "請改用 Safari 加入主畫面": "Use Safari to add to your home screen",
+  "這台裝置可直接安裝": "Installation is available on this device",
+  "可從瀏覽器選單加入主畫面": "Add to your home screen from the browser menu",
+  "瀏覽器的本機儲存空間不足，請改用較小的圖片或移除部分自訂連結。": "Browser storage is full. Use a smaller image or remove some custom links.",
+  "請選擇圖片檔案。": "Please choose an image file.",
+  "連結圖片不可超過 12 MB。": "Link images must be 12 MB or smaller.",
+  "無法讀取圖片尺寸。": "Could not read the image dimensions.",
+  "這個瀏覽器無法處理圖片。": "This browser cannot process images.",
+  "無法轉換這張圖片。": "Could not convert this image.",
+  "無法開啟這張圖片。": "Could not open this image.",
+  "這個網址沒有可預覽的自動網站圖示。": "No automatic icon preview is available for this URL.",
+  "自訂圖片預覽": "Custom image preview",
+  "自動網站圖示預覽": "Website icon preview",
+  "自訂圖片無法載入，將改用網站圖示。": "The custom image could not load. Using the website icon instead.",
+  "圖示無法載入時保留方形空位。": "A blank square is kept when the icon cannot load.",
+  "圖片不可超過 20 MB。": "Images must be 20 MB or smaller.",
+  "正在保存桌布…": "Saving wallpaper…",
+  "桌布已保存並套用。": "Wallpaper saved and applied.",
+  "桌布已暫時套用，但這個瀏覽器無法永久保存。": "Wallpaper applied for this session; this browser could not save it.",
+  "已恢復預設桌布。": "Default wallpaper restored.",
+  "正在使用這台裝置保存的自訂桌布。": "Using the wallpaper saved on this device.",
+  "目前使用預設桌布。": "Using the default wallpaper.",
+  "網站原有連結（不可刪除）": "Original links (cannot be deleted)",
+  "目前使用儲存在此裝置的圖片。": "Using an image saved on this device.",
+  "這是你新增的連結，可以編輯或刪除。": "This is a custom link. You can edit or delete it.",
+  "正在縮小並處理圖片…": "Resizing and processing the image…",
+  "無法處理這張圖片。": "Could not process this image.",
+  "已移除裝置圖片；儲存後會改用圖片網址或網站圖示。": "Device image removed. Save to use the image URL or website icon.",
+  "已改用圖片網址；也可以重新從裝置選圖。": "Using the image URL. You can choose another image from your device.",
+  "請填寫顯示名稱。": "Please enter a display name.",
+  "找不到要編輯的連結。": "The selected link could not be found.",
+  "連結、名稱與圖片設定已保存。": "Link, name, and image settings saved.",
+  "無法儲存這個連結。": "Could not save this link.",
+  "自訂連結已刪除。": "Custom link deleted.",
+  "目前沒有修改過的原始連結。": "No original links have been changed.",
+  "確定要還原全部網站原有連結嗎？你新增的「我的連結」會保留。": "Reset all original links? Your personal links will be kept.",
+  "已移除裝置圖片，將改用圖片網址或網站圖示。": "Device image removed. Using the image URL or website icon.",
+  "新連結已加入貓咪大戰爭上方的「我的連結」。": "Your link was added to “My links” above The Battle Cats.",
+  "無法新增這個連結。": "Could not add this link.",
+  "網址格式無法檢查": "This URL format cannot be checked",
+  "離線或檢查已取消": "Offline or check cancelled",
+  "此類網址無法自動檢查": "This type of URL cannot be checked",
+  "此 HTTP 連結需直接開啟確認": "Open this HTTP link directly to check it",
+  "網路狀況已改變": "The network connection changed",
+  "收到回應，無法驗證內容": "Response received; content could not be verified",
+  "收到正常回應": "Response received",
+  "需直接開啟確認登入或存取限制": "Open directly to check login or access restrictions",
+  "檢查已取消或裝置離線": "Check cancelled or device offline",
+  "連線請求失敗": "Connection request failed",
+  "目前的偏好僅在本次開啟有效，瀏覽器無法保存設定。": "Preferences apply only to this session; this browser could not save them.",
+  "手動隱藏，恢復顯示後才會回到主頁。": "Hidden manually. Restore to show it on the main page.",
+  "正在確認目前的網路連線…": "Checking the current network connection…",
+  "目前離線、使用本機檔案，或無法確認網路；暫不自動隱藏。": "Offline, opened as a local file, or unable to verify the network. No links will be hidden by this check.",
+  "檢查期間網路不穩定；已清除檢查結果，需要時再按「檢查一次」。": "The network was unstable. Results were cleared. Click “Check once” when needed.",
+  "已停止檢查；需要時可再按「檢查一次」。": "Checking stopped. Click “Check once” when needed.",
+  "連結已更新；需要時再按「檢查一次」。": "Links updated. Click “Check once” when needed.",
+  "網路已恢復；需要時再按「檢查一次」。": "You are back online. Click “Check once” when needed.",
+  "裝置目前離線，已清除本次檢查結果。": "This device is offline. Check results were cleared.",
+  "尚未檢查；按「檢查一次」才會開始，可隨時停止。": "Not checked yet. Click “Check once” to start; you can stop at any time."
+};
+
+  function translateText(value) {
+    if (getLanguage() !== 'en') return value;
+    if (Object.hasOwn(interfaceTranslations, value)) return interfaceTranslations[value];
+    const patterns = [
+      [/^正在檢查目前網路… 已隱藏 (\d+) 個連結，可在設定查看。$/, (_, n) => 'Checking the network… ' + n + ' hidden links. Review them in settings.'],
+      [/^已隱藏 (\d+) 個連結 · 可在設定查看、重試或恢復顯示。$/, (_, n) => n + ' hidden links · View, recheck, or restore them in settings.'],
+      [/^正在檢查 (\d+) \/ (\d+) 個網址…$/, (_, n, total) => 'Checking ' + n + ' / ' + total + ' URLs…'],
+      [/^檢查完成：(\d+) 個連續失敗、(\d+) 個回應較慢、(\d+) 個逾時、(\d+) 個無法判定。結果僅供本次參考，不會持續檢查。$/, (_, failed, slow, timeout, unknown) => 'Check complete: ' + failed + ' failed, ' + slow + ' slow, ' + timeout + ' timed out, ' + unknown + ' uncertain. No further checks will run automatically.'],
+      [/^回應較慢（([\d.]+) 秒），需直接開啟確認$/, (_, n) => 'Slow response (' + n + ' seconds). Open directly to check.'],
+      [/^逾時（([\d.]+) 秒內沒有回應），保留連結$/, (_, n) => 'Timed out (no response within ' + n + ' seconds). Link kept.'],
+      [/^連續兩次失敗（(.+)）$/, (_, reason) => 'Two failed attempts (' + translateText(reason) + ')'],
+      [/^已準備 (\d+) × (\d+)px 的裝置圖片，請按「儲存變更」。$/, (_, w, h) => 'Image ready: ' + w + ' × ' + h + ' px. Click “Save changes”.'],
+      [/^已準備 (\d+) × (\d+)px 的裝置圖片。$/, (_, w, h) => 'Image ready: ' + w + ' × ' + h + ' px.'],
+      [/^請填寫(.+)。$/, (_, field) => 'Please enter ' + translateText(field).toLowerCase() + '.'],
+      [/^(.+)不能使用 javascript: 網址。$/, (_, field) => translateText(field) + ' cannot use a javascript: URL.'],
+      [/^(.+)格式不正確。$/, (_, field) => 'Invalid ' + translateText(field).toLowerCase() + '.'],
+      [/^(.+)只支援 http、https 或目前頁面的本機相對路徑。$/, (_, field) => translateText(field) + ' supports only HTTP, HTTPS, or a relative local path.'],
+      [/^確定要刪除「([\s\S]*)」嗎？$/, (_, name) => 'Delete “' + name + '”?'],
+      [/^開啟 ([\s\S]+)$/, (_, label) => 'Open ' + label]
+    ];
+    for (const [pattern, replace] of patterns) if (pattern.test(value)) return value.replace(pattern, replace);
+    return value;
+  }
+
+  const interfaceSources = new WeakMap();
+  let interfaceObserver;
+  function translateInterface() {
+    // 保存各段原文，切回中文時可精確還原；只觀察設定文字更新，不發出網路請求。
+    interfaceObserver?.disconnect();
+    const roots = [
+      document.getElementById('games-settings-panel'),
+      document.getElementById('games-settings-button'),
+      document.querySelector('label[for="games-category-filter"]'),
+      document.getElementById('games-catalog-empty')
+    ].filter(Boolean);
+    function translatedValue(node, key, value) {
+      let records = interfaceSources.get(node);
+      if (!records) { records = {}; interfaceSources.set(node, records); }
+      const previous = records[key];
+      const source = previous && value === previous.output ? previous.source : value;
+      const trimmed = source.trim();
+      const output = source.replace(trimmed, () => translateText(trimmed));
+      records[key] = { source, output };
+      return output;
+    }
+    for (const root of roots) {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      let node;
+      while ((node = walker.nextNode())) {
+        // 選單項目、已隱藏的連結名稱與使用者輸入均保持原文。
+        if (!node.textContent.trim() || node.parentElement.closest('option, input, textarea, .hidden-links-list a')) continue;
+        const output = translatedValue(node, 'text', node.textContent);
+        if (output !== node.textContent) node.textContent = output;
+      }
+      for (const element of [root, ...root.querySelectorAll('[placeholder], [aria-label], [title], optgroup[label], img[alt]')]) {
+        for (const attribute of ['placeholder', 'aria-label', 'title', 'label', 'alt']) {
+          if (!element.hasAttribute(attribute)) continue;
+          const value = element.getAttribute(attribute);
+          const output = translatedValue(element, attribute, value);
+          if (output !== value) element.setAttribute(attribute, output);
         }
- 
-        // 初始化語言
-        let currentLang = localStorage.getItem('userLang') || (navigator.language.startsWith('zh') ? 'zh' : 'en');
-
-        // Favicon 處理邏輯，獨立成函數方便調用
-        function processFavicons() {
-            document.querySelectorAll('favicon').forEach(tag => {
-                const parentLink = tag.closest('a');
-                if (parentLink) {
-                    parentLink.setAttribute('target', '_blank');
-
-                    // 如果連結有 no-icon 類別，則直接移除 favicon 標籤，不生成任何圖標，並做標記
-                    if (parentLink.classList.contains('no-icon')) {
-                        tag.remove();
-                        parentLink.dataset.hasNoIcon = 'true'; // 標記為明確不想要圖標
-                        return; // 終止這個連結的處理
-                    }
-
-                    // 如果連結內部已經有 "非生成式" 的 img 標籤（即使用者提供的原始圖片），則不生成 favicon
-                    if (parentLink.querySelector('img:not(.generated-favicon)')) {
-                        tag.remove(); // 移除 favicon 佔位符
-                        return; // 終止這個連結的處理
-                    }
-                    
-                    // 標記該連結原本有 favicon 佔位符
-                    parentLink.dataset.hasFaviconPlaceholder = 'true';
-
-                    let targetUrlForFavicon = null;
-                    
-                    // 優先從 data-屬性獲取真實URL (適用於雙語連結)
-                    if (parentLink.classList.contains('雙語名字')) {
-                        targetUrlForFavicon = (currentLang === 'zh') ?
-                                                parentLink.getAttribute('data-zh-href') :
-                                                parentLink.getAttribute('data-en-href');
-                    }
-                    
-                    // 如果上述方法未能獲取到 URL，則嘗試使用 href
-                    if (!targetUrlForFavicon && parentLink.href && parentLink.href !== '#') {
-                         targetUrlForFavicon = parentLink.href;
-                    }
-
-                    let faviconOrigin = null;
-                    if (targetUrlForFavicon) {
-                        try {
-                            faviconOrigin = new URL(targetUrlForFavicon).origin;
-                        } catch (e) {
-                            faviconOrigin = null;
-                        }
-                    }
-
-                    if (faviconOrigin) {
-                        const faviconUrl = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=256&url=${faviconOrigin}`;
-                        const img = document.createElement('img');
-                        img.src = faviconUrl;
-                        img.className = 'icon-img'; // 保留原有樣式類別
-                        img.classList.add('generated-favicon'); // 新增類別以區分自動生成圖片
-                        tag.replaceWith(img);
-                    } else {
-                        tag.remove(); // 無法產生 favicon 就移除
-                    }
-                }
-            });
-        }
-
-        // 頁面載入時執行 Favicon 處理
-        processFavicons();
-        applyLanguage(currentLang);
-
-        // 語言切換按鈕事件監聽
-        const langToggleButton = document.getElementById('lang-toggle-btn');
-        if (langToggleButton) {
-            langToggleButton.addEventListener('click', function() {
-                currentLang = (currentLang === 'zh') ? 'en' : 'zh';
-                localStorage.setItem('userLang', currentLang); // 儲存語言偏好
-                applyLanguage(currentLang); // 應用新的語言，更新連結 href 和文字
-
-                // 針對那些原本有 favicon 佔位符的連結，更新其自動生成的圖標
-                document.querySelectorAll('a[data-has-favicon-placeholder="true"]').forEach(link => {
-                    // 如果這個連結明確設置了 no-icon，則不處理其圖標
-                    if (link.dataset.hasNoIcon) {
-                        return;
-                    }
-
-                    // 移除舊的自動生成圖標（如果有）
-                    const existingGeneratedFavicon = link.querySelector('.generated-favicon');
-                    if (existingGeneratedFavicon) {
-                        existingGeneratedFavicon.remove();
-                    }
-
-                    // 重新插入 <favicon> 佔位符，以便重新觸發生成邏輯
-                    // 僅在該連結沒有使用者提供的原始圖片時才重新插入
-                    if (!link.querySelector('img:not(.generated-favicon)')) {
-                        const faviconTag = document.createElement('favicon');
-                        const linkTextSpan = link.querySelector('.link-text');
-                        if (linkTextSpan) {
-                            linkTextSpan.insertAdjacentElement('beforebegin', faviconTag);
-                        } else {
-                            link.prepend(faviconTag);
-                        }
-                    }
-                });
-                
-                // 重新執行 Favicon 處理邏輯，生成新的圖標
-                processFavicons();
-            });
-        }
-
-
-        // 展開/收合按鈕通用處理（圖片切換）
-        function setupToggle(btnId, detailsId, imgId, allSections) {
-            const btn = document.getElementById(btnId);
-            const details = document.getElementById(detailsId);
-            const arrowImg = document.getElementById(imgId);
-            const collapsedImg = 'https://cdn-icons-png.flaticon.com/512/15714/15714566.png'; // 收合
-            const expandedImg = 'https://cdn-icons-png.flaticon.com/512/3416/3416111.png'; //展開
-            btn.addEventListener('click', function() {
-                const isOpening = details.style.display === 'none';
-                if (isOpening && Array.isArray(allSections)) {
-                    allSections.forEach(function(section) {
-                        if (section.details !== details) {
-                            section.details.style.display = 'none';
-                            section.arrow.src = collapsedImg;
-                        }
-                    });
-                }
-                if (isOpening) {
-                    details.style.display = 'block';
-                    arrowImg.src = expandedImg;
-                } else {
-                    details.style.display = 'none';
-                    arrowImg.src = collapsedImg;
-                }
-            });
-        }
-        const toggleSections = [
-            { details: document.getElementById('battlecats-details'), arrow: document.getElementById('battlecats-arrow') },
-            { details: document.getElementById('freefire-details'), arrow: document.getElementById('freefire-arrow') },
-            { details: document.getElementById('other-details'), arrow: document.getElementById('other-arrow') }
-        ];
-        setupToggle('toggle-battlecats-btn', 'battlecats-details', 'battlecats-arrow', toggleSections);
-        setupToggle('toggle-freefire-btn', 'freefire-details', 'freefire-arrow', toggleSections);
-        setupToggle('toggle-other-btn', 'other-details', 'other-arrow', toggleSections);
-
-        // 標題點一下展開/收合，連續雙擊（dblclick）才跳連結
-        function setupTitleClick(titleId, btnId, linkUrl, dynamicUrl) { // linkUrl 和 dynamicUrl 參數現在是備用
-            const title = document.getElementById(titleId);
-            const btn = document.getElementById(btnId);
-            if (!title) return;
-
-            title.addEventListener('click', function(e) {
-                btn.click();
-            });
-
-            title.addEventListener('dblclick', function(e) {
-                let urlToOpen = null;
-                const zhHref = title.getAttribute('data-zh-href');
-                const enHref = title.getAttribute('data-en-href');
-
-                if (currentLang === 'zh' && zhHref) {
-                    urlToOpen = zhHref;
-                } else if (currentLang === 'en' && enHref) {
-                    urlToOpen = enHref;
-                } else if (dynamicUrl) { // Fallback to dynamicUrl if provided in function call
-                    urlToOpen = dynamicUrl.replace('{lang_code}', currentLang);
-                } else if (linkUrl) { // Fallback to static linkUrl if provided in function call
-                    urlToOpen = linkUrl;
-                }
-
-                if (urlToOpen) {
-                    window.open(urlToOpen, '_blank');
-                }
-            });
-        }
-        // Battle Cats 現在透過 HTML 的 data-en-href / data-zh-href 屬性設定連結
-        setupTitleClick('battlecats-title', 'toggle-battlecats-btn'); 
-        setupTitleClick('freefire-title', 'toggle-freefire-btn', null, 'https://ff.garena.com/{lang_code}');
-        setupTitleClick('other-title', 'toggle-other-btn', null); // Other 沒有連結
+      }
+    }
+    document.getElementById('games-wallpaper-preview').dataset.emptyLabel = translateText('桌布預覽');
+    interfaceObserver ||= new MutationObserver(translateInterface);
+    for (const root of roots) interfaceObserver.observe(root, {
+      subtree: true, childList: true, characterData: true, attributes: true,
+      attributeFilter: ['placeholder', 'aria-label', 'title', 'label', 'alt']
     });
+  }
+
+  function faviconUrl(linkUrl) {
+    try {
+      const url = new URL(linkUrl, document.baseURI);
+      if (!['https:', 'http:'].includes(url.protocol) || url.origin === location.origin) return '';
+      return `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(url.hostname)}`;
+    } catch { return ''; }
+  }
+
+  function createIcon(imageUrl, linkUrl) {
+    // 方框寬高固定為 1em，跟隨文字大小；圖片失敗只留空位，不顯示替代長文字。
+    const slot = document.createElement('span');
+    slot.className = 'icon-slot';
+    slot.setAttribute('aria-hidden', 'true');
+    const source = imageUrl || faviconUrl(linkUrl);
+    if (!source) return slot;
+    const image = document.createElement('img');
+    image.className = 'icon-img';
+    image.alt = '';
+    image.loading = 'lazy';
+    image.decoding = 'async';
+    image.addEventListener('error', () => { image.style.visibility = 'hidden'; }, { once: true });
+    image.src = source;
+    slot.appendChild(image);
+    return slot;
+  }
+
+  function applyLanguage() {
+    const lang = getLanguage();
+    document.documentElement.lang = lang === 'en' ? 'en' : 'zh-TW';
+    document.querySelectorAll('#games-catalog [data-en-label], #games-catalog [data-en-href]').forEach(element => {
+      if (element.dataset.userEdited === 'true') return;
+      const label = lang === 'en' ? element.dataset.enLabel : element.dataset.zhLabel;
+      if (label) (element.querySelector('.link-text') || element).textContent = label;
+      const url = lang === 'en' ? element.dataset.enHref : element.dataset.zhHref;
+      if (url) {
+        element.setAttribute('href', url);
+        element.querySelector('.icon-slot')?.replaceWith(createIcon(element.dataset.icon, url));
+      }
+    });
+  }
+
+  function categoryLabel(category) {
+    // 官網在標題內時，只讀取一份名稱，不把備用標題或箭頭加進分類選單。
+    const title = category.querySelector('.category-title-link .link-text') || category.querySelector('h2');
+    return title.textContent.trim();
+  }
+
+  function refreshCategoryControls(category) {
+    const details = category.querySelector('.category-details');
+    if (!details) return;
+    const label = categoryLabel(category);
+    const expanded = !details.hidden;
+    const titleLink = category.querySelector('.category-title-link');
+    const fallback = category.querySelector('.category-title-fallback');
+    if (fallback) {
+      fallback.textContent = label;
+      fallback.hidden = !titleLink.hidden;
+    }
+    category.querySelectorAll('[data-category-toggle]').forEach(control => {
+      control.setAttribute('aria-expanded', String(expanded));
+      if (control.classList.contains('category-toggle')) {
+        control.setAttribute('aria-label', getLanguage() === 'en'
+          ? `${expanded ? 'Collapse' : 'Expand'} ${label}`
+          : `${expanded ? '收合' : '展開'}${label}`);
+      }
+    });
+    if (titleLink) titleLink.title = getLanguage() === 'en'
+      ? 'Click to expand/collapse; double-click to open the link (Enter opens directly)'
+      : '單擊展開／收合；雙擊開啟連結（Enter 直接開啟）';
+  }
+
+  function setCategoryExpanded(category, expanded) {
+    const details = category.querySelector('.category-details');
+    if (!details) return;
+    // 延續舊版操作：同組玩家資源一次只展開一個，其他分類不受影響。
+    if (expanded) {
+      document.querySelectorAll('.game-category[data-collapse-group]').forEach(other => {
+        if (other !== category && other.dataset.collapseGroup === category.dataset.collapseGroup) {
+          setCategoryExpanded(other, false);
+        }
+      });
+    }
+    details.hidden = !expanded;
+    refreshCategoryControls(category);
+  }
+
+  function refreshCatalog() {
+    document.querySelectorAll('.link-group').forEach(group => {
+      const links = Array.from(group.querySelectorAll('a[data-link-id]'));
+      const visible = links.filter(link => !link.hidden);
+      group.hidden = visible.length === 0;
+      visible.forEach((link, index) => { link.dataset.hasPrevious = String(index > 0); });
+    });
+    const filter = document.getElementById('games-category-filter');
+    const selected = filter.value || 'all';
+    const categories = Array.from(document.querySelectorAll('.game-category'));
+    const options = [new Option(getLanguage() === 'en' ? 'All categories' : '所有分類', 'all')];
+    let visibleCount = 0;
+    categories.forEach(category => {
+      const links = Array.from(category.querySelectorAll('a[data-link-id]'));
+      const count = links.filter(link => !link.hidden).length;
+      if (links.length) options.push(new Option(categoryLabel(category), category.id));
+      category.hidden = !count || (selected !== 'all' && selected !== category.id);
+      refreshCategoryControls(category);
+      if (!category.hidden) visibleCount += count;
+    });
+    filter.replaceChildren(...options);
+    filter.value = options.some(option => option.value === selected) ? selected : 'all';
+    if (filter.value !== selected) return refreshCatalog();
+    // 篩選或隱藏連結後，一併收起沒有可見分類的表格欄位。
+    const columns = Array.from(document.querySelectorAll('.catalog-column'));
+    columns.forEach(column => { column.hidden = !column.querySelector('.game-category:not([hidden])'); });
+    const table = document.querySelector('.games-table');
+    if (table) table.hidden = columns.every(column => column.hidden);
+    document.getElementById('games-catalog-count').textContent = getLanguage() === 'en' ? `${visibleCount} links` : `${visibleCount} 個連結`;
+    document.getElementById('games-catalog-empty').hidden = visibleCount > 0;
+  }
+
+  window.Games = { createIcon, faviconUrl, getLanguage, refreshCatalog, translateText };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('#games-catalog a[data-link-id]').forEach(link => {
+      const label = document.createElement('span');
+      label.className = 'link-text';
+      label.textContent = link.textContent.trim();
+      link.replaceChildren(createIcon(link.dataset.icon, link.getAttribute('href')), label);
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+    });
+    applyLanguage();
+    translateInterface();
+    document.getElementById('games-category-filter').addEventListener('change', event => {
+      const category = document.getElementById(event.target.value);
+      // 主動選擇玩家分類時直接展開；定期連線更新不改變使用者的收合狀態。
+      if (category?.matches('.game-category[data-collapse-group]')) setCategoryExpanded(category, true);
+      refreshCatalog();
+    });
+    const catalog = document.getElementById('games-catalog');
+    catalog.addEventListener('click', event => {
+      const control = event.target.closest('[data-category-toggle]');
+      if (!control) return;
+      if (control.matches('a')) {
+        // 保留鍵盤 Enter、中鍵、Ctrl/Cmd + 點擊及右鍵選單的原生連結功能。
+        if (event.detail === 0 || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        if (event.detail > 1) return;
+      }
+      const category = control.closest('.game-category[data-collapse-group]');
+      if (category) setCategoryExpanded(category, category.querySelector('.category-details').hidden);
+    });
+    catalog.addEventListener('dblclick', event => {
+      const titleLink = event.target.closest('a.category-title-link');
+      if (!titleLink || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      window.open(titleLink.href, '_blank', 'noopener,noreferrer');
+    });
+    document.getElementById('lang-toggle-btn').addEventListener('click', () => {
+      try { localStorage.setItem('userLang', getLanguage() === 'zh' ? 'en' : 'zh'); }
+      catch { /* 禁止本機儲存時仍保留目前介面。 */ }
+      applyLanguage();
+      document.dispatchEvent(new Event('games:language-changed'));
+      refreshCatalog();
+      translateInterface();
+    });
+    document.addEventListener('games:links-updated', refreshCatalog);
+    refreshCatalog();
+  });
+})();
 </script>
 
-<center>
+<script id="games-settings-script">
+/*
+ * 設定中心：保留既有個人資料格式。
+ * 1. 儲存鍵與安裝狀態  2. 桌布 IndexedDB  3. 圖片和網址工具
+ * 4. 設定面板事件  5. 連結編輯與新增
+ * 網路檢查與隱藏請看本檔案末尾的 games-check-script 區塊。
+ */
+(() => {
+  'use strict';
 
-<table id="games-table" border="1" width="80%">
-<tr valign="top">
+  const LINK_STORAGE_KEY = 'gamesLinkPreferencesV1';
+  const DATABASE_NAME = 'gamesPreferences';
+  const DATABASE_VERSION = 1;
+  const APPEARANCE_STORE = 'appearance';
+  const WALLPAPER_KEY = 'customWallpaper';
+  const MAX_WALLPAPER_SIZE = 20 * 1024 * 1024;
+  const MAX_LINK_IMAGE_SIZE = 12 * 1024 * 1024;
+  const LINK_IMAGE_MAX_EDGE = 192;
 
-<td width="33%"> 
-<b class="section-title" data-original-text="Gaming Platform">Gaming Platform</b><br>
+  let deferredInstallPrompt = null;
+  let installStateElement = null;
+  let installButtonElement = null;
+  let currentWallpaperUrl = null;
 
-<a href="https://www.youtube.com/playables" class="雙語名字" data-original-text="Playables"><favicon></favicon><span class="link-text">Playables</span></a><br>
-<a href="https://www.facebook.com/gaming/play/ " ><favicon></favicon><span class="link-text">Facebook Gaming</span></a><br>
+  function setStatus(element, message, type = '') {
+    if (!element) return;
+    element.textContent = message;
+    element.classList.toggle('is-success', type === 'success');
+    element.classList.toggle('is-error', type === 'error');
+  }
 
-<a href="#"  class="雙語名字" 
- data-en-href="https://www.msn.com/en-xl/play"
- data-zh-href="https://www.msn.com/zh-tw/play" >
-  <favicon></favicon><span class="link-text">MSN</span></a><br>
+  function isAppleMobileDevice() {
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent)
+      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
 
-<a href="https://Roblox.com" ><img src="https://images.rbxcdn.com/7c5fe83dffa97250aaddd54178900ea7.png" class="icon-img"><span class="link-text">Roblox</span></a><br>
-<a href="https://sites.google.com/site/populardoodlegames" ><favicon></favicon><span class="link-text">Google Doodles Game</span></a><br>
-<a href="https://www.crazygames.com/"><img src="https://imgs.crazygames.com/favicons/favicon-transparent.png" class="icon-img"><span class="link-text">Crazy Games</span></a><br>
-<a href="https://poki.com/" ><favicon></favicon><span class="link-text">Poki</span></a><br>
-<a href="https://g123.jp/" ><favicon></favicon><span class="link-text">G123</span></a><br>
-<a href="#"  class="雙語名字"  data-en-href="https://kuioo.com" data-zh-href="https://kuioo.tw/" ><span class="link-text"><favicon></favicon>Kuioo</span></a><br>
-<a href="https://classicgamezone.com/" ><favicon></favicon><span class="link-text">Retro Games</span></a><br>
-<a href="https://www.jxgame.net/" ><img src="https://www.jxgame.net/skin/icon-32.png" class="icon-img">精选益智小游戏</a><br>
-<a href="https://zaixianwan.app/" ><img src="https://zaixianwan.app/pwa-192x192.png" class="icon-img"><span class="link-text">老遊戲在線玩</span></a><br>
-<a href="https://gameforge.com" ><favicon></favicon><span class="link-text">Gameforge</span></a><br>
-<a href="https://agargame.io/hot-games"><img src="https://agargame.io/cache/data/image/options/agar-io-logo1-m144x144.png" class="icon-img"><span class="link-text">Agar.io</span></a><br>
-<a href="https://gamebol.com/" ><favicon></favicon><span class="link-text">Gamebol</span></a><br>
-<a href="https://emupedia.net/beta/" ><favicon></favicon><span class="link-text">Emupedia</span></a><br>
-<a href="https://scratch.mit.edu/"><img src="https://upload.wikimedia.org/wikipedia/commons/7/75/Scratch.logo.S.png" class="icon-img"><span class="link-text">Scratch</span></a><br>
-<a href="https://packager.turbowarp.org/"><favicon></favicon><span class="link-text">Scratch to html</span></a><br>
-<a href="https://stretch3.github.io/" ><favicon></favicon><span class="link-text">Stretch3</span></a><br>
-</td>
-<td width="33%">
+  function isIOSSafari() {
+    return isAppleMobileDevice()
+      && /Safari/i.test(navigator.userAgent)
+      && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(navigator.userAgent);
+  }
 
-  <b class="section-title" data-original-text="Gun Games">Gun Games</b><br>
-  <a href="https://deadshot.io/" ><favicon></favicon><span class="link-text">DEADSHOT</span></a><br>
-  <a href="https://venge.io" ><favicon></favicon><span class="link-text">VENGE.io</span></a><br>
-  <a href="https://shellshock.io"><img src="https://shellshock.io/favicon192.png" class="icon-img"><span class="link-text">Shell Shockers</span></a><br><br>
+  function isStandaloneMode() {
+    return window.matchMedia('(display-mode: standalone)').matches
+      || window.navigator.standalone === true;
+  }
 
-  <b class="section-title" data-original-text="Single-player game">Single-player game</b><br>
+  function updateInstallState() {
+    if (!installStateElement || !installButtonElement) return;
 
-  <a href="https://orteil.dashnet.org/cookieclicker/" ><img src="https://cdn.dashnet.org/cookieclicker/img/perfectCookie.png" class="icon-img"><span class="link-text">Cookie Clicker</span></a><br>
-<a href="https://www.google.com/logos/2024/moon/r3/moon.html"><img src="https://www.gstatic.com/marketing-cms/73/c1/bcf7a6274cadb0fd07d2efb588cd/screenshot-2024-10-22-4-50-44-pm.png" class="icon-img"><span class="link-text">Rise of the Half Moon</span></a><br>
-<a href="https://quickdraw.withgoogle.com/" ><favicon></favicon><span class="link-text">Quick Draw</span></a><br>
-<a href="https://www.worldguessr.com/" ><favicon></favicon><span class="link-text">World Guessr</span></a><br>
-<a href="https://player03.com/run/3/beta/" ><img src="https://player03.com/run/3/beta/favicon.png" class="icon-img">Run 3</span></a><br>
-<a href="https://poki.com/en/g/level-devil" ><img src="https://img.gamedistribution.com/3ffc5c0944f54f06afb212ca7d80bb00-512x512.jpg" class="icon-img"><span class="link-text">Level Devil</span></a><br>
-<a href="https://paperio.site/" ><favicon></favicon><span class="link-text">Paper</span></a><br>
-<a href="https://garticphone.com/" ><favicon></favicon><span class="link-text">Gartic Phone</span></a><br>
-<a href="https://hex.frvr.com/" ><img src="https://m.media-amazon.com/images/I/71J9hUa5wML.png" class="icon-img"><span class="link-text">Hex FRVR</span></a><br>
-<a href="https://www.edclub.com/sportal/program-3.game" ><favicon></favicon><span class="link-text">Edclub</span></a><br>
-<br>
+    installStateElement.classList.toggle('is-installed', isStandaloneMode());
+    installButtonElement.hidden = true;
 
-
-<br><br>
-
-</td>
-<td width="34%">
-  
-<b class="section-title" data-original-text="Puzzle Game">Puzzle Game</b><br>
-<a href="骨牌區域遊戲.html"><span class="link-text">骨牌區域遊戲</span></a><br>
-<a href="http://www.solitaired.com"><img src="https://solitaired.com/images/logo.png" class="icon-img"><span class="link-text">Solitaired</span></a><br>
-<a href="黑白棋 .html" ><img src="黑白棋 icon.png" class="icon-img"><span class="link-text">Reversi</span></a><br>
-<a href="https://www.chess.com/" ><img src="https://www.chess.com/bundles/web/favicons/favicon.5d6cb047.svg" class="icon-img"><span class="link-text">Chess</span></a><br>
-<a href="https://lichess.org/" ><favicon></favicon><span class="link-text">Lichess</span>
-<a href="https://lichess.org/training" ><span class="link-text">-Puzzle</span></a><br>
-<a href="https://wintrchess.com/analysis" ><favicon></favicon><span class="link-text">Wintrchess</span></a><br>
-<a href="https://www.chessigma.com/" ><favicon></favicon><span class="link-text">Chessigma</span></a><br>
-<a href="https://www.nytimes.com/game" ><favicon></favicon><span class="link-text">NYTimes</span></a><br>
-<a href="https://kbhgames.com/game/her-trees" ><favicon></favicon><span class="link-text">Her Trees - The Puzzle House</span></a><br>
-<span style="color: #88FFFF" id="sudoku-links">
-    <b data-original-text="Sudoku">Sudoku</b>：
-    <a href="https://sudoku.com/" data-original-text="Classic">Classic</a> 、
-    <a href="https://sudoku.com/killer/" data-original-text="Killer">Killer</a>
-</span> 
-<br><br>
-
-  <img src="https://battlecats.club/wp-content/themes/nyanko/img/index/icon_x@3x.png" class="icon-img" alt="貓咪大戰爭圖示">
-  <b class="section-title" id="battlecats-title" data-original-text="The Battle Cats" data-en-href="https://battlecats.club/en" data-zh-href="https://battlecats.club/tw/">
-
-    The Battle Cats</b>
-<button id="toggle-battlecats-btn">
-  <img id="battlecats-arrow" src="https://cdn-icons-png.flaticon.com/512/15714/15714566.png" alt=">">
-  </button>
-
-<div id="battlecats-details" style="display:none;">
-<a href="https://battlecats-db.com/" ><favicon></favicon><span class="link-text">超絕攻略網</span></a><br>
-<a href="https://battlecatsinfo.github.io" ><favicon></favicon><span class="link-text">貓咪大戰爭中文資訊網站</span></a><br>
-<a href="https://forum.gamer.com.tw/G1.php?bsn=23772&parent=0" ><img src="https://i2.bahamut.com.tw/favicon.svg" class="icon-img"><span class="link-text">巴哈姆特-根目錄</span></a><br>
-<a href="https://battle-cats.fandom.com/" ><favicon></favicon><span class="link-text">The Battle Cats Wiki</span></a><br>
-<a href="https://wikiwiki.jp/bccharadata/" ><favicon></favicon><span class="link-text">History</span></a><br>
-<a href="https://jarjarblink.github.io/INFORMANT/" ><img src="https://jarjarblink.github.io/INFORMANT/static/favicon.ico" class="icon-img"><span class="link-text">更新日誌</span></a><br>
-<a href="https://jarjarblink.github.io/JDB/" ><img src="https://jarjarblink.github.io/JDB/static/favicon.ico" class="icon-img"><span class="link-text">JAR角色資料</span></a><br>
-<a href="https://internet-coffee.github.io/GrandAbyss_Calculator/"><favicon></favicon><span class="link-text">迷宮計算器</span></a><br>
-</div>
-<div class="toggle-section-gap"></div>
-
-<img src="https://static.wikia.nocookie.net/garena-freefire/images/a/a9/GarenaFreeFire_WonderLand.png" class="icon-img" alt="FF 圖示">
-<b class="section-title" id="freefire-title" data-original-text="Free Fire">
-  <br>
-  Free Fire</b>
-<button id="toggle-freefire-btn">
-
-  <img id="freefire-arrow" src="https://cdn-icons-png.flaticon.com/512/15714/15714566.png" alt=">">
-  </button>
-<div id="freefire-details" style="display:none;">
-<span style="display: inline-block; margin-bottom: 5px;">
-
-  <a href="https://garenafreefire.fandom.com/wiki/Free_Fire_Wiki"><favicon></favicon><span class="link-text">Free Fire Wiki</span></a><br>
-  <a href="#" class="雙語名字"
-  data-en-href="https://ff.garena.com/en/wallpaper"
-  data-zh-href="https://ff.garena.com/zh/wallpaper"
-   data-original-text="壁紙"><favicon></favicon><span class="link-text">Wallpaper</span></a><br>
-
-  <a href="#"  class="雙語名字"  data-en-href="https://rankguide.sea.freefiremobile.com/?lang=en" data-zh-href="https://rankguide.sea.freefiremobile.com/?lang=zh-tw" data-original-text="排位">
-    <favicon></favicon><span class="link-text">排位</span></a><br>
-
-  <a class="雙語名字" href="https://ffcraftland.garena.com/" data-original-text="我的戰場" ><favicon></favicon><span class="link-text">我的戰場</span></a><br>
-  <a class="雙語名字" data-en-href="https://ff.garena.com/universe/en"
-  data-zh-href="https://ff.garena.com/universe/zh"
- data-original-text="Universe">
-    <favicon></favicon><span class="link-text">Universe</span></a><br>
-</span>
-</div>
-<div class="toggle-section-gap"></div>
-<b class="section-title" id="other-title" data-original-text="Other">
-  
-  <img src="**請替換為其他遊戲圖片網址.png**" class="icon-img" alt="其他遊戲圖示">
-  Other</b>
-<button id="toggle-other-btn">
-  <img id="other-arrow" src="https://cdn-icons-png.flaticon.com/512/15714/15714566.png" alt=">">
-  </button>
-<div id="other-details" style="display:none;">
-<span style="display: inline-block;">
-  <a href="https://beatsaver.com/" ><favicon></favicon><span class="link-text">Beat Saver</span></a><br>
-
-     <a href="#" class="雙語名字"
-   data-en-href="https://www.pokemon.com/us/pokedex"
-   data-zh-href="https://tw.portal-pokemon.com/play/pokedex"
-   data-original-text="寶可夢圖鑑">
-   <img src="https://png.pngtree.com/png-clipart/20240404/original/pngtree-3d-pokemon-ball-png-image_14754359.png" class="icon-img">
-   <span class="link-text">Pokedex</span>
-</a><br>
-</span>
-</div>
-<br>
-
-
-</td>
-
-</tr>
-</table>
-<section id="custom-games-section" class="custom-games-section" aria-labelledby="custom-games-title" hidden>
-  <h2 id="custom-games-title">我的連結</h2>
-  <div id="custom-games-list" class="custom-games-list"></div>
-</section>
-</center>
-
-<script>
-  (() => {
-    'use strict';
-
-    const LINK_STORAGE_KEY = 'gamesLinkPreferencesV1';
-    const DATABASE_NAME = 'gamesPreferences';
-    const DATABASE_VERSION = 1;
-    const APPEARANCE_STORE = 'appearance';
-    const WALLPAPER_KEY = 'customWallpaper';
-    const MAX_WALLPAPER_SIZE = 20 * 1024 * 1024;
-    const MAX_LINK_IMAGE_SIZE = 12 * 1024 * 1024;
-    const LINK_IMAGE_MAX_EDGE = 192;
-
-    let deferredInstallPrompt = null;
-    let installStateElement = null;
-    let installButtonElement = null;
-    let currentWallpaperUrl = null;
-
-    function setStatus(element, message, type = '') {
-      if (!element) return;
-      element.textContent = message;
-      element.classList.toggle('is-success', type === 'success');
-      element.classList.toggle('is-error', type === 'error');
+    if (isStandaloneMode()) {
+      installStateElement.textContent = '已從主畫面開啟';
+    } else if (isIOSSafari()) {
+      installStateElement.textContent = '可從 Safari 加入主畫面';
+    } else if (isAppleMobileDevice()) {
+      installStateElement.textContent = '請改用 Safari 加入主畫面';
+    } else if (deferredInstallPrompt) {
+      installStateElement.textContent = '這台裝置可直接安裝';
+      installButtonElement.hidden = false;
+    } else {
+      installStateElement.textContent = '可從瀏覽器選單加入主畫面';
     }
+  }
 
-    function isAppleMobileDevice() {
-      return /iPhone|iPad|iPod/i.test(navigator.userAgent)
-        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    }
+  window.addEventListener('beforeinstallprompt', event => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    updateInstallState();
+  });
 
-    function isIOSSafari() {
-      return isAppleMobileDevice()
-        && /Safari/i.test(navigator.userAgent)
-        && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(navigator.userAgent);
-    }
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    updateInstallState();
+  });
 
-    function isStandaloneMode() {
-      return window.matchMedia('(display-mode: standalone)').matches
-        || window.navigator.standalone === true;
-    }
-
-    function updateInstallState() {
-      if (!installStateElement || !installButtonElement) return;
-
-      installStateElement.classList.toggle('is-installed', isStandaloneMode());
-      installButtonElement.hidden = true;
-
-      if (isStandaloneMode()) {
-        installStateElement.textContent = '已從主畫面開啟';
-      } else if (isIOSSafari()) {
-        installStateElement.textContent = '可從 Safari 加入主畫面';
-      } else if (isAppleMobileDevice()) {
-        installStateElement.textContent = '請改用 Safari 加入主畫面';
-      } else if (deferredInstallPrompt) {
-        installStateElement.textContent = '這台裝置可直接安裝';
-        installButtonElement.hidden = false;
-      } else {
-        installStateElement.textContent = '可從瀏覽器選單加入主畫面';
-      }
-    }
-
-    window.addEventListener('beforeinstallprompt', event => {
-      event.preventDefault();
-      deferredInstallPrompt = event;
-      updateInstallState();
-    });
-
-    window.addEventListener('appinstalled', () => {
-      deferredInstallPrompt = null;
-      updateInstallState();
-    });
-
-    function openDatabase() {
-      return new Promise((resolve, reject) => {
-        if (!('indexedDB' in window)) {
-          reject(new Error('IndexedDB is unavailable'));
-          return;
-        }
-
-        const request = indexedDB.open(DATABASE_NAME, DATABASE_VERSION);
-        request.onupgradeneeded = () => {
-          const database = request.result;
-          if (!database.objectStoreNames.contains(APPEARANCE_STORE)) {
-            database.createObjectStore(APPEARANCE_STORE);
-          }
-        };
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error || new Error('Unable to open local storage'));
-      });
-    }
-
-    async function readSavedWallpaper() {
-      const database = await openDatabase();
-      return new Promise((resolve, reject) => {
-        const transaction = database.transaction(APPEARANCE_STORE, 'readonly');
-        const request = transaction.objectStore(APPEARANCE_STORE).get(WALLPAPER_KEY);
-        request.onsuccess = () => resolve(request.result || null);
-        request.onerror = () => reject(request.error || new Error('Unable to read wallpaper'));
-        transaction.oncomplete = () => database.close();
-        transaction.onerror = () => database.close();
-      });
-    }
-
-    async function saveWallpaper(file) {
-      const database = await openDatabase();
-      return new Promise((resolve, reject) => {
-        const transaction = database.transaction(APPEARANCE_STORE, 'readwrite');
-        transaction.objectStore(APPEARANCE_STORE).put(file, WALLPAPER_KEY);
-        transaction.oncomplete = () => {
-          database.close();
-          resolve();
-        };
-        transaction.onerror = () => {
-          database.close();
-          reject(transaction.error || new Error('Unable to save wallpaper'));
-        };
-      });
-    }
-
-    async function removeSavedWallpaper() {
-      const database = await openDatabase();
-      return new Promise((resolve, reject) => {
-        const transaction = database.transaction(APPEARANCE_STORE, 'readwrite');
-        transaction.objectStore(APPEARANCE_STORE).delete(WALLPAPER_KEY);
-        transaction.oncomplete = () => {
-          database.close();
-          resolve();
-        };
-        transaction.onerror = () => {
-          database.close();
-          reject(transaction.error || new Error('Unable to remove wallpaper'));
-        };
-      });
-    }
-
-    function applyWallpaper(file, preview) {
-      if (currentWallpaperUrl) {
-        URL.revokeObjectURL(currentWallpaperUrl);
-        currentWallpaperUrl = null;
-      }
-
-      if (!file) {
-        document.body.style.removeProperty('background-image');
-        document.body.removeAttribute('data-custom-wallpaper');
-        preview.style.removeProperty('background-image');
+  // 2. 桌布較大，使用 IndexedDB；不和小型連結偏好共用 localStorage。
+  function openDatabase() {
+    return new Promise((resolve, reject) => {
+      if (!('indexedDB' in window)) {
+        reject(new Error('IndexedDB is unavailable'));
         return;
       }
 
-      currentWallpaperUrl = URL.createObjectURL(file);
-      const wallpaperValue = `url("${currentWallpaperUrl}")`;
-      document.body.style.backgroundImage = wallpaperValue;
-      document.body.setAttribute('data-custom-wallpaper', 'true');
-      preview.style.backgroundImage = wallpaperValue;
-    }
-
-    function loadLinkState() {
-      const emptyState = { overrides: {}, customLinks: [] };
-      try {
-        const parsed = JSON.parse(localStorage.getItem(LINK_STORAGE_KEY) || 'null');
-        if (!parsed || typeof parsed !== 'object') return emptyState;
-
-        const overrides = parsed.overrides && typeof parsed.overrides === 'object'
-          ? parsed.overrides
-          : {};
-        const customLinks = Array.isArray(parsed.customLinks)
-          ? parsed.customLinks.filter(item => item && typeof item === 'object' && typeof item.id === 'string')
-          : [];
-
-        return { overrides, customLinks };
-      } catch (error) {
-        return emptyState;
-      }
-    }
-
-    function saveLinkState(state) {
-      try {
-        localStorage.setItem(LINK_STORAGE_KEY, JSON.stringify(state));
-      } catch (error) {
-        throw new Error('瀏覽器的本機儲存空間不足，請改用較小的圖片或移除部分自訂連結。');
-      }
-    }
-
-    function normalizeEntryUrl(rawValue, required, fieldName) {
-      const value = String(rawValue || '').trim();
-      if (!value) {
-        if (required) throw new Error(`請填寫${fieldName}。`);
-        return '';
-      }
-
-      if (/^javascript:/i.test(value)) {
-        throw new Error(`${fieldName}不能使用 javascript: 網址。`);
-      }
-
-      let parsed;
-      try {
-        parsed = new URL(value, document.baseURI);
-      } catch (error) {
-        throw new Error(`${fieldName}格式不正確。`);
-      }
-
-      const isAllowedProtocol = parsed.protocol === 'http:'
-        || parsed.protocol === 'https:'
-        || (parsed.protocol === 'file:' && location.protocol === 'file:');
-      if (!isAllowedProtocol) {
-        throw new Error(`${fieldName}只支援 http、https 或目前頁面的本機相對路徑。`);
-      }
-
-      return value;
-    }
-
-    function resizeLinkImage(file) {
-      return new Promise((resolve, reject) => {
-        if (!file || !file.type.startsWith('image/')) {
-          reject(new Error('請選擇圖片檔案。'));
-          return;
+      const request = indexedDB.open(DATABASE_NAME, DATABASE_VERSION);
+      request.onupgradeneeded = () => {
+        const database = request.result;
+        if (!database.objectStoreNames.contains(APPEARANCE_STORE)) {
+          database.createObjectStore(APPEARANCE_STORE);
         }
-        if (file.size > MAX_LINK_IMAGE_SIZE) {
-          reject(new Error('連結圖片不可超過 12 MB。'));
-          return;
-        }
-
-        const objectUrl = URL.createObjectURL(file);
-        const sourceImage = new Image();
-        sourceImage.onload = () => {
-          try {
-            const sourceWidth = sourceImage.naturalWidth || sourceImage.width;
-            const sourceHeight = sourceImage.naturalHeight || sourceImage.height;
-            if (!sourceWidth || !sourceHeight) throw new Error('無法讀取圖片尺寸。');
-
-            const scale = Math.min(1, LINK_IMAGE_MAX_EDGE / Math.max(sourceWidth, sourceHeight));
-            const width = Math.max(1, Math.round(sourceWidth * scale));
-            const height = Math.max(1, Math.round(sourceHeight * scale));
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const context = canvas.getContext('2d');
-            if (!context) throw new Error('這個瀏覽器無法處理圖片。');
-
-            context.clearRect(0, 0, width, height);
-            context.drawImage(sourceImage, 0, 0, width, height);
-            const dataUrl = canvas.toDataURL('image/webp', 0.84);
-            if (!dataUrl || !dataUrl.startsWith('data:image/')) {
-              throw new Error('無法轉換這張圖片。');
-            }
-            resolve({ dataUrl, width, height });
-          } catch (error) {
-            reject(error);
-          } finally {
-            URL.revokeObjectURL(objectUrl);
-          }
-        };
-        sourceImage.onerror = () => {
-          URL.revokeObjectURL(objectUrl);
-          reject(new Error('無法開啟這張圖片。'));
-        };
-        sourceImage.src = objectUrl;
-      });
-    }
-
-    function getFaviconUrl(linkUrl) {
-      try {
-        const parsed = new URL(linkUrl, document.baseURI);
-        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
-        return `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=128&url=${encodeURIComponent(parsed.origin)}`;
-      } catch (error) {
-        return '';
-      }
-    }
-
-    function createManagedIcon(imageUrl, linkUrl) {
-      const fallbackUrl = getFaviconUrl(linkUrl);
-      const firstUrl = imageUrl || fallbackUrl;
-      if (!firstUrl) return null;
-
-      const image = document.createElement('img');
-      image.className = 'icon-img managed-link-icon';
-      image.src = firstUrl;
-      image.alt = '';
-      image.loading = 'lazy';
-      let triedFallback = !imageUrl || imageUrl === fallbackUrl;
-      image.addEventListener('error', () => {
-        if (!triedFallback && fallbackUrl) {
-          triedFallback = true;
-          image.src = fallbackUrl;
-        } else {
-          image.hidden = true;
-        }
-      });
-      return image;
-    }
-
-    function readAnchorLabel(anchor) {
-      const labelElement = anchor.querySelector('.link-text');
-      const value = labelElement ? labelElement.textContent : anchor.textContent;
-      return String(value || '').replace(/\s+/g, ' ').trim() || '未命名連結';
-    }
-
-    function readAnchorUrl(anchor) {
-      const directHref = anchor.getAttribute('href');
-      if (directHref && directHref !== '#') return directHref.trim();
-
-      const currentLanguage = localStorage.getItem('userLang') || 'zh';
-      const languageHref = currentLanguage === 'zh'
-        ? anchor.getAttribute('data-zh-href')
-        : anchor.getAttribute('data-en-href');
-      return (languageHref
-        || anchor.getAttribute('data-zh-href')
-        || anchor.getAttribute('data-en-href')
-        || '').trim();
-    }
-
-    function readAnchorImageUrl(anchor) {
-      const image = anchor.querySelector('img.icon-img:not(.generated-favicon):not(.managed-link-icon)');
-      return image ? (image.getAttribute('src') || '').trim() : '';
-    }
-
-    function updateAnchor(anchor, item) {
-      anchor.setAttribute('href', item.url);
-      anchor.setAttribute('target', '_blank');
-      anchor.querySelectorAll('img.icon-img, favicon').forEach(element => element.remove());
-
-      let labelElement = anchor.querySelector('.link-text');
-      if (!labelElement) {
-        Array.from(anchor.childNodes).forEach(node => {
-          if (node.nodeType === Node.TEXT_NODE) node.remove();
-        });
-        labelElement = document.createElement('span');
-        labelElement.className = 'link-text';
-        anchor.appendChild(labelElement);
-      }
-      labelElement.textContent = item.label;
-
-      const image = createManagedIcon(item.imageUrl, item.url);
-      if (image) anchor.insertBefore(image, anchor.firstChild);
-    }
-
-    function updatePreview(imageElement, textElement, imageUrl, linkUrl) {
-      const fallbackUrl = getFaviconUrl(linkUrl);
-      const previewUrl = imageUrl || fallbackUrl;
-      imageElement.onload = null;
-      imageElement.onerror = null;
-
-      if (!previewUrl) {
-        imageElement.hidden = true;
-        imageElement.removeAttribute('src');
-        textElement.textContent = '這個網址沒有可預覽的自動網站圖示。';
-        return;
-      }
-
-      imageElement.hidden = false;
-      imageElement.src = previewUrl;
-      textElement.textContent = imageUrl ? '自訂圖片預覽' : '自動網站圖示預覽';
-      imageElement.onerror = () => {
-        if (imageUrl && fallbackUrl && imageElement.src !== fallbackUrl) {
-          imageElement.src = fallbackUrl;
-          textElement.textContent = '自訂圖片無法載入，將改用網站圖示。';
-          return;
-        }
-        imageElement.hidden = true;
-        textElement.textContent = '目前無法載入這個圖示。';
       };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error('Unable to open local storage'));
+    });
+  }
+
+  async function readSavedWallpaper() {
+    const database = await openDatabase();
+    return new Promise((resolve, reject) => {
+      const transaction = database.transaction(APPEARANCE_STORE, 'readonly');
+      const request = transaction.objectStore(APPEARANCE_STORE).get(WALLPAPER_KEY);
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => reject(request.error || new Error('Unable to read wallpaper'));
+      transaction.oncomplete = () => database.close();
+      transaction.onerror = () => database.close();
+    });
+  }
+
+  async function saveWallpaper(file) {
+    const database = await openDatabase();
+    return new Promise((resolve, reject) => {
+      const transaction = database.transaction(APPEARANCE_STORE, 'readwrite');
+      transaction.objectStore(APPEARANCE_STORE).put(file, WALLPAPER_KEY);
+      transaction.oncomplete = () => {
+        database.close();
+        resolve();
+      };
+      transaction.onerror = () => {
+        database.close();
+        reject(transaction.error || new Error('Unable to save wallpaper'));
+      };
+    });
+  }
+
+  async function removeSavedWallpaper() {
+    const database = await openDatabase();
+    return new Promise((resolve, reject) => {
+      const transaction = database.transaction(APPEARANCE_STORE, 'readwrite');
+      transaction.objectStore(APPEARANCE_STORE).delete(WALLPAPER_KEY);
+      transaction.oncomplete = () => {
+        database.close();
+        resolve();
+      };
+      transaction.onerror = () => {
+        database.close();
+        reject(transaction.error || new Error('Unable to remove wallpaper'));
+      };
+    });
+  }
+
+  function applyWallpaper(file, preview) {
+    if (currentWallpaperUrl) {
+      URL.revokeObjectURL(currentWallpaperUrl);
+      currentWallpaperUrl = null;
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const settingsButton = document.getElementById('games-settings-button');
-      const settingsPanel = document.getElementById('games-settings-panel');
-      const settingsBackdrop = document.getElementById('games-settings-backdrop');
-      const settingsClose = document.getElementById('games-settings-close');
-      let elementFocusedBeforePanel = null;
+    if (!file) {
+      document.body.style.removeProperty('background-image');
+      document.body.removeAttribute('data-custom-wallpaper');
+      preview.style.removeProperty('background-image');
+      return;
+    }
 
-      function openSettings() {
-        elementFocusedBeforePanel = document.activeElement;
-        settingsPanel.hidden = false;
-        settingsBackdrop.hidden = false;
-        settingsButton.setAttribute('aria-expanded', 'true');
-        document.body.classList.add('games-settings-open');
-        requestAnimationFrame(() => settingsClose.focus());
+    currentWallpaperUrl = URL.createObjectURL(file);
+    const wallpaperValue = `url("${currentWallpaperUrl}")`;
+    document.body.style.backgroundImage = wallpaperValue;
+    document.body.setAttribute('data-custom-wallpaper', 'true');
+    preview.style.backgroundImage = wallpaperValue;
+  }
+
+  function loadLinkState() {
+    const emptyState = { overrides: {}, customLinks: [] };
+    try {
+      const parsed = JSON.parse(localStorage.getItem(LINK_STORAGE_KEY) || 'null');
+      if (!parsed || typeof parsed !== 'object') return emptyState;
+
+      const overrides = parsed.overrides && typeof parsed.overrides === 'object'
+        ? parsed.overrides
+        : {};
+      const customLinks = Array.isArray(parsed.customLinks)
+        ? parsed.customLinks.filter(item => item && typeof item === 'object' && typeof item.id === 'string')
+        : [];
+
+      return { overrides, customLinks };
+    } catch (error) {
+      return emptyState;
+    }
+  }
+
+  function saveLinkState(state) {
+    try {
+      localStorage.setItem(LINK_STORAGE_KEY, JSON.stringify(state));
+    } catch (error) {
+      throw new Error('瀏覽器的本機儲存空間不足，請改用較小的圖片或移除部分自訂連結。');
+    }
+  }
+
+  // 3. 表單輸入與圖片處理。
+  function normalizeEntryUrl(rawValue, required, fieldName) {
+    const value = String(rawValue || '').trim();
+    if (!value) {
+      if (required) throw new Error(`請填寫${fieldName}。`);
+      return '';
+    }
+
+    if (/^javascript:/i.test(value)) {
+      throw new Error(`${fieldName}不能使用 javascript: 網址。`);
+    }
+
+    let parsed;
+    try {
+      parsed = new URL(value, document.baseURI);
+    } catch (error) {
+      throw new Error(`${fieldName}格式不正確。`);
+    }
+
+    const isAllowedProtocol = parsed.protocol === 'http:'
+      || parsed.protocol === 'https:'
+      || (parsed.protocol === 'file:' && location.protocol === 'file:');
+    if (!isAllowedProtocol) {
+      throw new Error(`${fieldName}只支援 http、https 或目前頁面的本機相對路徑。`);
+    }
+
+    return value;
+  }
+
+  function resizeLinkImage(file) {
+    return new Promise((resolve, reject) => {
+      if (!file || !file.type.startsWith('image/')) {
+        reject(new Error('請選擇圖片檔案。'));
+        return;
+      }
+      if (file.size > MAX_LINK_IMAGE_SIZE) {
+        reject(new Error('連結圖片不可超過 12 MB。'));
+        return;
       }
 
-      function closeSettings() {
-        settingsPanel.hidden = true;
-        settingsBackdrop.hidden = true;
-        settingsButton.setAttribute('aria-expanded', 'false');
-        document.body.classList.remove('games-settings-open');
-        if (elementFocusedBeforePanel && typeof elementFocusedBeforePanel.focus === 'function') {
-          elementFocusedBeforePanel.focus();
-        } else {
-          settingsButton.focus();
-        }
-      }
-
-      settingsButton.addEventListener('click', openSettings);
-      settingsClose.addEventListener('click', closeSettings);
-      settingsBackdrop.addEventListener('click', closeSettings);
-      settingsPanel.addEventListener('keydown', event => {
-        if (event.key !== 'Tab') return;
-        const focusable = Array.from(settingsPanel.querySelectorAll('button:not([disabled]):not([hidden]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'))
-          .filter(element => !element.hidden && element.offsetParent !== null);
-        if (!focusable.length) return;
-
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault();
-          last.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first.focus();
-        }
-      });
-      document.addEventListener('keydown', event => {
-        if (event.key === 'Escape' && !settingsPanel.hidden) closeSettings();
-      });
-
-      const wallpaperFile = document.getElementById('games-wallpaper-file');
-      const wallpaperReset = document.getElementById('games-wallpaper-reset');
-      const wallpaperPreview = document.getElementById('games-wallpaper-preview');
-      const wallpaperStatus = document.getElementById('games-wallpaper-status');
-
-      wallpaperFile.addEventListener('change', async () => {
-        const file = wallpaperFile.files && wallpaperFile.files[0];
-        if (!file) return;
-
-        if (!file.type.startsWith('image/')) {
-          setStatus(wallpaperStatus, '請選擇圖片檔案。', 'error');
-          wallpaperFile.value = '';
-          return;
-        }
-        if (file.size > MAX_WALLPAPER_SIZE) {
-          setStatus(wallpaperStatus, '圖片不可超過 20 MB。', 'error');
-          wallpaperFile.value = '';
-          return;
-        }
-
-        applyWallpaper(file, wallpaperPreview);
-        setStatus(wallpaperStatus, '正在保存桌布…');
+      const objectUrl = URL.createObjectURL(file);
+      const sourceImage = new Image();
+      sourceImage.onload = () => {
         try {
-          await saveWallpaper(file);
-          setStatus(wallpaperStatus, '桌布已保存並套用。', 'success');
+          const sourceWidth = sourceImage.naturalWidth || sourceImage.width;
+          const sourceHeight = sourceImage.naturalHeight || sourceImage.height;
+          if (!sourceWidth || !sourceHeight) throw new Error('無法讀取圖片尺寸。');
+
+          const scale = Math.min(1, LINK_IMAGE_MAX_EDGE / Math.max(sourceWidth, sourceHeight));
+          const width = Math.max(1, Math.round(sourceWidth * scale));
+          const height = Math.max(1, Math.round(sourceHeight * scale));
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const context = canvas.getContext('2d');
+          if (!context) throw new Error('這個瀏覽器無法處理圖片。');
+
+          context.clearRect(0, 0, width, height);
+          context.drawImage(sourceImage, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/webp', 0.84);
+          if (!dataUrl || !dataUrl.startsWith('data:image/')) {
+            throw new Error('無法轉換這張圖片。');
+          }
+          resolve({ dataUrl, width, height });
         } catch (error) {
-          setStatus(wallpaperStatus, '桌布已暫時套用，但這個瀏覽器無法永久保存。', 'error');
+          reject(error);
+        } finally {
+          URL.revokeObjectURL(objectUrl);
         }
+      };
+      sourceImage.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error('無法開啟這張圖片。'));
+      };
+      sourceImage.src = objectUrl;
+    });
+  }
+
+  function getFaviconUrl(linkUrl) {
+    return window.Games.faviconUrl(linkUrl);
+  }
+
+  function createManagedIcon(imageUrl, linkUrl) {
+    return window.Games.createIcon(imageUrl, linkUrl);
+  }
+
+  function readAnchorLabel(anchor) {
+    const labelElement = anchor.querySelector('.link-text');
+    const value = labelElement ? labelElement.textContent : anchor.textContent;
+    return String(value || '').replace(/\s+/g, ' ').trim() || '未命名連結';
+  }
+
+  function readAnchorUrl(anchor) {
+    const directHref = anchor.getAttribute('href');
+    if (directHref && directHref !== '#') return directHref.trim();
+
+    const currentLanguage = localStorage.getItem('userLang') || 'zh';
+    const languageHref = currentLanguage === 'zh'
+      ? anchor.getAttribute('data-zh-href')
+      : anchor.getAttribute('data-en-href');
+    return (languageHref
+      || anchor.getAttribute('data-zh-href')
+      || anchor.getAttribute('data-en-href')
+      || '').trim();
+  }
+
+  function readAnchorImageUrl(anchor) {
+    return anchor.dataset.icon || '';
+  }
+
+  function updateAnchor(anchor, item) {
+    anchor.setAttribute('href', item.url);
+    anchor.setAttribute('target', '_blank');
+    anchor.rel = 'noopener noreferrer';
+    anchor.dataset.userEdited = 'true';
+    anchor.querySelectorAll('.icon-slot').forEach(element => element.remove());
+
+    let labelElement = anchor.querySelector('.link-text');
+    if (!labelElement) {
+      Array.from(anchor.childNodes).forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE) node.remove();
+      });
+      labelElement = document.createElement('span');
+      labelElement.className = 'link-text';
+      anchor.appendChild(labelElement);
+    }
+    labelElement.textContent = item.label;
+
+    const image = createManagedIcon(item.imageUrl, item.url);
+    if (image) anchor.insertBefore(image, anchor.firstChild);
+  }
+
+  function updatePreview(imageElement, textElement, imageUrl, linkUrl) {
+    const fallbackUrl = getFaviconUrl(linkUrl);
+    const previewUrl = imageUrl || fallbackUrl;
+    imageElement.onload = null;
+    imageElement.onerror = null;
+    imageElement.alt = '';
+    imageElement.style.visibility = 'visible';
+
+    if (!previewUrl) {
+      imageElement.hidden = false;
+      imageElement.style.visibility = 'hidden';
+      imageElement.removeAttribute('src');
+      textElement.textContent = '這個網址沒有可預覽的自動網站圖示。';
+      return;
+    }
+
+    imageElement.hidden = false;
+    imageElement.src = previewUrl;
+    textElement.textContent = imageUrl ? '自訂圖片預覽' : '自動網站圖示預覽';
+    imageElement.onerror = () => {
+      if (imageUrl && fallbackUrl && imageElement.src !== fallbackUrl) {
+        imageElement.src = fallbackUrl;
+        textElement.textContent = '自訂圖片無法載入，將改用網站圖示。';
+        return;
+      }
+      imageElement.style.visibility = 'hidden';
+      textElement.textContent = '圖示無法載入時保留方形空位。';
+    };
+  }
+
+  // 4. 設定面板與桌布操作。
+  document.addEventListener('DOMContentLoaded', () => {
+    const settingsButton = document.getElementById('games-settings-button');
+    const settingsPanel = document.getElementById('games-settings-panel');
+    const settingsBackdrop = document.getElementById('games-settings-backdrop');
+    const settingsClose = document.getElementById('games-settings-close');
+    let elementFocusedBeforePanel = null;
+
+    function openSettings() {
+      elementFocusedBeforePanel = document.activeElement;
+      settingsPanel.hidden = false;
+      settingsBackdrop.hidden = false;
+      settingsButton.setAttribute('aria-expanded', 'true');
+      document.body.classList.add('games-settings-open');
+      requestAnimationFrame(() => settingsClose.focus());
+    }
+
+    function closeSettings() {
+      settingsPanel.hidden = true;
+      settingsBackdrop.hidden = true;
+      settingsButton.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('games-settings-open');
+      if (elementFocusedBeforePanel && typeof elementFocusedBeforePanel.focus === 'function') {
+        elementFocusedBeforePanel.focus();
+      } else {
+        settingsButton.focus();
+      }
+    }
+
+    settingsButton.addEventListener('click', openSettings);
+    settingsClose.addEventListener('click', closeSettings);
+    settingsBackdrop.addEventListener('click', closeSettings);
+    settingsPanel.addEventListener('keydown', event => {
+      if (event.key !== 'Tab') return;
+      const focusable = Array.from(settingsPanel.querySelectorAll('a[href], summary, button:not([disabled]):not([hidden]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+        .filter(element => !element.hidden && element.offsetParent !== null);
+      if (!focusable.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && !settingsPanel.hidden) closeSettings();
+    });
+
+    const wallpaperFile = document.getElementById('games-wallpaper-file');
+    const wallpaperReset = document.getElementById('games-wallpaper-reset');
+    const wallpaperPreview = document.getElementById('games-wallpaper-preview');
+    const wallpaperStatus = document.getElementById('games-wallpaper-status');
+
+    wallpaperFile.addEventListener('change', async () => {
+      const file = wallpaperFile.files && wallpaperFile.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        setStatus(wallpaperStatus, '請選擇圖片檔案。', 'error');
         wallpaperFile.value = '';
-      });
+        return;
+      }
+      if (file.size > MAX_WALLPAPER_SIZE) {
+        setStatus(wallpaperStatus, '圖片不可超過 20 MB。', 'error');
+        wallpaperFile.value = '';
+        return;
+      }
 
-      wallpaperReset.addEventListener('click', async () => {
-        applyWallpaper(null, wallpaperPreview);
-        try {
-          await removeSavedWallpaper();
-        } catch (error) {
-          // 即使儲存區不可用，也維持本次頁面的預設桌布。
+      applyWallpaper(file, wallpaperPreview);
+      setStatus(wallpaperStatus, '正在保存桌布…');
+      try {
+        await saveWallpaper(file);
+        setStatus(wallpaperStatus, '桌布已保存並套用。', 'success');
+      } catch (error) {
+        setStatus(wallpaperStatus, '桌布已暫時套用，但這個瀏覽器無法永久保存。', 'error');
+      }
+      wallpaperFile.value = '';
+    });
+
+    wallpaperReset.addEventListener('click', async () => {
+      applyWallpaper(null, wallpaperPreview);
+      try {
+        await removeSavedWallpaper();
+      } catch (error) {
+        // 即使儲存區不可用，也維持本次頁面的預設桌布。
+      }
+      setStatus(wallpaperStatus, '已恢復預設桌布。', 'success');
+    });
+
+    readSavedWallpaper()
+      .then(savedWallpaper => {
+        if (savedWallpaper instanceof Blob) {
+          applyWallpaper(savedWallpaper, wallpaperPreview);
+          setStatus(wallpaperStatus, '正在使用這台裝置保存的自訂桌布。');
+        } else {
+          setStatus(wallpaperStatus, '目前使用預設桌布。');
         }
-        setStatus(wallpaperStatus, '已恢復預設桌布。', 'success');
+      })
+      .catch(() => setStatus(wallpaperStatus, '目前使用預設桌布。'));
+
+    // 5. 原始連結不可刪除；自訂連結、修改內容仍沿用 V1 儲存格式。
+    const originalLinks = new Map();
+    // ID 直接讀取 HTML，分類或順序調整不影響舊有個人設定。
+    const tableAnchors = Array.from(document.querySelectorAll('#games-catalog a[data-link-id]'));
+    tableAnchors.forEach(anchor => {
+      const id = anchor.dataset.linkId;
+      anchor.dataset.linkEditorId = id;
+      originalLinks.set(id, {
+        id,
+        anchor,
+        label: readAnchorLabel(anchor),
+        url: readAnchorUrl(anchor),
+        imageUrl: readAnchorImageUrl(anchor)
       });
+    });
 
-      readSavedWallpaper()
-        .then(savedWallpaper => {
-          if (savedWallpaper instanceof Blob) {
-            applyWallpaper(savedWallpaper, wallpaperPreview);
-            setStatus(wallpaperStatus, '正在使用這台裝置保存的自訂桌布。');
-          } else {
-            setStatus(wallpaperStatus, '目前使用預設桌布。');
-          }
-        })
-        .catch(() => setStatus(wallpaperStatus, '目前使用預設桌布。'));
+    const linkState = loadLinkState();
+    const linkSelect = document.getElementById('games-link-select');
+    const editForm = document.getElementById('games-link-edit-form');
+    const editLabel = document.getElementById('games-link-label');
+    const editUrl = document.getElementById('games-link-url');
+    const editImageUrl = document.getElementById('games-link-image-url');
+    const editImagePick = document.getElementById('games-link-image-pick');
+    const editImageFile = document.getElementById('games-link-image-file');
+    const editImageClear = document.getElementById('games-link-image-clear');
+    const editImageFileStatus = document.getElementById('games-link-image-file-status');
+    const editPreview = document.getElementById('games-link-image-preview');
+    const editPreviewText = document.getElementById('games-link-image-preview-text');
+    const editRestore = document.getElementById('games-link-restore');
+    const editDelete = document.getElementById('games-link-delete');
+    const editLockNote = document.getElementById('games-link-lock-note');
+    const editStatus = document.getElementById('games-link-status');
+    const resetAllOriginals = document.getElementById('games-all-original-links-reset');
+    const addForm = document.getElementById('games-link-add-form');
+    const addLabel = document.getElementById('games-new-link-label');
+    const addUrl = document.getElementById('games-new-link-url');
+    const addImageUrl = document.getElementById('games-new-link-image-url');
+    const addImagePick = document.getElementById('games-new-link-image-pick');
+    const addImageFile = document.getElementById('games-new-link-image-file');
+    const addImageClear = document.getElementById('games-new-link-image-clear');
+    const addImageFileStatus = document.getElementById('games-new-link-image-file-status');
+    const addPreview = document.getElementById('games-new-link-image-preview');
+    const addPreviewText = document.getElementById('games-new-link-image-preview-text');
+    const addStatus = document.getElementById('games-new-link-status');
+    const customSection = document.getElementById('custom-games-section');
+    const customList = document.getElementById('custom-games-list');
+    let editLocalImageDataUrl = '';
+    let addLocalImageDataUrl = '';
 
-      const originalLinks = new Map();
-      const tableAnchors = Array.from(document.querySelectorAll('#games-table a[href], #games-table a[data-en-href], #games-table a[data-zh-href]'));
-      tableAnchors.forEach((anchor, index) => {
-        const id = `original-${String(index + 1).padStart(3, '0')}`;
-        anchor.dataset.linkEditorId = id;
-        originalLinks.set(id, {
-          id,
-          anchor,
-          label: readAnchorLabel(anchor),
-          url: readAnchorUrl(anchor),
-          imageUrl: readAnchorImageUrl(anchor)
-        });
-      });
+    function getCustomLink(id) {
+      return linkState.customLinks.find(item => item.id === id) || null;
+    }
 
-      const linkState = loadLinkState();
-      const linkSelect = document.getElementById('games-link-select');
-      const editForm = document.getElementById('games-link-edit-form');
-      const editLabel = document.getElementById('games-link-label');
-      const editUrl = document.getElementById('games-link-url');
-      const editImageUrl = document.getElementById('games-link-image-url');
-      const editImagePick = document.getElementById('games-link-image-pick');
-      const editImageFile = document.getElementById('games-link-image-file');
-      const editImageClear = document.getElementById('games-link-image-clear');
-      const editImageFileStatus = document.getElementById('games-link-image-file-status');
-      const editPreview = document.getElementById('games-link-image-preview');
-      const editPreviewText = document.getElementById('games-link-image-preview-text');
-      const editRestore = document.getElementById('games-link-restore');
-      const editDelete = document.getElementById('games-link-delete');
-      const editLockNote = document.getElementById('games-link-lock-note');
-      const editStatus = document.getElementById('games-link-status');
-      const resetAllOriginals = document.getElementById('games-all-original-links-reset');
-      const addForm = document.getElementById('games-link-add-form');
-      const addLabel = document.getElementById('games-new-link-label');
-      const addUrl = document.getElementById('games-new-link-url');
-      const addImageUrl = document.getElementById('games-new-link-image-url');
-      const addImagePick = document.getElementById('games-new-link-image-pick');
-      const addImageFile = document.getElementById('games-new-link-image-file');
-      const addImageClear = document.getElementById('games-new-link-image-clear');
-      const addImageFileStatus = document.getElementById('games-new-link-image-file-status');
-      const addPreview = document.getElementById('games-new-link-image-preview');
-      const addPreviewText = document.getElementById('games-new-link-image-preview-text');
-      const addStatus = document.getElementById('games-new-link-status');
-      const customSection = document.getElementById('custom-games-section');
-      const customList = document.getElementById('custom-games-list');
-      let editLocalImageDataUrl = '';
-      let addLocalImageDataUrl = '';
-
-      function getCustomLink(id) {
-        return linkState.customLinks.find(item => item.id === id) || null;
+    function getEditableItem(id) {
+      if (originalLinks.has(id)) {
+        return linkState.overrides[id] || originalLinks.get(id);
       }
+      return getCustomLink(id);
+    }
 
-      function getEditableItem(id) {
-        if (originalLinks.has(id)) {
-          return linkState.overrides[id] || originalLinks.get(id);
+    function applyOriginalOverrides() {
+      originalLinks.forEach((original, id) => {
+        const override = linkState.overrides[id];
+        if (override && override.label && override.url) {
+          updateAnchor(original.anchor, override);
         }
-        return getCustomLink(id);
-      }
+      });
+    }
 
-      function applyOriginalOverrides() {
-        originalLinks.forEach((original, id) => {
-          const override = linkState.overrides[id];
-          if (override && override.label && override.url) {
-            updateAnchor(original.anchor, override);
-          }
-        });
-      }
+    function renderCustomLinks() {
+      customList.replaceChildren();
+      customSection.hidden = linkState.customLinks.length === 0;
 
-      function renderCustomLinks() {
-        customList.replaceChildren();
-        customSection.hidden = linkState.customLinks.length === 0;
+      linkState.customLinks.forEach(item => {
+        const link = document.createElement('a');
+        link.href = item.url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.dataset.customLinkId = item.id;
+        link.dataset.linkId = item.id;
 
+        const icon = createManagedIcon(item.imageUrl, item.url);
+        if (icon) link.appendChild(icon);
+
+        const label = document.createElement('span');
+        label.className = 'link-text';
+        label.textContent = item.label;
+        link.appendChild(label);
+        customList.appendChild(link);
+      });
+      document.dispatchEvent(new Event('games:links-updated'));
+    }
+
+    function rebuildLinkSelector(preferredId) {
+      const selectedBefore = preferredId || linkSelect.value;
+      linkSelect.replaceChildren();
+
+      const originalGroup = document.createElement('optgroup');
+      originalGroup.label = '網站原有連結（不可刪除）';
+      originalLinks.forEach((original, id) => {
+        const item = linkState.overrides[id] || original;
+        const option = document.createElement('option');
+        option.value = id;
+        option.textContent = item.label;
+        originalGroup.appendChild(option);
+      });
+      linkSelect.appendChild(originalGroup);
+
+      if (linkState.customLinks.length) {
+        const customGroup = document.createElement('optgroup');
+        customGroup.label = '我的連結';
         linkState.customLinks.forEach(item => {
-          const link = document.createElement('a');
-          link.href = item.url;
-          link.target = '_blank';
-          link.rel = 'noopener noreferrer';
-          link.dataset.customLinkId = item.id;
-
-          const icon = createManagedIcon(item.imageUrl, item.url);
-          if (icon) link.appendChild(icon);
-
-          const label = document.createElement('span');
-          label.className = 'link-text';
-          label.textContent = item.label;
-          link.appendChild(label);
-          customList.appendChild(link);
-        });
-      }
-
-      function rebuildLinkSelector(preferredId) {
-        const selectedBefore = preferredId || linkSelect.value;
-        linkSelect.replaceChildren();
-
-        const originalGroup = document.createElement('optgroup');
-        originalGroup.label = '網站原有連結（不可刪除）';
-        originalLinks.forEach((original, id) => {
-          const item = linkState.overrides[id] || original;
           const option = document.createElement('option');
-          option.value = id;
+          option.value = item.id;
           option.textContent = item.label;
-          originalGroup.appendChild(option);
+          customGroup.appendChild(option);
         });
-        linkSelect.appendChild(originalGroup);
-
-        if (linkState.customLinks.length) {
-          const customGroup = document.createElement('optgroup');
-          customGroup.label = '我的連結';
-          linkState.customLinks.forEach(item => {
-            const option = document.createElement('option');
-            option.value = item.id;
-            option.textContent = item.label;
-            customGroup.appendChild(option);
-          });
-          linkSelect.appendChild(customGroup);
-        }
-
-        const preferredExists = Array.from(linkSelect.options).some(option => option.value === selectedBefore);
-        if (preferredExists) linkSelect.value = selectedBefore;
+        linkSelect.appendChild(customGroup);
       }
 
-      function populateEditor() {
-        const id = linkSelect.value;
-        const item = getEditableItem(id);
-        if (!item) return;
+      const preferredExists = Array.from(linkSelect.options).some(option => option.value === selectedBefore);
+      if (preferredExists) linkSelect.value = selectedBefore;
+    }
 
-        editLabel.value = item.label || '';
-        editUrl.value = item.url || '';
-        const savedImageUrl = item.imageUrl || '';
-        const usesLocalImage = savedImageUrl.startsWith('data:image/');
-        editLocalImageDataUrl = usesLocalImage ? savedImageUrl : '';
-        editImageUrl.value = usesLocalImage ? '' : savedImageUrl;
+    function populateEditor() {
+      const id = linkSelect.value;
+      const item = getEditableItem(id);
+      if (!item) return;
+
+      editLabel.value = item.label || '';
+      editUrl.value = item.url || '';
+      const savedImageUrl = item.imageUrl || '';
+      const usesLocalImage = savedImageUrl.startsWith('data:image/');
+      editLocalImageDataUrl = usesLocalImage ? savedImageUrl : '';
+      editImageUrl.value = usesLocalImage ? '' : savedImageUrl;
+      editImageFile.value = '';
+      editImageClear.hidden = !usesLocalImage;
+      editImageFileStatus.textContent = usesLocalImage
+        ? '目前使用儲存在此裝置的圖片。'
+        : '也可以選擇手機相簿或裝置中的圖片。';
+      const isOriginal = originalLinks.has(id);
+      editRestore.hidden = !isOriginal;
+      editDelete.hidden = isOriginal;
+      editLockNote.textContent = isOriginal
+        ? '網站原本的連結可以編輯與還原，但不能刪除。'
+        : '這是你新增的連結，可以編輯或刪除。';
+      setStatus(editStatus, '');
+      updatePreview(editPreview, editPreviewText, editLocalImageDataUrl || editImageUrl.value.trim(), editUrl.value.trim());
+    }
+
+    function previewCurrentEditorImage() {
+      updatePreview(editPreview, editPreviewText, editLocalImageDataUrl || editImageUrl.value.trim(), editUrl.value.trim());
+    }
+
+    editImagePick.addEventListener('click', () => editImageFile.click());
+    editImageFile.addEventListener('change', async () => {
+      const file = editImageFile.files && editImageFile.files[0];
+      if (!file) return;
+
+      editImagePick.disabled = true;
+      editImageFileStatus.textContent = '正在縮小並處理圖片…';
+      try {
+        const result = await resizeLinkImage(file);
+        editLocalImageDataUrl = result.dataUrl;
+        editImageUrl.value = '';
+        editImageClear.hidden = false;
+        editImageFileStatus.textContent = `已準備 ${result.width} × ${result.height}px 的裝置圖片，請按「儲存變更」。`;
+        previewCurrentEditorImage();
+      } catch (error) {
+        editImageFileStatus.textContent = error.message || '無法處理這張圖片。';
+      } finally {
         editImageFile.value = '';
-        editImageClear.hidden = !usesLocalImage;
-        editImageFileStatus.textContent = usesLocalImage
-          ? '目前使用儲存在此裝置的圖片。'
-          : '也可以選擇手機相簿或裝置中的圖片。';
-        const isOriginal = originalLinks.has(id);
-        editRestore.hidden = !isOriginal;
-        editDelete.hidden = isOriginal;
-        editLockNote.textContent = isOriginal
-          ? '網站原本的連結可以編輯與還原，但不能刪除。'
-          : '這是你新增的連結，可以編輯或刪除。';
-        setStatus(editStatus, '');
-        updatePreview(editPreview, editPreviewText, editLocalImageDataUrl || editImageUrl.value.trim(), editUrl.value.trim());
+        editImagePick.disabled = false;
       }
-
-      function previewCurrentEditorImage() {
-        updatePreview(editPreview, editPreviewText, editLocalImageDataUrl || editImageUrl.value.trim(), editUrl.value.trim());
-      }
-
-      editImagePick.addEventListener('click', () => editImageFile.click());
-      editImageFile.addEventListener('change', async () => {
-        const file = editImageFile.files && editImageFile.files[0];
-        if (!file) return;
-
-        editImagePick.disabled = true;
-        editImageFileStatus.textContent = '正在縮小並處理圖片…';
-        try {
-          const result = await resizeLinkImage(file);
-          editLocalImageDataUrl = result.dataUrl;
-          editImageUrl.value = '';
-          editImageClear.hidden = false;
-          editImageFileStatus.textContent = `已準備 ${result.width} × ${result.height}px 的裝置圖片，請按「儲存變更」。`;
-          previewCurrentEditorImage();
-        } catch (error) {
-          editImageFileStatus.textContent = error.message || '無法處理這張圖片。';
-        } finally {
-          editImageFile.value = '';
-          editImagePick.disabled = false;
-        }
-      });
-      editImageClear.addEventListener('click', () => {
+    });
+    editImageClear.addEventListener('click', () => {
+      editLocalImageDataUrl = '';
+      editImageFile.value = '';
+      editImageClear.hidden = true;
+      editImageFileStatus.textContent = '已移除裝置圖片；儲存後會改用圖片網址或網站圖示。';
+      previewCurrentEditorImage();
+    });
+    editImageUrl.addEventListener('input', () => {
+      if (editLocalImageDataUrl) {
         editLocalImageDataUrl = '';
-        editImageFile.value = '';
         editImageClear.hidden = true;
-        editImageFileStatus.textContent = '已移除裝置圖片；儲存後會改用圖片網址或網站圖示。';
-        previewCurrentEditorImage();
-      });
-      editImageUrl.addEventListener('input', () => {
-        if (editLocalImageDataUrl) {
-          editLocalImageDataUrl = '';
-          editImageClear.hidden = true;
-          editImageFileStatus.textContent = '已改用圖片網址；也可以重新從裝置選圖。';
-        }
-        previewCurrentEditorImage();
-      });
-      editUrl.addEventListener('input', previewCurrentEditorImage);
-      linkSelect.addEventListener('change', populateEditor);
-
-      editForm.addEventListener('submit', event => {
-        event.preventDefault();
-        const id = linkSelect.value;
-
-        try {
-          const item = {
-            label: editLabel.value.trim(),
-            url: normalizeEntryUrl(editUrl.value, true, '連結網址'),
-            imageUrl: editLocalImageDataUrl || normalizeEntryUrl(editImageUrl.value, false, '圖片網址')
-          };
-          if (!item.label) throw new Error('請填寫顯示名稱。');
-
-          if (originalLinks.has(id)) {
-            const hadPreviousOverride = Object.prototype.hasOwnProperty.call(linkState.overrides, id);
-            const previousOverride = linkState.overrides[id];
-            linkState.overrides[id] = item;
-            try {
-              saveLinkState(linkState);
-            } catch (error) {
-              if (hadPreviousOverride) linkState.overrides[id] = previousOverride;
-              else delete linkState.overrides[id];
-              throw error;
-            }
-            updateAnchor(originalLinks.get(id).anchor, item);
-          } else {
-            const customLink = getCustomLink(id);
-            if (!customLink) throw new Error('找不到要編輯的連結。');
-            const previousCustomLink = { ...customLink };
-            Object.assign(customLink, item);
-            try {
-              saveLinkState(linkState);
-            } catch (error) {
-              Object.assign(customLink, previousCustomLink);
-              throw error;
-            }
-            renderCustomLinks();
-          }
-
-          rebuildLinkSelector(id);
-          populateEditor();
-          setStatus(editStatus, '連結、名稱與圖片設定已保存。', 'success');
-        } catch (error) {
-          setStatus(editStatus, error.message || '無法儲存這個連結。', 'error');
-        }
-      });
-
-      editRestore.addEventListener('click', () => {
-        const id = linkSelect.value;
-        if (!originalLinks.has(id)) return;
-        delete linkState.overrides[id];
-        saveLinkState(linkState);
-        location.reload();
-      });
-
-      editDelete.addEventListener('click', () => {
-        const id = linkSelect.value;
-        const customLink = getCustomLink(id);
-        if (!customLink) return;
-        if (!window.confirm(`確定要刪除「${customLink.label}」嗎？`)) return;
-
-        linkState.customLinks = linkState.customLinks.filter(item => item.id !== id);
-        saveLinkState(linkState);
-        renderCustomLinks();
-        rebuildLinkSelector();
-        populateEditor();
-        setStatus(editStatus, '自訂連結已刪除。', 'success');
-      });
-
-      resetAllOriginals.addEventListener('click', () => {
-        if (!Object.keys(linkState.overrides).length) {
-          setStatus(editStatus, '目前沒有修改過的原始連結。');
-          return;
-        }
-        if (!window.confirm('確定要還原全部網站原有連結嗎？你新增的「我的連結」會保留。')) return;
-        linkState.overrides = {};
-        saveLinkState(linkState);
-        location.reload();
-      });
-
-      function previewNewLinkImage() {
-        updatePreview(addPreview, addPreviewText, addLocalImageDataUrl || addImageUrl.value.trim(), addUrl.value.trim());
+        editImageFileStatus.textContent = '已改用圖片網址；也可以重新從裝置選圖。';
       }
+      previewCurrentEditorImage();
+    });
+    editUrl.addEventListener('input', previewCurrentEditorImage);
+    linkSelect.addEventListener('change', populateEditor);
 
-      function resetNewLinkImageControls() {
-        addLocalImageDataUrl = '';
-        addImageFile.value = '';
-        addImageClear.hidden = true;
-        addImageFileStatus.textContent = '也可以選擇手機相簿或裝置中的圖片。';
-        previewNewLinkImage();
-      }
+    editForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const id = linkSelect.value;
 
-      addImagePick.addEventListener('click', () => addImageFile.click());
-      addImageFile.addEventListener('change', async () => {
-        const file = addImageFile.files && addImageFile.files[0];
-        if (!file) return;
+      try {
+        const item = {
+          label: editLabel.value.trim(),
+          url: normalizeEntryUrl(editUrl.value, true, '連結網址'),
+          imageUrl: editLocalImageDataUrl || normalizeEntryUrl(editImageUrl.value, false, '圖片網址')
+        };
+        if (!item.label) throw new Error('請填寫顯示名稱。');
 
-        addImagePick.disabled = true;
-        addImageFileStatus.textContent = '正在縮小並處理圖片…';
-        try {
-          const result = await resizeLinkImage(file);
-          addLocalImageDataUrl = result.dataUrl;
-          addImageUrl.value = '';
-          addImageClear.hidden = false;
-          addImageFileStatus.textContent = `已準備 ${result.width} × ${result.height}px 的裝置圖片。`;
-          previewNewLinkImage();
-        } catch (error) {
-          addImageFileStatus.textContent = error.message || '無法處理這張圖片。';
-        } finally {
-          addImageFile.value = '';
-          addImagePick.disabled = false;
-        }
-      });
-      addImageClear.addEventListener('click', () => {
-        addLocalImageDataUrl = '';
-        addImageFile.value = '';
-        addImageClear.hidden = true;
-        addImageFileStatus.textContent = '已移除裝置圖片，將改用圖片網址或網站圖示。';
-        previewNewLinkImage();
-      });
-      addImageUrl.addEventListener('input', () => {
-        if (addLocalImageDataUrl) {
-          addLocalImageDataUrl = '';
-          addImageClear.hidden = true;
-          addImageFileStatus.textContent = '已改用圖片網址；也可以重新從裝置選圖。';
-        }
-        previewNewLinkImage();
-      });
-      addUrl.addEventListener('input', previewNewLinkImage);
-
-      addForm.addEventListener('submit', event => {
-        event.preventDefault();
-        try {
-          const item = {
-            id: `custom-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
-            label: addLabel.value.trim(),
-            url: normalizeEntryUrl(addUrl.value, true, '連結網址'),
-            imageUrl: addLocalImageDataUrl || normalizeEntryUrl(addImageUrl.value, false, '圖片網址')
-          };
-          if (!item.label) throw new Error('請填寫顯示名稱。');
-
-          linkState.customLinks.push(item);
+        if (originalLinks.has(id)) {
+          const hadPreviousOverride = Object.prototype.hasOwnProperty.call(linkState.overrides, id);
+          const previousOverride = linkState.overrides[id];
+          linkState.overrides[id] = item;
           try {
             saveLinkState(linkState);
           } catch (error) {
-            linkState.customLinks.pop();
+            if (hadPreviousOverride) linkState.overrides[id] = previousOverride;
+            else delete linkState.overrides[id];
+            throw error;
+          }
+          updateAnchor(originalLinks.get(id).anchor, item);
+        } else {
+          const customLink = getCustomLink(id);
+          if (!customLink) throw new Error('找不到要編輯的連結。');
+          const previousCustomLink = { ...customLink };
+          Object.assign(customLink, item);
+          try {
+            saveLinkState(linkState);
+          } catch (error) {
+            Object.assign(customLink, previousCustomLink);
             throw error;
           }
           renderCustomLinks();
-          rebuildLinkSelector(item.id);
-          populateEditor();
-          addForm.reset();
-          resetNewLinkImageControls();
-          setStatus(addStatus, '新連結已加入頁面下方的「我的連結」。', 'success');
-        } catch (error) {
-          setStatus(addStatus, error.message || '無法新增這個連結。', 'error');
         }
-      });
 
-      applyOriginalOverrides();
+        rebuildLinkSelector(id);
+        populateEditor();
+        document.dispatchEvent(new Event('games:links-updated'));
+        setStatus(editStatus, '連結、名稱與圖片設定已保存。', 'success');
+      } catch (error) {
+        setStatus(editStatus, error.message || '無法儲存這個連結。', 'error');
+      }
+    });
+
+    editRestore.addEventListener('click', () => {
+      const id = linkSelect.value;
+      if (!originalLinks.has(id)) return;
+      delete linkState.overrides[id];
+      saveLinkState(linkState);
+      location.reload();
+    });
+
+    editDelete.addEventListener('click', () => {
+      const id = linkSelect.value;
+      const customLink = getCustomLink(id);
+      if (!customLink) return;
+      if (!window.confirm(window.Games.translateText(`確定要刪除「${customLink.label}」嗎？`))) return;
+
+      linkState.customLinks = linkState.customLinks.filter(item => item.id !== id);
+      saveLinkState(linkState);
       renderCustomLinks();
       rebuildLinkSelector();
       populateEditor();
-
-      const languageButton = document.getElementById('lang-toggle-btn');
-      if (languageButton) {
-        languageButton.addEventListener('click', () => {
-          window.setTimeout(() => {
-            applyOriginalOverrides();
-            rebuildLinkSelector(linkSelect.value);
-            populateEditor();
-          }, 0);
-        });
-      }
-
-      installStateElement = document.getElementById('games-home-screen-state');
-      installButtonElement = document.getElementById('games-install-button');
-      installButtonElement.addEventListener('click', async () => {
-        if (!deferredInstallPrompt) return;
-        deferredInstallPrompt.prompt();
-        await deferredInstallPrompt.userChoice;
-        deferredInstallPrompt = null;
-        updateInstallState();
-      });
-      updateInstallState();
-
-      window.addEventListener('beforeunload', () => {
-        if (currentWallpaperUrl) URL.revokeObjectURL(currentWallpaperUrl);
-      });
+      setStatus(editStatus, '自訂連結已刪除。', 'success');
     });
-  })();
+
+    resetAllOriginals.addEventListener('click', () => {
+      if (!Object.keys(linkState.overrides).length) {
+        setStatus(editStatus, '目前沒有修改過的原始連結。');
+        return;
+      }
+      if (!window.confirm(window.Games.translateText('確定要還原全部網站原有連結嗎？你新增的「我的連結」會保留。'))) return;
+      linkState.overrides = {};
+      saveLinkState(linkState);
+      location.reload();
+    });
+
+    function previewNewLinkImage() {
+      updatePreview(addPreview, addPreviewText, addLocalImageDataUrl || addImageUrl.value.trim(), addUrl.value.trim());
+    }
+
+    function resetNewLinkImageControls() {
+      addLocalImageDataUrl = '';
+      addImageFile.value = '';
+      addImageClear.hidden = true;
+      addImageFileStatus.textContent = '也可以選擇手機相簿或裝置中的圖片。';
+      previewNewLinkImage();
+    }
+
+    addImagePick.addEventListener('click', () => addImageFile.click());
+    addImageFile.addEventListener('change', async () => {
+      const file = addImageFile.files && addImageFile.files[0];
+      if (!file) return;
+
+      addImagePick.disabled = true;
+      addImageFileStatus.textContent = '正在縮小並處理圖片…';
+      try {
+        const result = await resizeLinkImage(file);
+        addLocalImageDataUrl = result.dataUrl;
+        addImageUrl.value = '';
+        addImageClear.hidden = false;
+        addImageFileStatus.textContent = `已準備 ${result.width} × ${result.height}px 的裝置圖片。`;
+        previewNewLinkImage();
+      } catch (error) {
+        addImageFileStatus.textContent = error.message || '無法處理這張圖片。';
+      } finally {
+        addImageFile.value = '';
+        addImagePick.disabled = false;
+      }
+    });
+    addImageClear.addEventListener('click', () => {
+      addLocalImageDataUrl = '';
+      addImageFile.value = '';
+      addImageClear.hidden = true;
+      addImageFileStatus.textContent = '已移除裝置圖片，將改用圖片網址或網站圖示。';
+      previewNewLinkImage();
+    });
+    addImageUrl.addEventListener('input', () => {
+      if (addLocalImageDataUrl) {
+        addLocalImageDataUrl = '';
+        addImageClear.hidden = true;
+        addImageFileStatus.textContent = '已改用圖片網址；也可以重新從裝置選圖。';
+      }
+      previewNewLinkImage();
+    });
+    addUrl.addEventListener('input', previewNewLinkImage);
+
+    addForm.addEventListener('submit', event => {
+      event.preventDefault();
+      try {
+        const item = {
+          id: `custom-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+          label: addLabel.value.trim(),
+          url: normalizeEntryUrl(addUrl.value, true, '連結網址'),
+          imageUrl: addLocalImageDataUrl || normalizeEntryUrl(addImageUrl.value, false, '圖片網址')
+        };
+        if (!item.label) throw new Error('請填寫顯示名稱。');
+
+        linkState.customLinks.push(item);
+        try {
+          saveLinkState(linkState);
+        } catch (error) {
+          linkState.customLinks.pop();
+          throw error;
+        }
+        renderCustomLinks();
+        rebuildLinkSelector(item.id);
+        populateEditor();
+        addForm.reset();
+        resetNewLinkImageControls();
+        setStatus(addStatus, '新連結已加入貓咪大戰爭上方的「我的連結」。', 'success');
+      } catch (error) {
+        setStatus(addStatus, error.message || '無法新增這個連結。', 'error');
+      }
+    });
+
+    applyOriginalOverrides();
+    renderCustomLinks();
+    rebuildLinkSelector();
+    populateEditor();
+
+    document.addEventListener('games:language-changed', () => {
+      originalLinks.forEach((original, id) => {
+        if (!linkState.overrides[id]) {
+          original.label = readAnchorLabel(original.anchor);
+          original.url = readAnchorUrl(original.anchor);
+        }
+      });
+      applyOriginalOverrides();
+      rebuildLinkSelector(linkSelect.value);
+      populateEditor();
+      document.dispatchEvent(new Event('games:links-updated'));
+    });
+
+    installStateElement = document.getElementById('games-home-screen-state');
+    installButtonElement = document.getElementById('games-install-button');
+    installButtonElement.addEventListener('click', async () => {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      updateInstallState();
+    });
+    updateInstallState();
+
+    window.addEventListener('beforeunload', () => {
+      if (currentWallpaperUrl) URL.revokeObjectURL(currentWallpaperUrl);
+    });
+  });
+})();
+</script>
+
+<script id="games-check-script">
+/*
+ * 手動連線檢查：只有按「檢查一次」或「再測一次」才會發出檢查請求。
+ *
+ * 超過 SLOW_RESPONSE_MS 標示較慢；超過 REQUEST_TIMEOUT_MS 中止並標示逾時。
+ * 同時最多 4 個請求；兩次明確失敗才暫時隱藏。較慢、離線、逾時保留連結。
+ * 跨網站 no-cors 回應不可讀取狀態／內容，不能據此保證網站可正常使用。
+ * 自動結果只留在記憶體；localStorage 只保存使用者開關與手動顯示偏好。
+ */
+(() => {
+  'use strict';
+  const REQUEST_TIMEOUT_MS = 8000;
+  const SLOW_RESPONSE_MS = 3000;
+  const RETRY_DELAY_MS = 1200;
+  const CONCURRENCY = 4;
+  const STORAGE_KEY = 'gamesVisibilityPreferencesV1';
+
+  // 獨立於畫面的檢查函式，測試時可注入網路回應、離線狀態與時間限制。
+  async function probeUrl(rawUrl, options = {}) {
+    const { baseUrl, signal, fetchFn = fetch, online = () => navigator.onLine,
+      timeoutMs = REQUEST_TIMEOUT_MS, slowMs = SLOW_RESPONSE_MS, now = () => performance.now() } = options;
+    let url;
+    try { url = new URL(rawUrl, baseUrl); }
+    catch { return { kind: 'unknown', reason: '網址格式無法檢查' }; }
+    if (!online() || signal?.aborted) return { kind: 'unknown', reason: '離線或檢查已取消' };
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {
+      return { kind: 'unknown', reason: '此類網址無法自動檢查' };
+    }
+    // HTTPS 頁面不能 fetch HTTP，但使用者仍能直接開啟 HTTP 網站。
+    if (new URL(baseUrl).protocol === 'https:' && url.protocol === 'http:') {
+      return { kind: 'unknown', reason: '此 HTTP 連結需直接開啟確認' };
+    }
+    const controller = new AbortController();
+    const abort = () => controller.abort();
+    signal?.addEventListener('abort', abort, { once: true });
+    let timedOut = false;
+    const started = now();
+    const timer = setTimeout(() => { timedOut = true; abort(); }, timeoutMs);
+    try {
+      const response = await fetchFn(url.href, {
+        method: 'GET', mode: 'no-cors', credentials: 'omit', cache: 'no-store',
+        redirect: 'follow', referrerPolicy: 'no-referrer', signal: controller.signal
+      });
+      if (!online() || signal?.aborted) return { kind: 'unknown', reason: '網路狀況已改變' };
+      const durationMs = Math.max(0, now() - started);
+      if (response.type === 'opaque' || response.ok) {
+        if (durationMs >= slowMs) return { kind: 'slow', durationMs, reason: `回應較慢（${(durationMs / 1000).toFixed(1)} 秒），需直接開啟確認` };
+        return { kind: 'response', durationMs, reason: response.type === 'opaque' ? '收到回應，無法驗證內容' : '收到正常回應' };
+      }
+      if ([404, 410].includes(response.status) || response.status >= 500) {
+        return { kind: 'failed', reason: `HTTP ${response.status}` };
+      }
+      // 登入、權限或限制請求不等於使用者不能開啟網站。
+      return { kind: 'unknown', reason: '需直接開啟確認登入或存取限制' };
+    } catch {
+      if (signal?.aborted || !online()) return { kind: 'unknown', reason: '檢查已取消或裝置離線' };
+      if (timedOut) return { kind: 'timeout', durationMs: Math.max(0, now() - started), reason: `逾時（${timeoutMs / 1000} 秒內沒有回應），保留連結` };
+      return { kind: 'failed', reason: '連線請求失敗' };
+    } finally {
+      clearTimeout(timer);
+      signal?.removeEventListener('abort', abort);
+      controller.abort(); // 收到標頭即停止，不下載整個遊戲。
+    }
+  }
+
+  async function checkUrl(url, options) {
+    const first = await probeUrl(url, options);
+    if (first.kind !== 'failed') return first;
+    await new Promise(resolve => {
+      const finish = () => { clearTimeout(timer); options.signal?.removeEventListener('abort', finish); resolve(); };
+      const timer = setTimeout(finish, options.retryDelayMs ?? RETRY_DELAY_MS);
+      options.signal?.addEventListener('abort', finish, { once: true });
+      if (options.signal?.aborted) finish();
+    });
+    const second = await probeUrl(url, options);
+    return second.kind === 'failed'
+      ? { kind: 'failed', reason: `連續兩次失敗（${second.reason}）` }
+      : second;
+  }
+
+  // 可在 Node 中抽出這個 script 檢查；正常瀏覽頁面不會使用此分支。
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { probeUrl, checkUrl };
+    return;
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const autoToggle = document.getElementById('games-auto-hide');
+    const checkButton = document.getElementById('games-check-now');
+    const hiddenList = document.getElementById('games-hidden-list');
+    const reviewList = document.getElementById('games-check-results');
+    const checkStatus = document.getElementById('games-check-status');
+    const summary = document.getElementById('games-availability-summary');
+    const hideButton = document.getElementById('games-link-hide');
+    const linkSelect = document.getElementById('games-link-select');
+    let preferences = { autoHide: true, decisions: {}, linkDecisions: {} };
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (saved && typeof saved === 'object') {
+        preferences.autoHide = saved.autoHide !== false;
+        if (saved.decisions && typeof saved.decisions === 'object' && !Array.isArray(saved.decisions)) {
+          preferences.decisions = Object.fromEntries(Object.entries(saved.decisions).filter(([, value]) => ['hide', 'show'].includes(value)));
+        }
+        if (saved.linkDecisions && typeof saved.linkDecisions === 'object' && !Array.isArray(saved.linkDecisions)) {
+          preferences.linkDecisions = Object.fromEntries(Object.entries(saved.linkDecisions).filter(([, value]) => ['hide', 'show'].includes(value)));
+        }
+      }
+    } catch { /* 空白或不可用的儲存區，使用預設設定。 */ }
+    autoToggle.checked = preferences.autoHide;
+
+    // 舊版以網址保存的手動選擇轉到固定 ID，中英文網址都納入比對。
+    let migrated = false;
+    anchors().forEach(link => {
+      if (preferences.linkDecisions[link.dataset.linkId]) return;
+      const urls = [link.href, link.dataset.zhHref, link.dataset.enHref].filter(Boolean).map(value => new URL(value, document.baseURI).href);
+      const legacyUrl = urls.find(url => preferences.decisions[url]);
+      if (legacyUrl) {
+        preferences.linkDecisions[link.dataset.linkId] = preferences.decisions[legacyUrl];
+        migrated = true;
+      }
+    });
+    if (migrated) savePreferences();
+
+    // 網址當 key：切換語言、修改網址不會沿用另一個目的地的連線結果。
+    let results = new Map();
+    let activeScan = null;
+
+    function anchors() { return Array.from(document.querySelectorAll('#games-catalog a[data-link-id]')); }
+    function selectedAnchor() { return anchors().find(link => link.dataset.linkId === linkSelect.value); }
+    function suppressed(link) {
+      const manual = preferences.linkDecisions[link.dataset.linkId];
+      if (manual) return manual === 'hide';
+      return preferences.autoHide && results.get(link.href)?.kind === 'failed';
+    }
+    function savePreferences() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences)); }
+      catch { checkStatus.textContent = '目前的偏好僅在本次開啟有效，瀏覽器無法保存設定。'; }
+    }
+    function updateHideButton() {
+      const link = selectedAnchor();
+      hideButton.disabled = !link;
+      hideButton.textContent = link && suppressed(link) ? '恢復顯示此連結' : '隱藏此連結';
+    }
+    function addAction(container, label, handler) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'games-settings-action games-settings-action--secondary';
+      button.textContent = label;
+      button.addEventListener('click', handler);
+      container.appendChild(button);
+    }
+    function setDecision(link, decision) {
+      preferences.linkDecisions[link.dataset.linkId] = decision;
+      renderVisibility();
+      savePreferences();
+    }
+
+    function resultRow(link, reasonText, isHidden) {
+      const row = document.createElement('li');
+      const open = document.createElement('a');
+      const label = link.querySelector('.link-text')?.textContent || link.textContent;
+      open.href = link.href;
+      open.target = '_blank';
+      open.rel = 'noopener noreferrer';
+      open.textContent = label;
+      open.setAttribute('aria-label', `開啟 ${label}`);
+      const reason = document.createElement('small');
+      reason.textContent = reasonText;
+      const actions = document.createElement('div');
+      actions.className = 'games-settings-actions';
+      addAction(actions, isHidden ? '恢復顯示' : '隱藏此連結', () => setDecision(link, isHidden ? 'show' : 'hide'));
+      addAction(actions, '再測一次', () => scan([link.href]));
+      row.append(open, reason, actions);
+      return row;
+    }
+
+    function renderVisibility() {
+      hiddenList.replaceChildren();
+      reviewList.replaceChildren();
+      const reviewed = new Set();
+      let count = 0;
+      anchors().forEach(link => {
+        const isHidden = suppressed(link);
+        link.hidden = isHidden;
+        link.dataset.suppressed = String(isHidden);
+        const result = results.get(link.href);
+        if (!isHidden && result && result.kind !== 'response' && !reviewed.has(link.href)) {
+          reviewList.appendChild(resultRow(link, result.reason, false));
+          reviewed.add(link.href);
+        }
+        if (!isHidden) return;
+        count++;
+        const manual = preferences.linkDecisions[link.dataset.linkId] === 'hide';
+        hiddenList.appendChild(resultRow(link, manual ? '手動隱藏，恢復顯示後才會回到主頁。' : result?.reason, true));
+      });
+      document.getElementById('games-hidden-count').textContent = String(count);
+      document.getElementById('games-hidden-empty').hidden = count > 0;
+      document.getElementById('games-review-results').hidden = reviewed.size === 0;
+      summary.textContent = activeScan
+        ? `正在檢查目前網路… 已隱藏 ${count} 個連結，可在設定查看。`
+        : `已隱藏 ${count} 個連結 · 可在設定查看、重試或恢復顯示。`;
+      updateHideButton();
+      window.Games.refreshCatalog();
+    }
+
+    async function scan(onlyUrls) {
+      activeScan?.abort();
+      const controller = new AbortController();
+      activeScan = controller;
+      checkButton.textContent = '停止檢查';
+      const options = { baseUrl: document.baseURI, signal: controller.signal };
+      const urls = [...new Set(onlyUrls || anchors().map(link => link.href))];
+      const next = onlyUrls ? new Map(results) : new Map();
+      let checked = 0;
+      renderVisibility();
+      checkStatus.textContent = '正在確認目前的網路連線…';
+      try {
+        // 同站小圖作為連線基準。基準也失敗時，不把整批網站誤判成故障。
+        const baselineUrl = new URL('games-icon-192.png', document.baseURI).href;
+        const baseline = await probeUrl(baselineUrl, options);
+        if (controller.signal.aborted) return;
+        if (!['response', 'slow'].includes(baseline.kind)) {
+          results.clear();
+          checkStatus.textContent = '目前離線、使用本機檔案，或無法確認網路；暫不自動隱藏。';
+          return;
+        }
+        let cursor = 0;
+        async function worker() {
+          while (cursor < urls.length && !controller.signal.aborted) {
+            const url = urls[cursor++];
+            const result = await checkUrl(url, options);
+            if (controller.signal.aborted) return;
+            next.set(url, result);
+            checked++;
+            checkStatus.textContent = `正在檢查 ${checked} / ${urls.length} 個網址…`;
+          }
+        }
+        await Promise.all(Array.from({ length: Math.min(CONCURRENCY, urls.length) }, worker));
+        if (controller.signal.aborted) return;
+        // 過程中斷線時丟棄結果，避免把斷網誤當成每個網站都不能用。
+        const finalBaseline = await probeUrl(baselineUrl, options);
+        if (controller.signal.aborted) return;
+        if (!['response', 'slow'].includes(finalBaseline.kind)) {
+          results.clear();
+          checkStatus.textContent = '檢查期間網路不穩定；已清除檢查結果，需要時再按「檢查一次」。';
+          return;
+        }
+        results = next;
+        const failures = [...next.values()].filter(result => result.kind === 'failed').length;
+        const slow = [...next.values()].filter(result => result.kind === 'slow').length;
+        const timeouts = [...next.values()].filter(result => result.kind === 'timeout').length;
+        const unknown = [...next.values()].filter(result => result.kind === 'unknown').length;
+        checkStatus.textContent = `檢查完成：${failures} 個連續失敗、${slow} 個回應較慢、${timeouts} 個逾時、${unknown} 個無法判定。結果僅供本次參考，不會持續檢查。`;
+      } finally {
+        if (activeScan === controller) {
+          activeScan = null;
+          checkButton.textContent = '檢查一次';
+          renderVisibility();
+        }
+      }
+    }
+
+    function clearResults(message) {
+      // 網址或網路改變只清除過時結果，不會啟動下一次檢查。
+      activeScan?.abort();
+      activeScan = null;
+      checkButton.textContent = '檢查一次';
+      results.clear();
+      renderVisibility();
+      checkStatus.textContent = message;
+    }
+    autoToggle.addEventListener('change', () => {
+      preferences.autoHide = autoToggle.checked;
+      renderVisibility();
+      savePreferences();
+    });
+    checkButton.addEventListener('click', () => {
+      if (activeScan) {
+        activeScan.abort();
+        checkStatus.textContent = '已停止檢查；需要時可再按「檢查一次」。';
+      } else scan();
+    });
+    hideButton.addEventListener('click', () => {
+      const link = selectedAnchor();
+      if (link) setDecision(link, suppressed(link) ? 'show' : 'hide');
+    });
+    linkSelect.addEventListener('change', updateHideButton);
+    document.getElementById('games-reset-visibility').addEventListener('click', () => {
+      preferences.decisions = {};
+      preferences.linkDecisions = {};
+      renderVisibility();
+      savePreferences();
+    });
+    document.addEventListener('games:links-updated', () => clearResults('連結已更新；需要時再按「檢查一次」。'));
+    window.addEventListener('online', () => clearResults('網路已恢復；需要時再按「檢查一次」。'));
+    window.addEventListener('offline', () => clearResults('裝置目前離線，已清除本次檢查結果。'));
+    renderVisibility();
+    checkStatus.textContent = '尚未檢查；按「檢查一次」才會開始，可隨時停止。';
+  });
+})();
 </script>
 </body>
 </html>

@@ -462,6 +462,35 @@
     line-height: 1.45;
 }
 
+.schedule-language-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.schedule-language-option {
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 1px solid #bdc1c6;
+    border-radius: 10px;
+    background: white;
+    color: #3c4043;
+    font: 700 14px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    cursor: pointer;
+}
+
+.schedule-language-option:hover,
+.schedule-language-option:focus-visible {
+    border-color: #1a73e8;
+    outline: 3px solid rgba(26, 115, 232, 0.14);
+}
+
+.schedule-language-option[aria-pressed="true"] {
+    border-color: #1a73e8;
+    background: #1a73e8;
+    color: white;
+}
+
 .google-account-panel label {
     display: block;
     margin: 12px 0 6px;
@@ -1182,6 +1211,15 @@
         <h2 id="google-account-title">設定</h2>
         <p class="google-account-panel__intro">管理 Google 帳號、頁面桌布、自訂連結與 iPhone 主畫面捷徑。</p>
 
+        <section class="settings-card" aria-labelledby="schedule-language-title">
+            <h3 id="schedule-language-title">顯示語言</h3>
+            <p class="settings-card__description">切換 Schedule 的介面語言；Games 也會沿用這個選擇。</p>
+            <div class="schedule-language-options" role="group" aria-label="顯示語言">
+                <button class="schedule-language-option" type="button" data-schedule-language="zh" aria-pressed="false">中文</button>
+                <button class="schedule-language-option" type="button" data-schedule-language="en" aria-pressed="false">English</button>
+            </div>
+        </section>
+
         <form id="google-account-form" class="settings-card">
             <h3>Google 帳號</h3>
             <p class="settings-card__description">
@@ -1295,6 +1333,230 @@
             <button id="google-account-cancel" class="settings-done-button" type="button">完成</button>
         </div>
     </section>
+
+    <script>
+        (() => {
+            const LANGUAGE_KEY = 'userLang';
+            const ENGLISH_TEXT = new Map([
+                ['設定', 'Settings'],
+                ['開啟設定', 'Open settings'],
+                ['顯示語言', 'Display language'],
+                ['切換 Schedule 的介面語言；Games 也會沿用這個選擇。', 'Choose the Schedule interface language. Games uses the same setting.'],
+                ['管理 Google 帳號、頁面桌布、自訂連結與 iPhone 主畫面捷徑。', 'Manage your Google account, wallpaper, custom links, and iPhone home screen shortcut.'],
+                ['Google 帳號', 'Google account'],
+                ['預設使用帳號 0，可依需要改成 1、2、3…；儲存後會套用到本頁與九宮格的 Google 連結。', 'Account 0 is the default. Change it to 1, 2, 3, and so on when needed; saving applies it to Google links here and on the nine-grid page.'],
+                ['帳號序號', 'Account number'],
+                ['或者', 'or'],
+                ['貼上任一 Google 產品連結自動判別', 'Paste a Google product link to detect the account'],
+                ['例如：https://mail.google.com/mail/u/0/#inbox', 'Example: https://mail.google.com/mail/u/0/#inbox'],
+                ['儲存帳號設定', 'Save account settings'],
+                ['頁面桌布', 'Page wallpaper'],
+                ['從手機相簿或裝置中選擇圖片；桌布只會儲存在目前的瀏覽器。', 'Choose an image from your phone or device. The wallpaper is stored only in this browser.'],
+                ['目前桌布預覽', 'Current wallpaper preview'],
+                ['選擇圖片', 'Choose image'],
+                ['恢復預設', 'Restore default'],
+                ['圖片與連結', 'Images and links'],
+                ['可修改原有連結的名稱、網址與圖片，也能在指定分類新增自己的連結。', 'Edit the name, URL, and image of existing links, or add your own link to a category.'],
+                ['要編輯的項目', 'Item to edit'],
+                ['＋ 新增連結', '+ Add link'],
+                ['顯示名稱', 'Display name'],
+                ['新增到分類', 'Add to category'],
+                ['連結網址', 'Link URL'],
+                ['https://example.com 或 Games.html', 'https://example.com or Games.html'],
+                ['連結圖片預覽', 'Link image preview'],
+                ['圖片網址（可留空）', 'Image URL (optional)'],
+                ['或從裝置選擇圖片', 'Or choose an image from your device'],
+                ['儲存連結', 'Save link'],
+                ['還原原始內容', 'Restore original'],
+                ['刪除自訂連結', 'Delete custom link'],
+                ['原有連結', 'Existing links'],
+                ['自訂連結', 'Custom links'],
+                ['Schedule 主畫面圖示', 'Schedule home screen icon'],
+                ['加入 iPhone／iPad 主畫面', 'Add to the iPhone/iPad home screen'],
+                ['請使用 Safari 開啟本頁，接著：', 'Open this page in Safari, then:'],
+                ['點選「分享」按鈕', 'Tap the Share button'],
+                ['選擇「加入主畫面」', 'Choose Add to Home Screen'],
+                ['確認名稱後點選「加入」', 'Confirm the name, then tap Add'],
+                ['可加入主畫面', 'Ready to add to the home screen'],
+                ['已從主畫面開啟', 'Opened from the home screen'],
+                ['請在 iPhone／iPad 的 Safari 操作', 'Use Safari on an iPhone or iPad'],
+                ['完成', 'Done'],
+                ['點一下分類即可展開或收合連結', 'Tap a category to expand or collapse its links'],
+                ['找不到 /u/數字 或 authuser=數字，請確認這是 Google 產品連結。', 'No /u/number or authuser=number was found. Check that this is a Google product link.'],
+                ['請輸入 0 到 99 之間的整數。', 'Enter a whole number from 0 to 99.'],
+                ['請選擇圖片檔案。', 'Choose an image file.'],
+                ['圖片不可超過 20 MB。', 'The image must be 20 MB or smaller.'],
+                ['正在保存桌布…', 'Saving wallpaper…'],
+                ['桌布已保存並套用。', 'Wallpaper saved and applied.'],
+                ['桌布已暫時套用，但這個瀏覽器無法永久保存。', 'Wallpaper applied for now, but this browser could not save it permanently.'],
+                ['已恢復預設桌布。', 'Default wallpaper restored.'],
+                ['正在使用自訂桌布。', 'Using a custom wallpaper.'],
+                ['目前使用預設桌布。', 'Using the default wallpaper.'],
+                ['請選擇 5 MB 以下的圖片。', 'Choose an image smaller than 5 MB.'],
+                ['圖片已準備好，請按「儲存連結」。', 'Image ready. Select Save link.'],
+                ['無法讀取這張圖片。', 'This image could not be read.'],
+                ['請輸入名稱與有效的網址。', 'Enter a name and a valid URL.'],
+                ['圖片網址無效。', 'The image URL is invalid.'],
+                ['自訂連結已新增。', 'Custom link added.'],
+                ['原有連結已更新。', 'Existing link updated.'],
+                ['自訂連結已更新。', 'Custom link updated.'],
+                ['自訂連結已刪除。', 'Custom link deleted.']
+            ]);
+            const textState = new WeakMap();
+            const attributeState = new WeakMap();
+            let currentLanguage = readLanguage();
+            let observer;
+
+            function readLanguage() {
+                try {
+                    return localStorage.getItem(LANGUAGE_KEY) === 'en' ? 'en' : 'zh';
+                } catch (error) {
+                    return 'zh';
+                }
+            }
+
+            function translateText(source) {
+                if (ENGLISH_TEXT.has(source)) return ENGLISH_TEXT.get(source);
+
+                const patterns = [
+                    [/^目前套用帳號 (\d+)$/, 'Account $1 is currently active.'],
+                    [/^已從連結辨識出帳號 (\d+)$/, 'Detected account $1 from the link.'],
+                    [/^已儲存並套用帳號 (\d+)$/, 'Account $1 saved and applied.'],
+                    [/^已套用帳號 (\d+)；瀏覽器無法保存，下次開啟會恢復預設 0。$/, 'Account $1 is active, but this browser could not save it. The next visit will use account 0.'],
+                    [/^開啟設定（Google 帳號：(\d+)）$/, 'Open settings (Google account: $1)'],
+                    [/^開啟設定，目前 Google 帳號 (\d+)$/, 'Open settings, current Google account $1'],
+                    [/^自訂｜(.+)$/, 'Custom | $1']
+                ];
+                for (const [pattern, replacement] of patterns) {
+                    if (pattern.test(source)) return source.replace(pattern, replacement);
+                }
+                return source;
+            }
+
+            function translateTextNode(node) {
+                const current = node.nodeValue;
+                let state = textState.get(node);
+                if (!state || current !== state.applied) state = { source: current, applied: current };
+
+                if (!state.source.trim()) {
+                    state.applied = current;
+                    textState.set(node, state);
+                    return;
+                }
+
+                const whitespace = state.source.match(/^\s*/)?.[0] || '';
+                const trailing = state.source.match(/\s*$/)?.[0] || '';
+                const trimmed = state.source.trim();
+                const translated = currentLanguage === 'en' ? translateText(trimmed) : trimmed;
+                const next = `${whitespace}${translated}${trailing}`;
+                if (current !== next) node.nodeValue = next;
+                state.applied = next;
+                textState.set(node, state);
+            }
+
+            function translateAttribute(element, name) {
+                if (!element.hasAttribute(name)) return;
+                const current = element.getAttribute(name);
+                let states = attributeState.get(element);
+                if (!states) {
+                    states = new Map();
+                    attributeState.set(element, states);
+                }
+                let state = states.get(name);
+                if (!state || current !== state.applied) state = { source: current, applied: current };
+                const next = currentLanguage === 'en' ? translateText(state.source) : state.source;
+                if (current !== next) element.setAttribute(name, next);
+                state.applied = next;
+                states.set(name, state);
+            }
+
+            function translateTree(root) {
+                if (!root) return;
+                if (root.nodeType === Node.TEXT_NODE) {
+                    translateTextNode(root);
+                    return;
+                }
+                if (root.nodeType !== Node.ELEMENT_NODE) return;
+                ['placeholder', 'aria-label', 'title', 'alt', 'label'].forEach(name => translateAttribute(root, name));
+                const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+                while (walker.nextNode()) translateTextNode(walker.currentNode);
+                root.querySelectorAll('[placeholder], [aria-label], [title], [alt], optgroup[label]').forEach(element => {
+                    ['placeholder', 'aria-label', 'title', 'alt', 'label'].forEach(name => translateAttribute(element, name));
+                });
+            }
+
+            function roots() {
+                return [
+                    document.getElementById('google-account-button'),
+                    document.getElementById('google-account-panel'),
+                    document.querySelector('.mobile-dashboard-hint')
+                ].filter(Boolean);
+            }
+
+            function syncLanguageButtons() {
+                document.querySelectorAll('[data-schedule-language]').forEach(button => {
+                    const pressed = button.dataset.scheduleLanguage === currentLanguage ? 'true' : 'false';
+                    if (button.getAttribute('aria-pressed') !== pressed) button.setAttribute('aria-pressed', pressed);
+                });
+            }
+
+            function startObserver() {
+                if (!observer) {
+                    observer = new MutationObserver(mutations => {
+                        observer.disconnect();
+                        mutations.forEach(mutation => {
+                            if (mutation.type === 'childList') {
+                                mutation.addedNodes.forEach(translateTree);
+                            } else {
+                                translateTree(mutation.target);
+                            }
+                        });
+                        syncLanguageButtons();
+                        startObserver();
+                    });
+                }
+                roots().forEach(root => observer.observe(root, {
+                    subtree: true,
+                    childList: true,
+                    characterData: true,
+                    attributes: true,
+                    attributeFilter: ['placeholder', 'aria-label', 'title', 'alt', 'label']
+                }));
+            }
+
+            function applyLanguage(language = readLanguage()) {
+                currentLanguage = language;
+                document.documentElement.lang = currentLanguage === 'en' ? 'en' : 'zh-TW';
+                if (observer) observer.disconnect();
+                roots().forEach(translateTree);
+                syncLanguageButtons();
+                startObserver();
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('[data-schedule-language]').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const language = button.dataset.scheduleLanguage === 'en' ? 'en' : 'zh';
+                        try {
+                            localStorage.setItem(LANGUAGE_KEY, language);
+                        } catch (error) {
+                            currentLanguage = language;
+                        }
+                        applyLanguage(language);
+                        document.dispatchEvent(new CustomEvent('schedule:language-changed', { detail: { language } }));
+                        document.dispatchEvent(new CustomEvent('schedule:settings-saved'));
+                    });
+                });
+                applyLanguage();
+            });
+
+            window.ScheduleLanguage = {
+                getLanguage: () => currentLanguage,
+                translateText,
+                refresh: applyLanguage
+            };
+        })();
+    </script>
 
     <script>
         (() => {
@@ -1514,6 +1776,7 @@
                 button.addEventListener('click', openPanel);
                 cancelButton.addEventListener('click', closePanel);
                 backdrop.addEventListener('click', closePanel);
+                document.addEventListener('schedule:settings-saved', closePanel);
 
                 linkInput.addEventListener('input', () => {
                     const value = linkInput.value.trim();
@@ -1548,6 +1811,7 @@
                     try {
                         localStorage.setItem(STORAGE_KEY, String(accountIndex));
                         setStatus(`已儲存並套用帳號 ${accountIndex}`, 'success');
+                        document.dispatchEvent(new CustomEvent('schedule:settings-saved'));
                     } catch (error) {
                         setStatus(`已套用帳號 ${accountIndex}；瀏覽器無法保存，下次開啟會恢復預設 0。`, 'error');
                     }
@@ -1665,6 +1929,7 @@
                     status.textContent = message;
                     status.classList.toggle('is-success', type === 'success');
                     status.classList.toggle('is-error', type === 'error');
+                    if (type === 'success') document.dispatchEvent(new CustomEvent('schedule:settings-saved'));
                 }
 
                 function applyWallpaper(file) {
@@ -1938,6 +2203,7 @@
                     status.textContent = message;
                     status.classList.toggle('is-success', type === 'success');
                     status.classList.toggle('is-error', type === 'error');
+                    if (type === 'success') document.dispatchEvent(new CustomEvent('schedule:settings-saved'));
                 }
 
                 function showIconPreview(source) {

@@ -23,7 +23,9 @@
  */
 :root {
   color-scheme: dark;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* 標楷體是主要字型；其他字型僅供沒有安裝標楷體的裝置後備使用。 */
+  --ui-font: "DFKai-SB", "BiauKai", "標楷體", serif;
+  font-family: var(--ui-font);
   color: #f3f8f3;
   --panel: rgba(13, 43, 33, .92);
   --line: rgba(208, 235, 219, .2);
@@ -160,7 +162,7 @@ body.games-settings-open { overflow: hidden; }
   background: rgba(15, 37, 30, 0.82);
   color: #fff;
   box-shadow: 0 5px 18px rgba(0, 0, 0, 0.3);
-  font: 700 25px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font: 700 25px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI Symbol", sans-serif;
   cursor: pointer;
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
@@ -197,7 +199,7 @@ body.games-settings-open { overflow: hidden; }
   background: rgba(250, 252, 250, 0.98);
   color: #17221d;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.4);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--ui-font);
   text-align: left;
   -webkit-overflow-scrolling: touch;
 }
@@ -292,6 +294,13 @@ body.games-settings-open { overflow: hidden; }
   line-height: 1.48;
 }
 
+.font-picker-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.games-settings-panel .font-picker-grid label { margin: 0; }
+
 .games-settings-panel label {
   display: block;
   margin: 10px 0 5px;
@@ -310,7 +319,7 @@ body.games-settings-open { overflow: hidden; }
   border-radius: 10px;
   background: #fff;
   color: #17221d;
-  font: 16px/1.3 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font: 16px/1.3 var(--ui-font);
 }
 
 .games-settings-panel input:focus,
@@ -337,7 +346,7 @@ body.games-settings-open { overflow: hidden; }
   padding: 9px 13px;
   border: 0;
   border-radius: 10px;
-  font: 750 14px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font: 750 14px/1 var(--ui-font);
   cursor: pointer;
 }
 
@@ -559,10 +568,36 @@ body.games-settings-open { overflow: hidden; }
     </header>
     <p class="games-settings-panel__intro">桌布、遊戲連結與主畫面捷徑都可在這裡管理；個人設定只保存在目前裝置的瀏覽器。</p>
 
+    <!-- 一次選擇整個頁面使用的字型，選項集中在同一個選單。 -->
+    <section class="games-settings-card" aria-labelledby="games-font-title">
+      <h3 id="games-font-title">顯示字型</h3>
+      <p class="games-settings-description">從下列六種常用字型選擇一種，會套用到整個頁面。</p>
+      <div class="font-picker-grid">
+        <label for="games-font-select">字型
+          <select id="games-font-select">
+            <optgroup label="中文字體">
+            <option value="kaiti">標楷體</option>
+            <option value="jhenghei">微軟正黑體</option>
+            <option value="mingliu">新細明體</option>
+            </optgroup>
+            <optgroup label="英文字體">
+            <option value="arial">Arial</option>
+            <option value="times">Times New Roman</option>
+            <option value="calibri">Calibri</option>
+            </optgroup>
+          </select>
+        </label>
+      </div>
+      <div class="games-settings-actions">
+        <button id="games-font-save" class="games-settings-action games-settings-action--primary" type="button">套用字型</button>
+      </div>
+      <p id="games-font-status" class="settings-status" role="status" aria-live="polite"></p>
+    </section>
+
     <!-- 隱藏只影響本裝置的顯示，原始連結仍留在下方 HTML。 -->
     <section class="games-settings-card" aria-labelledby="games-visibility-title">
       <h3 id="games-visibility-title">連線檢查與隱藏</h3>
-      <p class="games-settings-description">需要時按「檢查一次」，不會在開啟頁面或背景自動檢查。超過 3 秒標示回應較慢，8 秒仍沒有回應就停止等待並標示逾時。</p>
+      <p class="games-settings-description">需要時按「檢查一次」，不會在開啟頁面或背景自動檢查。連續失敗的連結會保持隱藏，直到下次手動檢查。超過 3 秒標示回應較慢，8 秒仍沒有回應就停止等待並標示逾時。</p>
       <label class="settings-check"><input id="games-auto-hide" type="checkbox" checked> 檢查後隱藏連續兩次失敗的連結</label>
       <details class="availability-note"><summary>哪些情況無法判斷？</summary><p>這裡只測第一次回應，無法測完整遊戲載入時間。網站先回傳頁面、之後卡住，或回傳登入頁、封鎖提示頁時，仍需直接開啟確認。較慢、逾時和無法判定的連結會列出來，由你決定是否隱藏；圖片載入失敗不代表網站無法訪問。</p></details>
       <div class="games-settings-actions">
@@ -717,11 +752,11 @@ body.games-settings-open { overflow: hidden; }
             <section class="game-category" id="category-party" aria-labelledby="heading-party">
               <h2 id="heading-party" data-zh-label="多人與派對" data-en-label="Multiplayer &amp; Party">多人與派對</h2>
               <div class="game-links">
-                <a data-link-id="original-030" href="https://garticphone.com/">Gartic Phone</a>
+                <a data-link-id="original-030" href="https://garticphone.com/" data-zh-label="你畫我猜" data-en-label="Gartic Phone">你畫我猜</a>
                 <a data-link-id="original-026" href="https://www.worldguessr.com/">World Guessr</a>
-                <a data-link-id="original-025" href="https://quickdraw.withgoogle.com/">Quick Draw</a>
+                <a data-link-id="original-025" href="https://quickdraw.withgoogle.com/" data-zh-label="限時塗鴉" data-en-label="Quick, Draw!">限時塗鴉</a>
                 <a data-link-id="original-029" href="https://paperio.site/">Paper</a>
-                <a data-link-id="original-014" href="https://agargame.io/hot-games" data-icon="https://agargame.io/cache/data/image/options/agar-io-logo1-m144x144.png">Agar.io</a>
+                <a data-link-id="original-014" href="https://agargame.io/hot-games" data-zh-label="細胞吞噬" data-en-label="Agar.io" data-icon="https://agargame.io/cache/data/image/options/agar-io-logo1-m144x144.png">細胞吞噬</a>
                 <a data-link-id="original-004" href="https://Roblox.com" data-icon="https://images.rbxcdn.com/7c5fe83dffa97250aaddd54178900ea7.png">Roblox</a>
               </div>
             </section>
@@ -733,7 +768,7 @@ body.games-settings-open { overflow: hidden; }
                 <a data-link-id="original-007" href="https://poki.com/">Poki</a>
                 <a data-link-id="original-006" href="https://www.crazygames.com/" data-icon="https://imgs.crazygames.com/favicons/favicon-transparent.png">Crazy Games</a>
                 <a data-link-id="i-gamer" href="https://www.i-gamer.net/" data-zh-label="遊戲天堂" data-en-label="i-Gamer">遊戲天堂</a>
-                <a data-link-id="hueseek" href="https://hueseek.cn/">HueSeek</a>
+                <a data-link-id="hueseek" href="https://hueseek.cn/" data-zh-label="找色差" data-en-label="HueSeek">找色差</a>
                 <a data-link-id="original-001" href="https://www.youtube.com/playables" data-zh-label="遊戲角落" data-en-label="Playables">遊戲角落</a>
                 <a data-link-id="original-005" href="https://sites.google.com/site/populardoodlegames">Google Doodles Game</a>
                 <a data-link-id="original-009" href="https://kuioo.tw/" data-zh-href="https://kuioo.tw/" data-en-href="https://kuioo.com">Kuioo</a>
@@ -762,16 +797,16 @@ body.games-settings-open { overflow: hidden; }
               <h2 id="heading-puzzles" data-zh-label="益智與解謎" data-en-label="Puzzles &amp; Logic">益智與解謎</h2>
               <div class="game-links">
                 <a data-link-id="original-033" href="骨牌區域遊戲.html" data-zh-label="骨牌區域遊戲" data-en-label="Domino Regions">骨牌區域遊戲</a>
-                <a data-link-id="jigsaw-planet" href="https://www.jigsawplanet.com/" data-zh-label="Jigsaw Planet 拼圖" data-en-label="Jigsaw Planet">Jigsaw Planet 拼圖</a>
+                <a data-link-id="jigsaw-planet" href="https://www.jigsawplanet.com/" data-zh-label="線上拼圖" data-en-label="Jigsaw Planet">線上拼圖</a>
+                <a data-link-id="original-031" href="https://hex.frvr.com/" data-zh-label="六角形拼圖" data-en-label="Hex FRVR" data-icon="https://m.media-amazon.com/images/I/71J9hUa5wML.png">六角形拼圖</a>
+                <a data-link-id="original-042" href="https://kbhgames.com/game/her-trees">Her Trees - The Puzzle House</a>
+                <a data-link-id="original-024" href="https://www.google.com/logos/2024/moon/r3/moon.html" data-icon="https://www.gstatic.com/marketing-cms/73/c1/bcf7a6274cadb0fd07d2efb588cd/screenshot-2024-10-22-4-50-44-pm.png">Rise of the Half Moon</a>
+                <a data-link-id="original-041" href="https://www.nytimes.com/game">NYTimes</a>
                 <div class="link-group link-group--variants">
                   <span class="link-group-label" data-zh-label="數獨" data-en-label="Sudoku">數獨</span>
                   <a class="link-branch" data-link-context="數獨" data-link-id="original-043" href="https://sudoku.com/" data-zh-label="經典" data-en-label="Classic">經典</a>
                   <a class="link-branch" data-link-context="數獨" data-link-id="original-044" href="https://sudoku.com/killer/" data-zh-label="殺手" data-en-label="Killer">殺手</a>
                 </div>
-                <a data-link-id="original-031" href="https://hex.frvr.com/" data-icon="https://m.media-amazon.com/images/I/71J9hUa5wML.png">Hex FRVR</a>
-                <a data-link-id="original-042" href="https://kbhgames.com/game/her-trees">Her Trees - The Puzzle House</a>
-                <a data-link-id="original-024" href="https://www.google.com/logos/2024/moon/r3/moon.html" data-icon="https://www.gstatic.com/marketing-cms/73/c1/bcf7a6274cadb0fd07d2efb588cd/screenshot-2024-10-22-4-50-44-pm.png">Rise of the Half Moon</a>
-                <a data-link-id="original-041" href="https://www.nytimes.com/game">NYTimes</a>
                 <a data-link-id="original-011" href="https://www.jxgame.net/" data-zh-label="精選益智小遊戲" data-en-label="JX Game" data-icon="https://www.jxgame.net/skin/icon-32.png">精選益智小遊戲</a>
               </div>
             </section>
@@ -785,7 +820,7 @@ body.games-settings-open { overflow: hidden; }
                   <a data-link-id="original-037" href="https://lichess.org/">Lichess</a>
                   <a class="link-branch" data-link-context="Lichess" data-link-id="original-038" href="https://lichess.org/training" data-zh-label="謎題" data-en-label="Puzzles">謎題</a>
                 </div>
-                <a data-link-id="original-035" href="黑白棋 .html" data-zh-label="黑白棋 Reversi" data-en-label="Reversi" data-icon="黑白棋 icon.png">黑白棋 Reversi</a>
+                <a data-link-id="original-035" href="黑白棋 .html" data-zh-label="黑白棋" data-en-label="Reversi" data-icon="黑白棋 icon.png">黑白棋</a>
                 <a data-link-id="original-034" href="http://www.solitaired.com" data-icon="https://solitaired.com/images/logo.png">Solitaired</a>
                 <a data-link-id="original-039" href="https://wintrchess.com/analysis">Wintrchess</a>
                 <a data-link-id="original-040" href="https://www.chessigma.com/">Chessigma</a>
@@ -800,7 +835,7 @@ body.games-settings-open { overflow: hidden; }
                 <a data-link-id="original-028" href="https://poki.com/en/g/level-devil" data-icon="https://img.gamedistribution.com/3ffc5c0944f54f06afb212ca7d80bb00-512x512.jpg">Level Devil</a>
                 <a data-link-id="original-020" href="https://deadshot.io/">DEADSHOT</a>
                 <a data-link-id="original-021" href="https://venge.io">VENGE.io</a>
-                <a data-link-id="original-022" href="https://shellshock.io" data-icon="https://shellshock.io/favicon192.png">Shell Shockers</a>
+                <a data-link-id="original-022" href="https://shellshock.io" data-zh-label="蛋蛋槍戰" data-en-label="Shell Shockers" data-icon="https://shellshock.io/favicon192.png">蛋蛋槍戰</a>
                 <a data-link-id="plants-zombies" href="https://game.moe.ms/" data-zh-label="植物大戰殭屍" data-en-label="Plants vs. Zombies">植物大戰殭屍</a>
                 <a data-link-id="original-023" href="https://orteil.dashnet.org/cookieclicker/" data-icon="https://cdn.dashnet.org/cookieclicker/img/perfectCookie.png">Cookie Clicker</a>
               </div>
@@ -817,6 +852,17 @@ body.games-settings-open { overflow: hidden; }
                 <a data-link-id="original-018" href="https://packager.turbowarp.org/">Scratch to html</a>
                 <a data-link-id="original-019" href="https://stretch3.github.io/">Stretch3</a>
                 <a data-link-id="original-032" href="https://www.edclub.com/sportal/program-3.game">Edclub</a>
+              </div>
+            </section>
+
+            <!-- 小型工作室與個人開發者的直接遊玩作品。名稱沒有通行中譯時保留原名。 -->
+            <section class="game-category" id="category-indie" aria-labelledby="heading-indie">
+              <h2 id="heading-indie" data-zh-label="獨立網頁遊戲" data-en-label="Indie Web Games">獨立網頁遊戲</h2>
+              <div class="game-links">
+                <a data-link-id="indie-slow-roads" href="https://slowroads.io/">Slow Roads</a>
+                <a data-link-id="indie-doublespeak" href="https://doublespeakgames.com/">Doublespeak Games</a>
+                <a data-link-id="indie-sandspiel" href="https://sandspiel.club/">Sandspiel</a>
+                <a data-link-id="indie-paperclips" href="https://www.decisionproblem.com/paperclips/">Universal Paperclips</a>
               </div>
             </section>
 
@@ -860,10 +906,10 @@ body.games-settings-open { overflow: hidden; }
               </div>
               <div id="freefire-details" class="game-links category-details" hidden>
                 <a data-link-id="original-053" href="https://garenafreefire.fandom.com/wiki/Free_Fire_Wiki">Free Fire Wiki</a>
-                <a data-link-id="original-054" href="https://ff.garena.com/zh/wallpaper" data-zh-href="https://ff.garena.com/zh/wallpaper" data-en-href="https://ff.garena.com/en/wallpaper" data-zh-label="Free Fire 桌布" data-en-label="Free Fire Wallpaper">Free Fire 桌布</a>
+                <a data-link-id="original-054" href="https://ff.garena.com/zh/wallpaper" data-zh-href="https://ff.garena.com/zh/wallpaper" data-en-href="https://ff.garena.com/en/wallpaper" data-zh-label="桌布" data-en-label="Free Fire Wallpaper">桌布</a>
                 <a data-link-id="original-055" href="https://rankguide.sea.freefiremobile.com/?lang=zh-tw" data-zh-href="https://rankguide.sea.freefiremobile.com/?lang=zh-tw" data-en-href="https://rankguide.sea.freefiremobile.com/?lang=en" data-zh-label="排位指南" data-en-label="Rank Guide">排位指南</a>
                 <a data-link-id="original-056" href="https://ffcraftland.garena.com/" data-zh-label="我的戰場" data-en-label="Craftland">我的戰場</a>
-                <a data-link-id="original-057" href="https://ff.garena.com/universe/zh" data-zh-href="https://ff.garena.com/universe/zh" data-en-href="https://ff.garena.com/universe/en" data-zh-label="Free Fire 宇宙" data-en-label="Free Fire Universe">Free Fire 宇宙</a>
+                <a data-link-id="original-057" href="https://ff.garena.com/universe/zh" data-zh-href="https://ff.garena.com/universe/zh" data-en-href="https://ff.garena.com/universe/en" data-zh-label="宇宙" data-en-label="Free Fire Universe">宇宙</a>
               </div>
             </section>
 
@@ -908,8 +954,16 @@ body.games-settings-open { overflow: hidden; }
   "開啟設定": "Open settings",
   "關閉設定": "Close settings",
   "桌布、遊戲連結與主畫面捷徑都可在這裡管理；個人設定只保存在目前裝置的瀏覽器。": "Manage your wallpaper, links, and home screen shortcut here. Your preferences are saved only in this browser.",
+  "顯示字型": "Display fonts",
+  "從下列六種常用字型選擇一種，會套用到整個頁面。": "Choose one of these six common fonts to use across the whole page.",
+  "字型": "Font",
+  "中文字體": "Chinese font",
+  "英文字體": "English font",
+  "套用字型": "Apply fonts",
+  "字型已套用。": "Fonts applied.",
+  "字型已套用，但瀏覽器無法保存選擇。": "Fonts applied, but this browser could not save your choices.",
   "連線檢查與隱藏": "Connection checks and hidden links",
-  "需要時按「檢查一次」，不會在開啟頁面或背景自動檢查。超過 3 秒標示回應較慢，8 秒仍沒有回應就停止等待並標示逾時。": "Click “Check once” when needed. Checks never start automatically or run on a schedule. Responses taking over 3 seconds are marked slow; requests time out after 8 seconds.",
+  "需要時按「檢查一次」，不會在開啟頁面或背景自動檢查。連續失敗的連結會保持隱藏，直到下次手動檢查。超過 3 秒標示回應較慢，8 秒仍沒有回應就停止等待並標示逾時。": "Click “Check once” when needed. Checks never start automatically or run on a schedule. Failed links stay hidden until the next manual check. Responses taking over 3 seconds are marked slow; requests time out after 8 seconds.",
   "檢查後隱藏連續兩次失敗的連結": "Hide links after two failed attempts",
   "哪些情況無法判斷？": "What cannot be checked?",
   "這裡只測第一次回應，無法測完整遊戲載入時間。網站先回傳頁面、之後卡住，或回傳登入頁、封鎖提示頁時，仍需直接開啟確認。較慢、逾時和無法判定的連結會列出來，由你決定是否隱藏；圖片載入失敗不代表網站無法訪問。": "This checks the initial response, not the time needed to load the whole game. A site may respond with a login or blocked page, or get stuck later. Open it to confirm. Slow, timed-out, and uncertain links are listed for you to review. A missing icon does not mean the site is unavailable.",
@@ -1015,6 +1069,7 @@ body.games-settings-open { overflow: hidden; }
   "連線請求失敗": "Connection request failed",
   "目前的偏好僅在本次開啟有效，瀏覽器無法保存設定。": "Preferences apply only to this session; this browser could not save them.",
   "手動隱藏，恢復顯示後才會回到主頁。": "Hidden manually. Restore to show it on the main page.",
+  "上次檢查時連續失敗。": "Failed twice during the previous check.",
   "正在確認目前的網路連線…": "Checking the current network connection…",
   "目前離線、使用本機檔案，或無法確認網路；暫不自動隱藏。": "Offline, opened as a local file, or unable to verify the network. No links will be hidden by this check.",
   "檢查期間網路不穩定；已清除檢查結果，需要時再按「檢查一次」。": "The network was unstable. Results were cleared. Click “Check once” when needed.",
@@ -1032,7 +1087,8 @@ body.games-settings-open { overflow: hidden; }
       [/^正在檢查目前網路… 已隱藏 (\d+) 個連結，可在設定查看。$/, (_, n) => 'Checking the network… ' + n + ' hidden links. Review them in settings.'],
       [/^已隱藏 (\d+) 個連結 · 可在設定查看、重試或恢復顯示。$/, (_, n) => n + ' hidden links · View, recheck, or restore them in settings.'],
       [/^正在檢查 (\d+) \/ (\d+) 個網址…$/, (_, n, total) => 'Checking ' + n + ' / ' + total + ' URLs…'],
-      [/^檢查完成：(\d+) 個連續失敗、(\d+) 個回應較慢、(\d+) 個逾時、(\d+) 個無法判定。結果僅供本次參考，不會持續檢查。$/, (_, failed, slow, timeout, unknown) => 'Check complete: ' + failed + ' failed, ' + slow + ' slow, ' + timeout + ' timed out, ' + unknown + ' uncertain. No further checks will run automatically.'],
+      [/^檢查完成：(\d+) 個連續失敗、(\d+) 個回應較慢、(\d+) 個逾時、(\d+) 個無法判定。失敗項目會保留到下次手動檢查。$/, (_, failed, slow, timeout, unknown) => 'Check complete: ' + failed + ' failed, ' + slow + ' slow, ' + timeout + ' timed out, ' + unknown + ' uncertain. Failed links remain hidden until the next manual check.'],
+      [/^沿用上次檢查：(\d+) 個連結仍隱藏；需要時再按「檢查一次」。$/, (_, n) => 'Using the previous check: ' + n + ' links remain hidden. Click “Check once” when needed.'],
       [/^回應較慢（([\d.]+) 秒），需直接開啟確認$/, (_, n) => 'Slow response (' + n + ' seconds). Open directly to check.'],
       [/^逾時（([\d.]+) 秒內沒有回應），保留連結$/, (_, n) => 'Timed out (no response within ' + n + ' seconds). Link kept.'],
       [/^連續兩次失敗（(.+)）$/, (_, reason) => 'Two failed attempts (' + translateText(reason) + ')'],
@@ -1284,17 +1340,55 @@ body.games-settings-open { overflow: hidden; }
   const MAX_WALLPAPER_SIZE = 20 * 1024 * 1024;
   const MAX_LINK_IMAGE_SIZE = 12 * 1024 * 1024;
   const LINK_IMAGE_MAX_EDGE = 192;
+  // 小型偏好放 localStorage；整個頁面一次使用一套字型。
+  const FONT_STORAGE_KEY = 'gamesFontPreferencesV1';
+  const FONT_PRESETS = {
+    kaiti: '"DFKai-SB", "BiauKai", "標楷體", serif',
+    jhenghei: '"Microsoft JhengHei", "微軟正黑體", sans-serif',
+    mingliu: '"PMingLiU", "新細明體", serif',
+    arial: 'Arial, Helvetica, sans-serif',
+    times: '"Times New Roman", Times, serif',
+    calibri: 'Calibri, "Segoe UI", sans-serif'
+  };
+  const DEFAULT_FONT_PREFERENCE = 'kaiti';
 
   let deferredInstallPrompt = null;
   let installStateElement = null;
   let installButtonElement = null;
   let currentWallpaperUrl = null;
 
+  function readFontPreferences() {
+    let font = DEFAULT_FONT_PREFERENCE;
+    try {
+      const saved = JSON.parse(localStorage.getItem(FONT_STORAGE_KEY) || 'null');
+      if (saved && Object.hasOwn(FONT_PRESETS, saved.font)) {
+        font = saved.font;
+      } else if (saved && Object.hasOwn(FONT_PRESETS, saved.chinese)) {
+        // 舊版曾分開記錄中英文；升級後沿用當時的中文字體。
+        font = saved.chinese;
+      }
+    } catch (error) {
+      // 使用預設字型；本機儲存不可用時仍可在本次開啟中切換。
+    }
+    return { font };
+  }
+
+  function applyFontPreferences(preferences) {
+    document.documentElement.style.setProperty('--ui-font', FONT_PRESETS[preferences.font]);
+  }
+
+  function saveFontPreferences(preferences) {
+    localStorage.setItem(FONT_STORAGE_KEY, JSON.stringify(preferences));
+  }
+
+  applyFontPreferences(readFontPreferences());
+
   function setStatus(element, message, type = '') {
     if (!element) return;
     element.textContent = message;
     element.classList.toggle('is-success', type === 'success');
     element.classList.toggle('is-error', type === 'error');
+    if (type === 'success') document.dispatchEvent(new CustomEvent('games:settings-saved'));
   }
 
   function isAppleMobileDevice() {
@@ -1649,6 +1743,7 @@ body.games-settings-open { overflow: hidden; }
     settingsButton.addEventListener('click', openSettings);
     settingsClose.addEventListener('click', closeSettings);
     settingsBackdrop.addEventListener('click', closeSettings);
+    document.addEventListener('games:settings-saved', closeSettings);
     settingsPanel.addEventListener('keydown', event => {
       if (event.key !== 'Tab') return;
       const focusable = Array.from(settingsPanel.querySelectorAll('a[href], summary, button:not([disabled]):not([hidden]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'))
@@ -1667,6 +1762,27 @@ body.games-settings-open { overflow: hidden; }
     });
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && !settingsPanel.hidden) closeSettings();
+    });
+
+    const fontSelect = document.getElementById('games-font-select');
+    const fontSaveButton = document.getElementById('games-font-save');
+    const fontStatus = document.getElementById('games-font-status');
+    const savedFonts = readFontPreferences();
+    fontSelect.value = savedFonts.font;
+
+    fontSaveButton.addEventListener('click', () => {
+      const preferences = {
+        font: Object.hasOwn(FONT_PRESETS, fontSelect.value)
+          ? fontSelect.value
+          : DEFAULT_FONT_PREFERENCE
+      };
+      applyFontPreferences(preferences);
+      try {
+        saveFontPreferences(preferences);
+        setStatus(fontStatus, '字型已套用。', 'success');
+      } catch (error) {
+        setStatus(fontStatus, '字型已套用，但瀏覽器無法保存選擇。', 'error');
+      }
     });
 
     const wallpaperFile = document.getElementById('games-wallpaper-file');
@@ -2189,9 +2305,22 @@ body.games-settings-open { overflow: hidden; }
       : second;
   }
 
+  // 保存規則集中在這裡：完整檢查取代舊清單，單項重試只改該網址。
+  function updateFailedChecks(previous, links, checkResults, onlyUrls) {
+    const updated = onlyUrls ? { ...previous } : {};
+    const limitedUrls = onlyUrls ? new Set(onlyUrls) : null;
+    links.forEach(link => {
+      if (limitedUrls && !limitedUrls.has(link.href)) return;
+      const result = checkResults.get(link.href);
+      if (result?.kind === 'failed') updated[link.id] = result.reason;
+      else delete updated[link.id];
+    });
+    return updated;
+  }
+
   // 可在 Node 中抽出這個 script 檢查；正常瀏覽頁面不會使用此分支。
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { probeUrl, checkUrl };
+    module.exports = { probeUrl, checkUrl, updateFailedChecks };
     return;
   }
 
@@ -2204,7 +2333,7 @@ body.games-settings-open { overflow: hidden; }
     const summary = document.getElementById('games-availability-summary');
     const hideButton = document.getElementById('games-link-hide');
     const linkSelect = document.getElementById('games-link-select');
-    let preferences = { autoHide: true, decisions: {}, linkDecisions: {} };
+    let preferences = { autoHide: true, decisions: {}, linkDecisions: {}, failedChecks: {} };
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
       if (saved && typeof saved === 'object') {
@@ -2214,6 +2343,9 @@ body.games-settings-open { overflow: hidden; }
         }
         if (saved.linkDecisions && typeof saved.linkDecisions === 'object' && !Array.isArray(saved.linkDecisions)) {
           preferences.linkDecisions = Object.fromEntries(Object.entries(saved.linkDecisions).filter(([, value]) => ['hide', 'show'].includes(value)));
+        }
+        if (saved.failedChecks && typeof saved.failedChecks === 'object' && !Array.isArray(saved.failedChecks)) {
+          preferences.failedChecks = Object.fromEntries(Object.entries(saved.failedChecks).filter(([id, reason]) => typeof id === 'string' && typeof reason === 'string'));
         }
       }
     } catch { /* 空白或不可用的儲存區，使用預設設定。 */ }
@@ -2230,6 +2362,12 @@ body.games-settings-open { overflow: hidden; }
         migrated = true;
       }
     });
+    const currentLinkIds = new Set(anchors().map(link => link.dataset.linkId));
+    Object.keys(preferences.failedChecks).forEach(id => {
+      if (currentLinkIds.has(id)) return;
+      delete preferences.failedChecks[id];
+      migrated = true;
+    });
     if (migrated) savePreferences();
 
     // 網址當 key：切換語言、修改網址不會沿用另一個目的地的連線結果。
@@ -2241,7 +2379,7 @@ body.games-settings-open { overflow: hidden; }
     function suppressed(link) {
       const manual = preferences.linkDecisions[link.dataset.linkId];
       if (manual) return manual === 'hide';
-      return preferences.autoHide && results.get(link.href)?.kind === 'failed';
+      return preferences.autoHide && (Object.hasOwn(preferences.failedChecks, link.dataset.linkId) || results.get(link.href)?.kind === 'failed');
     }
     function savePreferences() {
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences)); }
@@ -2302,7 +2440,8 @@ body.games-settings-open { overflow: hidden; }
         if (!isHidden) return;
         count++;
         const manual = preferences.linkDecisions[link.dataset.linkId] === 'hide';
-        hiddenList.appendChild(resultRow(link, manual ? '手動隱藏，恢復顯示後才會回到主頁。' : result?.reason, true));
+        const savedReason = preferences.failedChecks[link.dataset.linkId];
+        hiddenList.appendChild(resultRow(link, manual ? '手動隱藏，恢復顯示後才會回到主頁。' : (result?.reason || savedReason || '上次檢查時連續失敗。'), true));
       });
       document.getElementById('games-hidden-count').textContent = String(count);
       document.getElementById('games-hidden-empty').hidden = count > 0;
@@ -2357,11 +2496,19 @@ body.games-settings-open { overflow: hidden; }
           return;
         }
         results = next;
+        // 只有整批檢查完整結束，才取代上次保存的失敗清單；單項重試只更新該網址。
+        preferences.failedChecks = updateFailedChecks(
+          preferences.failedChecks,
+          anchors().map(link => ({ id: link.dataset.linkId, href: link.href })),
+          next,
+          onlyUrls ? urls : null
+        );
+        savePreferences();
         const failures = [...next.values()].filter(result => result.kind === 'failed').length;
         const slow = [...next.values()].filter(result => result.kind === 'slow').length;
         const timeouts = [...next.values()].filter(result => result.kind === 'timeout').length;
         const unknown = [...next.values()].filter(result => result.kind === 'unknown').length;
-        checkStatus.textContent = `檢查完成：${failures} 個連續失敗、${slow} 個回應較慢、${timeouts} 個逾時、${unknown} 個無法判定。結果僅供本次參考，不會持續檢查。`;
+        checkStatus.textContent = `檢查完成：${failures} 個連續失敗、${slow} 個回應較慢、${timeouts} 個逾時、${unknown} 個無法判定。失敗項目會保留到下次手動檢查。`;
       } finally {
         if (activeScan === controller) {
           activeScan = null;
@@ -2405,8 +2552,16 @@ body.games-settings-open { overflow: hidden; }
     document.addEventListener('games:links-updated', () => clearResults('連結已更新；需要時再按「檢查一次」。'));
     window.addEventListener('online', () => clearResults('網路已恢復；需要時再按「檢查一次」。'));
     window.addEventListener('offline', () => clearResults('裝置目前離線，已清除本次檢查結果。'));
+    // 重新開頁時還原上次完整檢查的失敗狀態，不會在背景重新連線。
+    anchors().forEach(link => {
+      const reason = preferences.failedChecks[link.dataset.linkId];
+      if (reason) results.set(link.href, { kind: 'failed', reason });
+    });
     renderVisibility();
-    checkStatus.textContent = '尚未檢查；按「檢查一次」才會開始，可隨時停止。';
+    const savedFailureCount = Object.keys(preferences.failedChecks).length;
+    checkStatus.textContent = savedFailureCount
+      ? `沿用上次檢查：${savedFailureCount} 個連結仍隱藏；需要時再按「檢查一次」。`
+      : '尚未檢查；按「檢查一次」才會開始，可隨時停止。';
   });
 })();
 </script>

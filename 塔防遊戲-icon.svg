@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Tower Defense">
+  <rect x="4" y="4" width="120" height="120" rx="18" fill="#f8f8f8" stroke="#1684c9" stroke-width="8"/>
+  <g stroke="#d9d9d9" stroke-width="2">
+    <path d="M34 8v112M64 8v112M94 8v112M8 34h112M8 64h112M8 94h112"/>
+  </g>
+  <circle cx="20" cy="20" r="9" fill="#fff" stroke="#777" stroke-width="3"/>
+  <circle cx="108" cy="108" r="9" fill="#444"/>
+  <rect x="15" y="78" width="25" height="25" fill="#777" stroke="#333" stroke-width="3"/>
+  <path d="m17 80 21 21m0-21-21 21" stroke="#333" stroke-width="3"/>
+  <circle cx="68" cy="62" r="22" fill="#6356b2" stroke="#2f285f" stroke-width="5"/>
+  <path d="M76 48 103 25" stroke="#2f285f" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="68" cy="62" r="7" fill="#e8e4ff"/>
+</svg>

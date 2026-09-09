@@ -1,0 +1,1106 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>塔防遊戲・經典模式</title>
+<link rel="icon" type="image/svg+xml" href="塔防遊戲-icon.svg">
+<style>
+/* 遊戲本體全部在本檔；只有分頁 icon 使用同資料夾內的 SVG。 */
+:root { color-scheme: light; font-family: "Microsoft JhengHei", Arial, sans-serif; color: #333; background: #f7f7f7; }
+* { box-sizing: border-box; }
+body { margin: 0; padding: 16px 10px; }
+main { position: relative; width: min(100%, 720px); margin: auto; }
+h1 { margin: 0 0 8px; text-align: center; font-size: 26px; color: #1684c9; }
+.mode { text-align: center; color: #1684c9; margin: 0 0 14px; font-size: 14px; }
+.mode.hard { color: #a52d2d; font-weight: 700; }
+button, select, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { opacity: .45; cursor: default; }
+button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-visible, summary:focus-visible { outline: 2px solid #148bdd; outline-offset: 2px; }
+.language { position: absolute; top: 0; right: 0; min-width: 48px; border: 1px solid #aaa; border-radius: 2px; padding: 4px 7px; background: #eee; font-size: 12px; }
+.game { display: grid; grid-template-columns: minmax(0, 560px) 145px; gap: 12px; align-items: start; }
+.board { position: relative; }
+#board { display: block; width: 100%; aspect-ratio: 1; border: 1px solid #aaa; touch-action: manipulation; cursor: crosshair; }
+.wave { font-family: serif; font-size: 23px; margin: 3px 0 25px; }
+.stats { display: grid; gap: 10px; font-variant-numeric: tabular-nums; }
+.stats span { display: inline-block; width: 25px; }
+.palette { display: grid; grid-template-columns: repeat(3, 34px); grid-template-rows: repeat(2, 34px); margin: 30px 0 10px; }
+.weapon { padding: 0; background: transparent; border: 1px solid #bbb; }
+.weapon canvas { display: block; width: 32px; height: 32px; pointer-events: none; }
+.remove-tool { grid-column: 2; grid-row: 2; position: relative; background: #fff; }
+.remove-tool::after { content: ""; position: absolute; inset: 8px; border: 1px dashed #999; }
+.weapon[aria-pressed="true"] { background: #dcefff; outline: 2px solid #1684c9; z-index: 1; }
+.weapon[data-type="wall"] { grid-column: 3; }
+.controls { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.controls button, .speed-controls button, .tool-actions button { border: 1px solid #aaa; border-radius: 2px; padding: 5px 7px; background: #eee; font-size: 13px; }
+.speed-controls { display: grid; grid-template-columns: 1fr 1fr 1.5fr 1.2fr; gap: 3px; margin-top: 10px; }
+.speed-controls button { padding: 4px 2px; font-size: 12px; }
+.speed-controls button[aria-pressed="true"] { color: #fff; border-color: #1684c9; background: #1684c9; }
+.speed-controls input { width: 100%; min-width: 0; border: 1px solid #aaa; border-radius: 2px; padding: 3px 4px; font-size: 12px; text-align: center; }
+#info { margin: 9px 0; min-height: 94px; line-height: 1.6; font-size: 12px; white-space: pre-line; }
+#status { min-height: 38px; margin: 10px 0 5px; color: #505050; font-size: 13px; line-height: 1.5; }
+#status.error { color: #b12b2b; }
+.tools { margin-top: 12px; border: 1px solid #ccc; background: #fff; }
+.tools > summary { padding: 8px 10px; color: #17699c; background: #f1f6f9; cursor: pointer; font-weight: 700; font-size: 14px; }
+.tools-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 10px; padding: 10px; }
+.tool-section { min-width: 0; border-left: 3px solid #dbe8ef; padding-left: 9px; }
+.tool-section h2 { margin: 0 0 8px; font-size: 14px; }
+.tool-section label { font-size: 12px; line-height: 1.5; }
+.tool-section select { width: 100%; min-height: 31px; margin-top: 4px; border: 1px solid #aaa; background: #fff; }
+.tool-check { display: flex; align-items: flex-start; gap: 7px; }
+.tool-check input { width: 17px; height: 17px; margin: 1px 0 0; accent-color: #1684c9; }
+.tool-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.tool-actions button.is-active { color: #fff; border-color: #1684c9; background: #1684c9; }
+.device-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; margin-top: 8px; }
+.device-options button { border: 1px solid #aaa; border-radius: 2px; padding: 5px 4px; background: #eee; font-size: 12px; }
+.device-options button[aria-pressed="true"] { color: #fff; border-color: #1684c9; background: #1684c9; }
+.tool-note { min-height: 35px; margin: 7px 0 0; color: #666; font-size: 11px; line-height: 1.5; white-space: pre-line; }
+.help { border-top: 1px solid #ddd; margin-top: 8px; padding-top: 9px; font-size: 13px; line-height: 1.7; }
+.help p { margin: 4px 0; }
+.legend { color: #777; font-size: 12px; }
+@media(max-width:720px) {
+  .tools-grid { grid-template-columns: 1fr; }
+  .tool-note { min-height: 0; }
+}
+@media(max-width:540px) {
+  body { padding: 10px 8px; }
+  h1 { font-size: 22px; padding: 0 54px; }
+  .language { top: -1px; }
+  .game { grid-template-columns: 1fr; gap: 8px; }
+  aside { display: grid; grid-template-columns: 112px 1fr; gap: 0 12px; }
+  .wave { grid-column: 1/-1; margin: 0 0 6px; font-size: 19px; }
+  .stats { grid-column: 1/-1; display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 13px; }
+  .palette { grid-column: 1; grid-row: 3/7; margin: 12px 0 0; }
+  #info { grid-column: 2; grid-row: 3; margin: 10px 0 0; min-height: 65px; }
+  .selection-controls { grid-column: 2; grid-row: 4; }
+  .speed-controls { grid-column: 2; grid-row: 5; }
+  .game-controls { grid-column: 2; grid-row: 6; }
+}
+</style>
+</head>
+<body>
+<main>
+<button id="language" class="language" type="button" aria-label="切換到英文">EN</button>
+<h1 data-i18n="gameTitle">塔防遊戲</h1>
+<p id="mode-label" class="mode" data-i18n="classicMode">經典模式</p>
+<div class="game">
+  <div class="board"><canvas id="board" width="560" height="560" tabindex="0" aria-label="16乘16塔防地圖，白色入口位於左上，黑色出口位於右下">請使用支援 Canvas 的瀏覽器。</canvas></div>
+  <aside id="game-panel" aria-label="遊戲面板">
+    <div class="wave"><span id="wave-prefix">第 </span><b id="wave">0</b><span id="wave-suffix"> 波</span></div>
+    <div class="stats">
+      <div data-i18n-title="money"><span>💰</span><b id="money">500</b></div>
+      <div data-i18n-title="score"><span>⭐</span><b id="score">0</b></div>
+      <div data-i18n-title="life"><span>❤️</span><b id="life">100</b></div>
+      <div data-i18n-title="buildings"><span>🚧</span><b id="buildings">2</b></div>
+      <div data-i18n-title="monsters"><span>👾</span><b id="monsters">0</b></div>
+    </div>
+    <div id="palette" class="palette" aria-label="建築選單">
+      <button class="weapon" data-type="lmg" aria-pressed="false"><canvas width="64" height="64"></canvas></button>
+      <button class="weapon" data-type="hmg" aria-pressed="false"><canvas width="64" height="64"></canvas></button>
+      <button class="weapon" data-type="cannon" aria-pressed="false"><canvas width="64" height="64"></canvas></button>
+      <button class="weapon" data-type="laser" aria-pressed="false"><canvas width="64" height="64"></canvas></button>
+      <button id="plan-remove" class="weapon remove-tool" type="button" aria-pressed="false"></button>
+      <button class="weapon" data-type="wall" aria-pressed="false"><canvas width="64" height="64"></canvas></button>
+    </div>
+    <div id="info"></div>
+    <div class="controls selection-controls">
+      <button id="upgrade" hidden></button>
+      <button id="sell" hidden></button>
+      <button id="cancel" hidden></button>
+    </div>
+    <div id="speed-controls" class="speed-controls" role="group">
+      <button type="button" data-speed="1" aria-pressed="true">1×</button>
+      <button id="quick-speed" type="button" data-speed="2" aria-pressed="false">2×</button>
+      <input id="speed-input" type="number" min="0.1" max="100" step="0.1" value="1" inputmode="decimal" aria-label="自訂遊戲速度">
+      <button type="button" data-speed="100" aria-pressed="false">MAX</button>
+    </div>
+    <div class="controls game-controls">
+      <button id="pause"></button>
+      <button id="restart"></button>
+    </div>
+  </aside>
+</div>
+
+<details class="tools">
+  <summary data-i18n="toolsTitle">進階工具</summary>
+  <div class="tools-grid">
+    <section class="tool-section">
+      <h2 data-i18n="startTitle">開局模式</h2>
+      <label><span data-i18n="startLabel">地圖內容</span>
+        <select id="start-mode">
+          <option value="blank" data-i18n="startBlank">空白</option>
+          <option value="random" data-i18n="startRandom">隨機路障</option>
+        </select>
+      </label>
+      <div class="tool-actions"><button id="apply-start" type="button" data-i18n="applyStart">套用並重來</button></div>
+      <p class="tool-note" data-i18n="startNote">隨機模式每局重新產生合法路障；空白模式不放置任何建築。</p>
+    </section>
+
+    <section class="tool-section">
+      <h2 data-i18n="prebuildTitle">預先架設</h2>
+      <label class="tool-check"><input id="prebuild-enabled" type="checkbox"><span data-i18n="prebuildEnable">資金不足時將物品排入架設順序</span></label>
+      <label class="tool-check"><input id="overwrite-enabled" type="checkbox"><span data-i18n="overwriteEnable">允許新物品覆蓋現有物品</span></label>
+      <div class="tool-actions">
+        <button id="clear-plans" type="button" data-i18n="clearPlans">清除預設內容</button>
+      </div>
+      <p id="plan-summary" class="tool-note"></p>
+    </section>
+
+    <section class="tool-section">
+      <h2 data-i18n="autoTitle">自動升級</h2>
+      <label class="tool-check"><input id="auto-upgrade" type="checkbox"><span data-i18n="autoEnable">資金足夠時自動升級</span></label>
+      <div class="tool-actions">
+        <button id="auto-target" type="button"></button>
+        <button id="auto-all" type="button" data-i18n="autoAll">全選砲塔</button>
+        <button id="auto-clear" type="button" data-i18n="autoClear">清除目標</button>
+      </div>
+      <p id="auto-summary" class="tool-note"></p>
+    </section>
+
+    <section class="tool-section">
+      <h2 data-i18n="batchTitle">批量移除</h2>
+      <div class="tool-actions">
+        <button id="batch-mode" type="button"></button>
+        <button id="batch-remove" type="button" disabled></button>
+        <button id="batch-cancel" type="button" data-i18n="batchCancel" hidden>取消選取</button>
+      </div>
+      <p id="batch-summary" class="tool-note" data-i18n="batchNote">進入選取模式，點選多座建築後一次移除並回收半價。</p>
+    </section>
+
+    <section class="tool-section">
+      <h2 data-i18n="gateTitle">感應閥門</h2>
+      <p class="tool-note" data-i18n="gateNote">放置兩個感應器與兩個閥門。怪物踏上感應器後，系統會延遲 10 秒切換閥門。</p>
+      <div id="device-options" class="device-options" aria-label="感應閥門選單">
+        <button type="button" data-device="sensor1" aria-pressed="false">感應器 1 · $20</button>
+        <button type="button" data-device="gate1" aria-pressed="false">閥門 1 · $50</button>
+        <button type="button" data-device="sensor2" aria-pressed="false">感應器 2 · $20</button>
+        <button type="button" data-device="gate2" aria-pressed="false">閥門 2 · $50</button>
+      </div>
+      <p id="gate-summary" class="tool-note"></p>
+    </section>
+
+    <section class="tool-section">
+      <h2 data-i18n="pauseSettingsTitle">暫停設定</h2>
+      <label class="tool-check"><input id="pause-on-leave" type="checkbox"><span data-i18n="pauseOnLeave">離開頁面時自動暫停</span></label>
+      <p class="tool-note" data-i18n="pauseOnLeaveNote">切換到其他分頁、視窗或將頁面縮到背景時生效。</p>
+    </section>
+  </div>
+</details>
+
+<p id="status" role="status" aria-live="polite"></p>
+<div class="help">
+  <p data-i18n="help1">怪物從白圈走向黑圈。用路障、砲塔和閥門改變路線；任何操作都不能封死出口或困住怪物。</p>
+  <p data-i18n="help2">開啟預先架設後，資金不足的物品會以半透明編號排隊；任何買得起的物品都可立即架設。P 暫停、S 升級、C 出售、X 在 1× 與快捷倍率間切換。</p>
+  <p data-i18n="hardHelp">前 50 波維持經典節奏；第 51 波起，下一波不再等待清場。持盾怪物從第 101 波出現，請從側面或後方攻擊。</p>
+  <p data-i18n="saveHelp">遊戲每秒自動保存；重新開啟時會以暫停狀態恢復。</p>
+  <p class="legend" data-i18n="legend">輕機槍 $100 · 重機槍 $800 · 大砲 $300 · 雷射砲 $2000 · 路障 $5 · 感應器 $20 · 閥門 $50</p>
+</div>
+</main>
+<script>
+(() => {
+  'use strict';
+
+  // ① 語言、偏好與固定資料
+  const I18N = {
+    zh: {
+      pageTitle:'塔防遊戲・經典模式', hardPageTitle:'塔防遊戲・困難模式', gameTitle:'塔防遊戲', classicMode:'經典模式', hardMode:'困難模式',
+      languageLabel:'切換到英文', boardLabel:'16乘16塔防地圖，白色入口位於左上，黑色出口位於右下',
+      canvasFallback:'請使用支援 Canvas 的瀏覽器。', panelLabel:'遊戲面板', paletteLabel:'建築選單',
+      wavePrefix:'第 ', waveSuffix:' 波', money:'金幣', score:'分數', life:'生命', buildings:'建築數', monsters:'場上怪物',
+      wall:'路障', lmg:'輕機槍', hmg:'重機槍', cannon:'大砲', laser:'雷射砲',
+      sensor1:'感應器 1', sensor2:'感應器 2', gate1:'閥門 1', gate2:'閥門 2',
+      normalEnemy:'普通怪物', strongEnemy:'強化怪物', fastEnemy:'快速怪物', toughEnemy:'高生命怪物', armoredEnemy:'重甲怪物', damageEnemy:'高傷害怪物', shieldEnemy:'持盾怪物',
+      weaponChoice:'{name}，{cost} 金幣', weaponTitle:'{name} \u0024{cost}',
+      upgrade:'升級', sell:'出售', cancelBuild:'取消建造', pause:'■ 暫停', resume:'▶ 繼續', restart:'↻ 重來',
+      planRemove:'排程移除', planRemoveTitle:'空白：排程移除這一格的物品', infoPlanRemove:'排程移除\n點格子將移除動作加入預先架設清單。', removePlanned:'已將移除動作排入第 {order} 位。', nothingToRemove:'這格目前沒有可移除的物品；排程會等待物品出現。',
+      upgradeShortcut:'S：升級', sellShortcut:'C：出售', pauseShortcut:'P：暫停／繼續', restartTitle:'重新開始',
+      speedLabel:'遊戲速度', speedInputLabel:'自訂遊戲速度倍率', quickSpeedTitle:'左鍵套用；右鍵將欄位中的倍率存成這個快捷鍵', quickSpeedSet:'快捷倍率已設為 {speed}×。',
+      toolsTitle:'進階工具', startTitle:'開局模式', startLabel:'地圖內容', startBlank:'空白', startRandom:'隨機路障', applyStart:'套用並重來',
+      startNote:'隨機模式每局重新產生合法路障；空白模式不放置任何建築。', startApplied:'已套用「{mode}」開局。', randomStatus:'隨機路障已產生；所有路障都保留通往出口的路。',
+      prebuildTitle:'預先架設', prebuildEnable:'資金不足時將物品排入架設順序', overwriteEnable:'允許新物品覆蓋現有物品', clearPlans:'清除預設內容',
+      planNone:'目前沒有預先架設內容。', planCount:'已排入 {count} 個物品；最早排入的是{name}，需要 \u0024{cost}。', planCountRemove:'已排入 {count} 個動作；最早排入的是免費移除。',
+      autoTitle:'自動升級', autoEnable:'資金足夠時自動升級', autoAll:'全選砲塔', autoClear:'清除目標',
+      autoChoose:'選擇目標 ({count})', autoFinish:'完成選擇 ({count})',
+      autoSummaryNone:'尚未選擇升級目標。', autoSummaryCount:'已選擇 {count} 座砲塔。', autoSummaryLast:'最近升級：{name}，第 {level} 級。',
+      batchTitle:'批量移除', batchStart:'選取建築', batchFinish:'完成選取', batchRemove:'移除選取 ({count})', batchCancel:'取消選取',
+      batchNote:'進入選取模式，點選多座建築後一次移除並回收半價。',
+      batchSummary:'已選 {count} 座，可回收 \u0024{refund}。',
+      gateTitle:'感應閥門', gateNote:'放置兩個感應器與兩個閥門。怪物踏上感應器後，系統會延遲 10 秒切換閥門；遊戲加速時延遲也會一起加速。', gatePaletteLabel:'感應閥門選單',
+      gateIncomplete:'已放置 {count}／4 個元件。四個元件齊全後才會運作。', gateOpen:'兩個閥門目前都開啟。', gateClosed:'{name}目前關閉。', gatePending:'切換已排程，還有 {seconds} 秒。',
+      pauseSettingsTitle:'暫停設定', pauseOnLeave:'離開頁面時自動暫停', pauseOnLeaveNote:'切換到其他分頁、視窗或將頁面縮到背景時生效。', pauseOnLeaveOn:'離開頁面自動暫停已開啟。', pauseOnLeaveOff:'離開頁面自動暫停已關閉。',
+      help1:'怪物從白圈走向黑圈。用路障、砲塔和閥門改變路線；任何操作都不能封死出口或困住怪物。',
+      help2:'開啟預先架設後，資金不足的物品會以半透明編號排隊；任何買得起的物品都可立即架設。P 暫停、S 升級、C 出售、X 在 1× 與快捷倍率間切換。',
+      hardHelp:'前 50 波維持經典節奏；第 51 波起，下一波不再等待清場。持盾怪物從第 101 波出現，請從側面或後方攻擊。',
+      saveHelp:'遊戲每秒自動保存；重新開啟時會以暫停狀態恢復。',
+      legend:'輕機槍 \u0024100 · 重機槍 \u0024800 · 大砲 \u0024300 · 雷射砲 \u00242000 · 路障 \u00245 · 感應器 \u002420 · 閥門 \u002450',
+      initialStatus:'先用路障規劃路線，再建武器。入口與出口之間必須保留通路。',
+      keepPathShort:'入口與出口之間必須保留通路。',
+      outOfMap:'請選擇地圖內的格子。', entryExit:'不能在入口或出口建造。', redTile:'這個紅色格子可以通行，但不能建造。',
+      occupied:'這個格子已有建築或元件。', duplicateDevice:'同一種感應器或閥門只能放置一個。', enemyPassing:'怪物正在通過這個格子，暫時不能建造。',
+      blockPath:'無法建造：入口與出口之間必須保留一條路。', trapEnemy:'無法建造：這會把怪物困住。',
+      notEnough:'金幣不足，需要 \u0024{cost}。', built:'已建造{name}。可繼續點格子建造，Esc 取消。',
+      planned:'已將{name}排入第 {order} 位；再次點同一格可取消。', planCancelled:'已取消這格的預先架設，後續順序已重新編號。', plansCleared:'已清除所有預先架設內容。', plansCompleted:'已完成所有預先架設內容。',
+      planDropped:'一個預先架設項目已失效並移除：{reason}', prebuildOn:'預先架設已開啟。資金不足的物品會排隊，買得起的物品立即架設。', prebuildOff:'預先架設已關閉；現有排程仍會繼續。', overwriteOn:'覆蓋功能已開啟；新物品會先半價出售該格的舊物品。', overwriteOff:'覆蓋功能已關閉。', sameItem:'這個格子已經是相同的物品。',
+      upgradeNeed:'升級需要 \u0024{cost}。', upgraded:'{name}已升至 {level} 級。',
+      sold:'已出售，回收 \u0024{refund}。怪物會重新選擇路線。', replacedBuilt:'已出售原物品並回收 \u0024{refund}，再建造{name}。',
+      waveStart:'第 {wave} 波開始。', hardWaveStart:'困難模式第 {wave} 波開始；本波敵人出完後只間隔 {seconds} 秒，下一波不等待清場。', waveEnd:'第 {wave} 波結束，3 秒後接續下一波。', waveEndHeal:' 生命恢復。',
+      restoredGame:'已恢復上次的遊戲進度並暫停；準備好後按「繼續」。',
+      gameOver:'遊戲結束：第 {wave} 波，分數 {score}。', focus:'已指定集火；射程內的武器會優先攻擊這隻怪物。',
+      infoIdle:'選擇建築後，點擊格子放置。\n建好第一座武器後，怪物將自動出發。',
+      infoWall:'{name}', infoTower:'{name} · {level} 級\n傷害 {damage}／射程 {range}\n射速 {speed}／擊殺 {kills}{auto}',
+      autoMark:'\n自動升級目標', infoBuildWeapon:'{name} \u0024{cost}\n傷害 {damage}／射程 {range}\n射速 {speed}\n點格子連續建造。',
+      infoBuildWall:'{name} \u0024{cost}\n阻擋怪物，改變路線。\n點格子連續建造。',
+      infoBuildDevice:'{name} \u0024{cost}\n可放在道路上，怪物能通過。\n點格子放置。', infoDevice:'{name}\n可通行的閥門系統元件。{state}', gateStateOpen:'\n目前：開啟', gateStateClosed:'\n目前：關閉',
+      infoEnemy:'集火：{name}\n生命 {hp}／{maxHp}\n防禦 {armor}／傷害 {damage}{shield}', infoShield:'\n盾牌：正面抵擋 80% 傷害',
+      infoAutoMode:'自動升級目標選取中。\n點砲塔可加入或移除；路障不會升級。',
+      infoBatchMode:'批量移除選取中。\n點建築切換選取，再按「移除選取」。',
+      autoMode:'點擊要自動升級的砲塔；可以選擇多座。', autoReady:'已完成目標選擇，共 {count} 座。',
+      autoOnlyWeapon:'路障不能升級，請選擇砲塔。', autoAdded:'已加入{name}；目前 {count} 座目標。', autoRemoved:'已移除{name}；目前 {count} 座目標。',
+      autoOn:'自動升級已開啟；預先架設完成後，資金足夠時會升級指定目標。', autoNeedTargets:'自動升級已開啟；請先選擇至少一座砲塔。', autoOff:'自動升級已關閉。',
+      autoCleared:'已清除所有自動升級目標。', autoAllDone:'已選取目前全部 {count} 座砲塔。', autoAllNone:'目前沒有可自動升級的砲塔。',
+      batchMode:'點擊要批量移除的建築；可以選擇多座。', batchReady:'已完成選取，共 {count} 座。',
+      batchOnlyBuilding:'這個格子沒有可移除的建築。', batchSelection:'已選 {count} 座，將回收 \u0024{refund}。',
+      batchRemoved:'已移除 {count} 座建築，回收 \u0024{refund}。', batchCancelled:'已取消批量移除。',
+      gateScheduled:'{sensor}已感應到怪物；10 秒後切換閥門。', gateSwitched:'閥門已切換，{name}關閉。', gateRefused:'為避免封死道路或困住怪物，閥門保持開啟。', gateReady:'四個元件已完成，{name}先關閉。',
+      restartConfirm:'重新開始這局遊戲？', speedChanged:'速度已切換為 {speed}×。', invalidSpeed:'請輸入 0.1 到 100 之間的倍率。',
+      pausedOverlay:'已暫停', overOverlay:'遊戲結束', pauseHint:'按 P 或「繼續」恢復', overDetail:'第 {wave} 波 · 分數 {score}'
+    },
+    en: {
+      pageTitle:'Tower Defense · Classic Mode', hardPageTitle:'Tower Defense · Hard Mode', gameTitle:'Tower Defense', classicMode:'Classic mode', hardMode:'Hard mode',
+      languageLabel:'Switch to Chinese', boardLabel:'16 by 16 tower-defense map, with the white entrance at top left and the dark exit at bottom right',
+      canvasFallback:'Please use a browser that supports Canvas.', panelLabel:'Game panel', paletteLabel:'Build menu',
+      wavePrefix:'Wave ', waveSuffix:'', money:'Money', score:'Score', life:'Life', buildings:'Buildings', monsters:'Monsters',
+      wall:'Wall', lmg:'Light machine gun', hmg:'Heavy machine gun', cannon:'Cannon', laser:'Laser',
+      sensor1:'Sensor 1', sensor2:'Sensor 2', gate1:'Gate 1', gate2:'Gate 2',
+      normalEnemy:'Normal monster', strongEnemy:'Reinforced monster', fastEnemy:'Fast monster', toughEnemy:'High-health monster', armoredEnemy:'Armored monster', damageEnemy:'High-damage monster', shieldEnemy:'Shield bearer',
+      weaponChoice:'{name}, {cost} coins', weaponTitle:'{name} \u0024{cost}',
+      upgrade:'Upgrade', sell:'Sell', cancelBuild:'Cancel build', pause:'■ Pause', resume:'▶ Resume', restart:'↻ Restart',
+      planRemove:'Queue removal', planRemoveTitle:'Blank: queue removal of the item on this tile', infoPlanRemove:'Queue removal\nClick a tile to add a removal action to the planned list.', removePlanned:'Queued removal in position {order}.', nothingToRemove:'There is nothing to remove on this tile yet. The action will wait for an item to appear.',
+      upgradeShortcut:'S: Upgrade', sellShortcut:'C: Sell', pauseShortcut:'P: Pause / resume', restartTitle:'Restart game',
+      speedLabel:'Game speed', speedInputLabel:'Custom game speed multiplier', quickSpeedTitle:'Left-click to apply; right-click to save the field value as this shortcut', quickSpeedSet:'Shortcut speed set to {speed}×.',
+      toolsTitle:'Advanced tools', startTitle:'Starting mode', startLabel:'Map contents', startBlank:'Blank', startRandom:'Random walls', applyStart:'Apply and restart',
+      startNote:'Random mode creates a new legal wall layout each game. Blank mode starts without buildings.', startApplied:'Started with “{mode}”.', randomStatus:'Random walls created. Every wall preserves a route to the exit.',
+      prebuildTitle:'Planned building', prebuildEnable:'Queue items when there is not enough money', overwriteEnable:'Allow new items to replace existing items', clearPlans:'Clear planned items',
+      planNone:'No items are planned.', planCount:'{count} item(s) queued. Earliest: {name}, costing \u0024{cost}.', planCountRemove:'{count} action(s) queued. The earliest is a free removal.',
+      autoTitle:'Auto upgrade', autoEnable:'Upgrade automatically when affordable', autoAll:'Select all towers', autoClear:'Clear targets',
+      autoChoose:'Choose targets ({count})', autoFinish:'Finish choosing ({count})',
+      autoSummaryNone:'No upgrade targets selected.', autoSummaryCount:'{count} tower(s) selected.', autoSummaryLast:'Last upgrade: {name}, level {level}.',
+      batchTitle:'Batch removal', batchStart:'Select buildings', batchFinish:'Finish selecting', batchRemove:'Remove selected ({count})', batchCancel:'Cancel selection',
+      batchNote:'Enter selection mode, choose several buildings, then remove them together for half-price refunds.',
+      batchSummary:'{count} selected; refund \u0024{refund}.',
+      gateTitle:'Sensor gates', gateNote:'Place two sensors and two gates. Ten seconds after a monster crosses a sensor, the gates switch; game speed also accelerates the delay.', gatePaletteLabel:'Sensor gate menu',
+      gateIncomplete:'{count}/4 components placed. The system starts after all four are present.', gateOpen:'Both gates are open.', gateClosed:'{name} is closed.', gatePending:'A switch is queued in {seconds} seconds.',
+      pauseSettingsTitle:'Pause settings', pauseOnLeave:'Pause automatically when leaving the page', pauseOnLeaveNote:'Applies when switching tabs or windows, or moving the page into the background.', pauseOnLeaveOn:'Automatic pause when leaving is on.', pauseOnLeaveOff:'Automatic pause when leaving is off.',
+      help1:'Monsters move from the white circle to the dark circle. Use walls, towers, and gates to change their route. No action may block the exit or trap a monster.',
+      help2:'With planned building on, unaffordable items appear as numbered translucent previews. Any item you can afford may be built immediately. P pauses, S upgrades, C sells, and X toggles between 1× and the shortcut speed.',
+      hardHelp:'The first 50 waves keep the classic pace. From wave 51, the next wave no longer waits for a clear. Shield bearers appear from wave 101; attack them from the side or rear.',
+      saveHelp:'The game saves every second and restores in a paused state when reopened.',
+      legend:'LMG \u0024100 · HMG \u0024800 · Cannon \u0024300 · Laser \u00242000 · Wall \u00245 · Sensor \u002420 · Gate \u002450',
+      initialStatus:'Plan a route with walls, then build a weapon. A path must remain between the entrance and exit.',
+      keepPathShort:'A path must remain between the entrance and exit.',
+      outOfMap:'Choose a tile inside the map.', entryExit:'You cannot build on the entrance or exit.', redTile:'The red tile can be crossed but cannot be built on.',
+      occupied:'This tile already has a building or component.', duplicateDevice:'Only one of each sensor or gate can be placed.', enemyPassing:'A monster is crossing this tile, so you cannot build here yet.',
+      blockPath:'Cannot build: a path must remain between the entrance and exit.', trapEnemy:'Cannot build: this would trap a monster.',
+      notEnough:'Not enough money. You need \u0024{cost}.', built:'Built {name}. Keep clicking tiles to build, or press Esc to stop.',
+      planned:'Queued {name} in position {order}. Click the same tile again to cancel it.', planCancelled:'Cancelled the planned item on this tile and renumbered the queue.', plansCleared:'Cleared all planned items.', plansCompleted:'All planned items were placed.',
+      planDropped:'A planned item became invalid and was removed: {reason}', prebuildOn:'Planned building is on. Unaffordable items queue, while affordable items build immediately.', prebuildOff:'Planned building is off. Existing queued items will still be completed.', overwriteOn:'Replacement is on. The old item is sold for half price before the new item is built.', overwriteOff:'Replacement is off.', sameItem:'This tile already contains the same item.',
+      upgradeNeed:'This upgrade costs \u0024{cost}.', upgraded:'{name} upgraded to level {level}.',
+      sold:'Sold for \u0024{refund}. Monsters will recalculate their route.', replacedBuilt:'Sold the old item for \u0024{refund}, then built {name}.',
+      waveStart:'Wave {wave} started.', hardWaveStart:'Hard-mode wave {wave} started. After this wave finishes spawning, only {seconds} seconds pass before the next wave, without waiting for a clear.', waveEnd:'Wave {wave} cleared. The next wave starts in 3 seconds.', waveEndHeal:' Life restored.',
+      restoredGame:'Your previous game was restored and paused. Press Resume when ready.',
+      gameOver:'Game over at wave {wave}, score {score}.', focus:'Focus target set. Towers in range will prioritize this monster.',
+      infoIdle:'Choose a building, then click a tile to place it.\nWave 1 starts automatically after you build a weapon.',
+      infoWall:'{name}', infoTower:'{name} · Level {level}\nDamage {damage} / Range {range}\nRate {speed} / Kills {kills}{auto}',
+      autoMark:'\nAuto-upgrade target', infoBuildWeapon:'{name} \u0024{cost}\nDamage {damage} / Range {range}\nRate {speed}\nClick tiles to keep building.',
+      infoBuildWall:'{name} \u0024{cost}\nBlocks monsters and changes their route.\nClick tiles to keep building.',
+      infoBuildDevice:'{name} \u0024{cost}\nMonsters can pass through it on the path.\nClick a tile to place it.', infoDevice:'{name}\nPassable sensor-gate component.{state}', gateStateOpen:'\nCurrent state: open', gateStateClosed:'\nCurrent state: closed',
+      infoEnemy:'Focus: {name}\nHealth {hp} / {maxHp}\nArmor {armor} / Damage {damage}{shield}', infoShield:'\nShield: blocks 80% of frontal damage',
+      infoAutoMode:'Choosing auto-upgrade targets.\nClick towers to add or remove them. Walls cannot be upgraded.',
+      infoBatchMode:'Choosing buildings for batch removal.\nToggle buildings, then press Remove selected.',
+      autoMode:'Click the towers you want to upgrade automatically. You may choose several.', autoReady:'Target selection finished: {count} tower(s).',
+      autoOnlyWeapon:'Walls cannot be upgraded. Choose a tower.', autoAdded:'Added {name}; {count} target(s) selected.', autoRemoved:'Removed {name}; {count} target(s) selected.',
+      autoOn:'Auto upgrade is on. Selected targets upgrade when affordable after the planned queue is empty.', autoNeedTargets:'Auto upgrade is on. Choose at least one tower first.', autoOff:'Auto upgrade is off.',
+      autoCleared:'All auto-upgrade targets cleared.', autoAllDone:'Selected all {count} current tower(s).', autoAllNone:'There are no towers available for auto upgrade.',
+      batchMode:'Click the buildings to remove. You may choose several.', batchReady:'Selection finished: {count} building(s).',
+      batchOnlyBuilding:'There is no building on this tile.', batchSelection:'{count} selected; refund \u0024{refund}.',
+      batchRemoved:'Removed {count} building(s) and refunded \u0024{refund}.', batchCancelled:'Batch removal cancelled.',
+      gateScheduled:'{sensor} detected a monster. The gates switch in 10 seconds.', gateSwitched:'Gates switched; {name} is closed.', gateRefused:'The gates stayed open to avoid blocking the route or trapping a monster.', gateReady:'All four components are ready; {name} starts closed.',
+      restartConfirm:'Restart this game?', speedChanged:'Speed changed to {speed}×.', invalidSpeed:'Enter a multiplier from 0.1 to 100.',
+      pausedOverlay:'Paused', overOverlay:'Game over', pauseHint:'Press P or Resume to continue', overDetail:'Wave {wave} · Score {score}'
+    }
+  };
+
+  const SIZE = 16, CELL = 35, ENTRY = 0, EXIT = 255;
+  const PREF_KEY = 'towerDefenseClassicPrefs', RUN_KEY = 'towerDefenseRunV2';
+  const HARD_MODE_AFTER = 50, SHIELD_WAVE = 101, SENSOR_DELAY = 10;
+  const TYPES = {
+    wall: {nameKey:'wall', cost:5, damage:0, range:0, speed:0, maxRange:0, maxSpeed:0, color:'#777'},
+    lmg: {nameKey:'lmg', cost:100, damage:5, range:5, speed:3, maxRange:10, maxSpeed:6, color:'#6356b2'},
+    hmg: {nameKey:'hmg', cost:800, damage:35, range:3, speed:4, maxRange:5, maxSpeed:5, color:'#268432'},
+    cannon: {nameKey:'cannon', cost:300, damage:12, range:4, speed:2, maxRange:8, maxSpeed:6, color:'#99552d'},
+    laser: {nameKey:'laser', cost:2000, damage:25, range:6, speed:20, maxRange:10, maxSpeed:Infinity, color:'#6521cc'}
+  };
+  const DEVICE_TYPES = {
+    sensor1:{nameKey:'sensor1',cost:20,number:1,kind:'sensor'},
+    sensor2:{nameKey:'sensor2',cost:20,number:2,kind:'sensor'},
+    gate1:{nameKey:'gate1',cost:50,number:1,kind:'gate'},
+    gate2:{nameKey:'gate2',cost:50,number:2,kind:'gate'}
+  };
+  const WAVES = [[],[[1,0]],[[1,0],[1,1]],[[2,0],[1,1]],[[2,0],[1,1]],[[3,0],[2,1]],[[4,0],[2,1]],[[5,0],[3,1],[1,2]],[[6,0],[4,1],[1,2]],[[7,0],[3,1],[2,2]],[[8,0],[4,1],[3,2]]];
+  const ENEMIES = [
+    {nameKey:'normalEnemy', hp:50, speed:3, maxSpeed:10, armor:0, damage:1, reward:5, color:'#aa7035'},
+    {nameKey:'strongEnemy', hp:50, speed:6, maxSpeed:20, armor:1, damage:2, color:'#529966'},
+    {nameKey:'fastEnemy', hp:50, speed:12, maxSpeed:30, armor:1, damage:3, color:'#6465c7'},
+    {nameKey:'toughEnemy', hp:500, speed:5, maxSpeed:10, armor:1, damage:3, color:'#bd6363'},
+    {nameKey:'armoredEnemy', hp:50, speed:5, maxSpeed:10, armor:20, damage:3, color:'#666'},
+    {nameKey:'damageEnemy', hp:50, speed:7, maxSpeed:14, armor:2, damage:10, color:'#ab32b1'},
+    {nameKey:'shieldEnemy', hp:260, speed:5, maxSpeed:12, armor:3, damage:5, shield:.8, color:'#39748e'}
+  ];
+  const $ = id => document.getElementById(id);
+  const board = $('board'), ctx = board.getContext('2d');
+  const buildButtons = [...document.querySelectorAll('.weapon[data-type]')];
+  const deviceButtons = [...document.querySelectorAll('[data-device]')];
+  const speedButtons = [...document.querySelectorAll('[data-speed]')];
+  const prefs = loadPrefs();
+  const ui = {mode:null, prebuildEnabled:prefs.prebuild, overwriteEnabled:prefs.overwrite, autoEnabled:false, autoTargets:new Set(), batchTargets:new Set(), lastAuto:null};
+  let game, selected = null, buildingType = null, deviceType = null, planningRemoval = false, targetId = null, hover = -1, hudCache = '', lastSavedPayload = '';
+  let statusState = {key:'initialStatus', params:{}, error:false};
+
+  function loadPrefs() {
+    const result = {lang:'zh', speed:1, quickSpeed:2, prebuild:false, overwrite:false, pauseOnLeave:true, startMode:'blank'};
+    try {
+      result.lang = localStorage.getItem('userLang') === 'en' ? 'en' : 'zh';
+      const saved = JSON.parse(localStorage.getItem(PREF_KEY) || 'null');
+      if(saved && Number.isFinite(saved.speed) && saved.speed>=.1 && saved.speed<=100) result.speed = saved.speed;
+      if(saved && Number.isFinite(saved.quickSpeed) && saved.quickSpeed>=.1 && saved.quickSpeed<=100) result.quickSpeed=saved.quickSpeed;
+      if(saved) result.prebuild = saved.prebuild === true;
+      if(saved) result.overwrite = saved.overwrite === true;
+      if(saved && typeof saved.pauseOnLeave==='boolean') result.pauseOnLeave=saved.pauseOnLeave;
+      if(saved && ['blank','random'].includes(saved.startMode)) result.startMode = saved.startMode;
+    } catch {}
+    return result;
+  }
+  function savePrefs() {
+    try {
+      localStorage.setItem('userLang', prefs.lang);
+      localStorage.setItem(PREF_KEY, JSON.stringify({speed:prefs.speed,quickSpeed:prefs.quickSpeed,prebuild:prefs.prebuild,overwrite:prefs.overwrite,pauseOnLeave:prefs.pauseOnLeave,startMode:prefs.startMode}));
+    } catch {}
+  }
+  // 金額依序使用 K、M、B、T，之後接 AA、AB、AC……，避免後期數字撐開版面。
+  function largeSuffix(group) {
+    if(group<=4)return ['', 'K', 'M', 'B', 'T'][group] || '';
+    let index=group+21, result='';
+    do {result=String.fromCharCode(65+index%26)+result;index=Math.floor(index/26)-1;} while(index>=0);
+    return result;
+  }
+  function formatCompact(value) {
+    const number=Number(value);if(!Number.isFinite(number))return '∞';
+    const absolute=Math.abs(number);if(absolute<1000)return String(Math.floor(number));
+    let group=Math.min(706,Math.floor(Math.log10(absolute)/3));
+    let scaled=number/Math.pow(1000,group);
+    const digits=Math.abs(scaled)>=100?0:Math.abs(scaled)>=10?1:2;
+    scaled=Number(scaled.toFixed(digits));
+    if(Math.abs(scaled)>=1000){scaled/=1000;group++;}
+    return String(scaled).replace(/\.0+$/,'')+largeSuffix(group);
+  }
+  function tr(key, params={}) {
+    const table = I18N[prefs.lang] || I18N.zh;
+    const source = table[key] === undefined ? (I18N.zh[key] === undefined ? key : I18N.zh[key]) : table[key];
+    return String(source).replace(/\{(\w+)\}/g, (match,name)=>{
+      if(params[name]===undefined)return match;
+      return ['cost','refund','score'].includes(name)&&typeof params[name]==='number'?formatCompact(params[name]):String(params[name]);
+    });
+  }
+  function typeName(type) { return tr((TYPES[type] || DEVICE_TYPES[type]).nameKey); }
+  function enemyName(type) { return tr(ENEMIES[type].nameKey); }
+  function message(key, params={}, error=false) {
+    statusState = {key,params,error};
+    renderMessage();
+  }
+  function renderMessage() {
+    $('status').textContent = tr(statusState.key,statusState.params) + (statusState.params.recovery ? tr('waveEndHeal') : '');
+    $('status').classList.toggle('error',statusState.error);
+  }
+  function clearBuildError() { if(statusState.error) message('keepPathShort'); }
+  function applyLanguage() {
+    document.documentElement.lang = prefs.lang === 'en' ? 'en' : 'zh-Hant';
+    document.title = tr('pageTitle');
+    document.querySelectorAll('[data-i18n]').forEach(element=>{ element.textContent = tr(element.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-title]').forEach(element=>{ element.title = tr(element.dataset.i18nTitle); });
+    $('language').textContent = prefs.lang === 'en' ? '中文' : 'EN';
+    $('language').ariaLabel = tr('languageLabel');
+    board.ariaLabel = tr('boardLabel');
+    board.textContent = tr('canvasFallback');
+    $('game-panel').ariaLabel = tr('panelLabel');
+    $('palette').ariaLabel = tr('paletteLabel');
+    $('device-options').ariaLabel = tr('gatePaletteLabel');
+    $('wave-prefix').textContent = tr('wavePrefix');
+    $('wave-suffix').textContent = tr('waveSuffix');
+    $('speed-controls').ariaLabel = tr('speedLabel');
+    $('speed-input').ariaLabel = tr('speedInputLabel');
+    $('quick-speed').title=tr('quickSpeedTitle');
+    buildButtons.forEach(button=>{
+      const type = TYPES[button.dataset.type];
+      button.ariaLabel = tr('weaponChoice',{name:typeName(button.dataset.type),cost:type.cost});
+      button.title = tr('weaponTitle',{name:typeName(button.dataset.type),cost:type.cost});
+    });
+    $('plan-remove').ariaLabel=tr('planRemove');$('plan-remove').title=tr('planRemoveTitle');
+    deviceButtons.forEach(button=>{
+      const type = DEVICE_TYPES[button.dataset.device];
+      button.ariaLabel = tr('weaponChoice',{name:typeName(button.dataset.device),cost:type.cost});
+      button.title = tr('weaponTitle',{name:typeName(button.dataset.device),cost:type.cost});
+      button.textContent = typeName(button.dataset.device);
+    });
+    $('upgrade').title = tr('upgradeShortcut');
+    $('sell').title = tr('sellShortcut');
+    $('pause').title = tr('pauseShortcut');
+    $('restart').title = tr('restartTitle');
+    renderMessage();
+    hudCache = '';
+    updateHud();
+  }
+
+  // ② 地圖、建築、預先架設與尋路
+  const center = id => ({x:(id % SIZE + .5)*CELL, y:(Math.floor(id / SIZE)+.5)*CELL});
+  function neighbors(id) {
+    const x=id%SIZE,y=Math.floor(id/SIZE), out=[];
+    if(x<SIZE-1) out.push(id+1); if(y<SIZE-1) out.push(id+SIZE);
+    if(x>0) out.push(id-1); if(y>0) out.push(id-SIZE); return out;
+  }
+  function makeTower(type,id,spent=TYPES[type].cost) {
+    const base=TYPES[type];
+    return {type,id,level:1,spent,upgradeBasis:base.cost,damage:base.damage,range:base.range,speed:base.speed,cooldown:0,angle:-Math.PI/2,kills:0};
+  }
+  function makeDevice(type,id) { return {type,id,spent:DEVICE_TYPES[type].cost}; }
+  function findDevice(type,devices=game.devices) { return [...devices.values()].find(item=>item.type===type) || null; }
+  function distances(towers=game.towers,closedGate=game.closedGate,devices=game.devices) {
+    const gate=closedGate?findDevice(closedGate,devices):null;
+    const blockedGate=gate?gate.id:-1;
+    const result=new Int16Array(SIZE*SIZE).fill(-1), queue=[EXIT]; result[EXIT]=0;
+    for(let i=0;i<queue.length;i++) for(const next of neighbors(queue[i])) {
+      if(result[next]!==-1 || towers.has(next) || next===blockedGate) continue;
+      result[next]=result[queue[i]]+1; queue.push(next);
+    }
+    return result;
+  }
+  function baseIssue(id,allowRed=false) {
+    if(id<0 || id>=SIZE*SIZE) return {key:'outOfMap'};
+    if(id===ENTRY || id===EXIT) return {key:'entryExit'};
+    if(id===88 && !allowRed) return {key:'redTile'};
+    return null;
+  }
+  function towerIssue(id,type,towers=game.towers,devices=game.devices,checkEnemies=true,allowOverwrite=ui.overwriteEnabled) {
+    const basic=baseIssue(id); if(basic)return basic;
+    const old=towers.get(id),oldDevice=devices.get(id);
+    if(old&&old.type===type&&!oldDevice)return {key:'sameItem'};
+    const replacesWall=old&&old.type==='wall'&&type!=='wall'&&!oldDevice;
+    if((old||oldDevice)&&!allowOverwrite&&!replacesWall)return {key:'occupied'};
+    if(checkEnemies && game.enemies.some(enemy=>enemy.cell===id || enemy.next===id)) return {key:'enemyPassing'};
+    const proposed=new Map(towers),proposedDevices=new Map(devices);proposed.delete(id);proposedDevices.delete(id);proposed.set(id,{type});const field=distances(proposed,game.closedGate,proposedDevices);
+    if(field[ENTRY]<0) return {key:'blockPath'};
+    if(checkEnemies && game.enemies.some(enemy=>field[enemy.cell]<0 || (enemy.next!==null && field[enemy.next]<0))) return {key:'trapEnemy'};
+    return null;
+  }
+  function deviceIssue(id,type,towers=game.towers,devices=game.devices,checkEnemies=true,allowOverwrite=ui.overwriteEnabled) {
+    const basic=baseIssue(id,true); if(basic)return basic;
+    const oldDevice=devices.get(id);
+    if(oldDevice&&oldDevice.type===type)return {key:'sameItem'};
+    if((towers.has(id)||oldDevice)&&!allowOverwrite)return {key:'occupied'};
+    const proposedDevices=new Map(devices);proposedDevices.delete(id);
+    if(findDevice(type,proposedDevices)) return {key:'duplicateDevice'};
+    if(checkEnemies && game.enemies.some(enemy=>enemy.cell===id || enemy.next===id)) return {key:'enemyPassing'};
+    return null;
+  }
+  function projectedState() {
+    const towers=new Map(game.towers), devices=new Map(game.devices);
+    for(const plan of game.plans) {
+      towers.delete(plan.id);devices.delete(plan.id);
+      if(plan.kind==='tower') towers.set(plan.id,{type:plan.type});
+      else if(plan.kind==='device') devices.set(plan.id,{type:plan.type,id:plan.id});
+    }
+    return {towers,devices};
+  }
+  function buildPlanAt(id) { return game.plans.findIndex(plan=>plan.id===id&&plan.kind!=='remove'); }
+  function queuePlan(id,kind,type) {
+    const index=buildPlanAt(id);
+    if(index>=0) {
+      game.plans.splice(index,1); message('planCancelled'); hudCache=''; updateHud(); return;
+    }
+    const issue=baseIssue(id,kind==='device');if(issue)return message(issue.key,issue.params||{},true);
+    game.plans.push({id,kind,type});
+    message('planned',{name:typeName(type),order:game.plans.length}); hudCache=''; updateHud();
+  }
+  function queueRemoval(id) {
+    const index=game.plans.findIndex(plan=>plan.id===id&&plan.kind==='remove');
+    if(index>=0){game.plans.splice(index,1);message('planCancelled');hudCache='';updateHud();return;}
+    const issue=baseIssue(id,true);if(issue)return message(issue.key,issue.params||{},true);
+    game.plans.push({id,kind:'remove',type:'remove'});message('removePlanned',{order:game.plans.length});hudCache='';updateHud();
+  }
+  function componentCount() { return game.devices.size; }
+  function gateFieldIsSafe(type) {
+    const gate=findDevice(type); if(!gate)return null;
+    if(game.enemies.some(enemy=>enemy.cell===gate.id || enemy.next===gate.id))return null;
+    const field=distances(game.towers,type,game.devices);
+    if(field[ENTRY]<0)return null;
+    if(game.enemies.some(enemy=>field[enemy.cell]<0 || (enemy.next!==null && field[enemy.next]<0)))return null;
+    return field;
+  }
+  function switchGate(type,initial=false) {
+    if(componentCount()<4)return false;
+    const field=gateFieldIsSafe(type);
+    if(!field) {
+      game.closedGate=null; game.field=distances(); game.enemies.forEach(enemy=>enemy.next=null);
+      message('gateRefused',{},true); hudCache=''; return false;
+    }
+    game.closedGate=type; game.field=field; game.enemies.forEach(enemy=>enemy.next=null);
+    message(initial?'gateReady':'gateSwitched',{name:typeName(type)}); hudCache=''; return true;
+  }
+  function updateGateReadiness() {
+    const ready=componentCount()===4;
+    if(ready && !game.gateWasReady) {game.gateWasReady=true;switchGate('gate2',true);}
+    if(!ready) {game.gateWasReady=false;game.closedGate=null;game.gateQueue=[];game.field=distances();}
+  }
+  function placeItem(id,kind,type,announce=true) {
+    const data=kind==='tower'?TYPES[type]:DEVICE_TYPES[type];
+    const old=game.towers.get(id)||game.devices.get(id),refund=ui.overwriteEnabled&&old?refundFor(old):0;
+    game.money+=refund-data.cost;game.towers.delete(id);game.devices.delete(id);ui.autoTargets.delete(id);ui.batchTargets.delete(id);
+    if(kind==='tower')game.towers.set(id,makeTower(type,id));
+    else {game.devices.set(id,makeDevice(type,id));deviceType=null;}
+    updateGateReadiness();game.field=distances();
+    if(announce)message(old&&ui.overwriteEnabled?'replacedBuilt':'built',{name:typeName(type),refund});
+    hudCache='';
+  }
+  function buildSelected(id) {
+    if(game.over || (!buildingType&&!deviceType))return;
+    const kind=buildingType?'tower':'device', type=buildingType||deviceType;
+    if(buildPlanAt(id)>=0) {queuePlan(id,kind,type);return;}
+    const data=kind==='tower'?TYPES[type]:DEVICE_TYPES[type];
+    const old=game.towers.get(id)||game.devices.get(id),available=game.money+(ui.overwriteEnabled&&old?refundFor(old):0);
+    const issue=kind==='tower'?towerIssue(id,type):deviceIssue(id,type);
+    if(ui.prebuildEnabled&&(available<data.cost||issue)){queuePlan(id,kind,type);return;}
+    if(issue)return message(issue.key,issue.params||{},true);
+    if(available<data.cost)return message('notEnough',{cost:data.cost},true);
+    placeItem(id,kind,type,true);updateHud();
+  }
+  function processPlans() {
+    let placed=false,progress=true;
+    while(progress&&game.plans.length) {
+      progress=false;
+      for(let index=0;index<game.plans.length;index++) {
+        const plan=game.plans[index];
+        if(plan.kind==='remove') {
+          if(!game.towers.has(plan.id)&&!game.devices.has(plan.id))continue;
+          game.plans.splice(index,1);removeIds([plan.id]);progress=true;placed=true;break;
+        }
+        const data=plan.kind==='tower'?TYPES[plan.type]:DEVICE_TYPES[plan.type],old=game.towers.get(plan.id)||game.devices.get(plan.id);
+        const available=game.money+(ui.overwriteEnabled&&old?refundFor(old):0);if(available<data.cost)continue;
+        const issue=plan.kind==='tower'?towerIssue(plan.id,plan.type):deviceIssue(plan.id,plan.type);if(issue)continue;
+        game.plans.splice(index,1);progress=true;placeItem(plan.id,plan.kind,plan.type,false);placed=true;break;
+      }
+    }
+    if(placed) {const first=game.plans[0],data=first&&first.kind!=='remove'?(TYPES[first.type]||DEVICE_TYPES[first.type]):null;message(game.plans.length?(first.kind==='remove'?'planCountRemove':'planCount'):'plansCompleted',game.plans.length?{count:game.plans.length,name:first.kind==='remove'?tr('planRemove'):typeName(first.type),cost:data?data.cost:0}:{});hudCache='';}
+  }
+  function upgradeCost(tower) { return Math.max(1,Math.floor(tower.upgradeBasis*.75)); }
+  function refundFor(item) { return Math.floor(item.spent/2); }
+  function upgradeTower(tower,announce=true) {
+    if(!tower || tower.type==='wall' || game.over)return false;
+    const cost=upgradeCost(tower);
+    if(game.money<cost){if(announce)message('upgradeNeed',{cost},true);return false;}
+    const base=TYPES[tower.type];
+    game.money-=cost;tower.spent+=cost;tower.upgradeBasis+=cost;tower.level++;
+    tower.damage*=tower.type==='hmg'?1.3:tower.type==='cannon'?(tower.level>=10?1.2:1.3):(tower.level>=10?1.1:1.2);
+    tower.range=Math.min(base.maxRange,tower.range*1.05);tower.speed=Math.min(base.maxSpeed,tower.speed*1.05);
+    if(announce)message('upgraded',{name:typeName(tower.type),level:tower.level});hudCache='';return true;
+  }
+  function upgrade(){upgradeTower(game.towers.get(selected),true);updateHud();}
+  function removeIds(ids) {
+    let refund=0,count=0;
+    for(const id of ids) {
+      const tower=game.towers.get(id),device=game.devices.get(id),item=tower||device;if(!item)continue;
+      refund+=refundFor(item);count++;game.towers.delete(id);game.devices.delete(id);ui.autoTargets.delete(id);ui.batchTargets.delete(id);
+    }
+    game.money+=refund;updateGateReadiness();game.field=distances();
+    if(selected!==null&&!game.towers.has(selected)&&!game.devices.has(selected))selected=null;
+    if(game.wave===0&&![...game.towers.values()].some(tower=>tower.type!=='wall'))game.wait=3;
+    hudCache='';return {count,refund};
+  }
+  function sell(){const item=game.towers.get(selected)||game.devices.get(selected);if(!item||game.over)return;const result=removeIds([selected]);selected=null;message('sold',{refund:result.refund});updateHud();}
+
+  // ③ 開局只分空白與隨機；隨機路障逐一驗證，保證入口仍可走到出口。
+  function createRandomStart() {
+    const protectedTiles=new Set([ENTRY,EXIT,88,...neighbors(ENTRY),...neighbors(EXIT)]);
+    const candidates=Array.from({length:SIZE*SIZE},(_,id)=>id).filter(id=>!protectedTiles.has(id));
+    for(let i=candidates.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[candidates[i],candidates[j]]=[candidates[j],candidates[i]];}
+    let count=0;
+    for(const id of candidates) {
+      if(count>=28)break;
+      const proposed=new Map(game.towers);proposed.set(id,{type:'wall'});
+      if(distances(proposed,null,game.devices)[ENTRY]<0)continue;
+      game.towers.set(id,makeTower('wall',id,0));count++;
+    }
+  }
+  function createGameState() {
+    return {money:500,life:100,score:0,wave:0,paused:false,over:false,towers:new Map(),devices:new Map(),plans:[],closedGate:null,gateQueue:[],gateWasReady:false,clock:0,enemies:[],shots:[],effects:[],queue:[],spawnTimer:0,wait:3,waveActive:false,uid:0,autoTimer:.25};
+  }
+  // 完整當局另存一份；Map、Set 與飛彈的物件參照會轉成可安全保存的 JSON。
+  function clearRun() {
+    lastSavedPayload='';
+    try { localStorage.removeItem(RUN_KEY); } catch {}
+  }
+  function saveRun() {
+    if(!game||game.over)return;
+    const pristine=prefs.startMode==='blank'&&game.wave===0&&game.money===500&&game.life===100&&game.score===0&&!game.towers.size&&!game.devices.size&&!game.plans.length;
+    if(pristine){clearRun();return;}
+    try {
+      const {towers,devices,enemies,shots,effects,field,...plain}=game;
+      const snapshot={
+        version:2,
+        game:{
+          ...plain,
+          towers:[...towers.values()].map(item=>({...item})),
+          devices:[...devices.values()].map(item=>({...item})),
+          enemies:enemies.map(({sensors,...enemy})=>({...enemy,sensors:[...sensors]})),
+          shots:shots.filter(shot=>shot.target?.alive&&shot.owner).map(shot=>({
+            x:shot.x,y:shot.y,sourceX:shot.sourceX,sourceY:shot.sourceY,damage:shot.damage,life:shot.life,color:shot.color,
+            targetId:shot.target.id,ownerId:shot.owner.id
+          }))
+        },
+        ui:{autoEnabled:ui.autoEnabled,autoTargets:[...ui.autoTargets],lastAuto:ui.lastAuto}
+      };
+      const payload=JSON.stringify(snapshot);
+      if(payload!==lastSavedPayload){localStorage.setItem(RUN_KEY,payload);lastSavedPayload=payload;}
+    } catch {}
+  }
+  function restoreRun() {
+    try {
+      const snapshot=JSON.parse(localStorage.getItem(RUN_KEY)||'null'),source=snapshot?.game;
+      if(snapshot?.version!==2||!source||source.over||!Number.isFinite(source.money)||!Number.isFinite(source.life)||source.life<=0)return false;
+      const restored=createGameState();
+      restored.money=Math.max(0,source.money);
+      restored.life=Math.max(0,source.life);
+      restored.score=Number.isFinite(source.score)?Math.max(0,source.score):0;
+      restored.wave=Number.isInteger(source.wave)?Math.max(0,source.wave):0;
+      restored.paused=true;
+      restored.clock=Number.isFinite(source.clock)?Math.max(0,source.clock):0;
+      restored.spawnTimer=Number.isFinite(source.spawnTimer)?source.spawnTimer:0;
+      restored.wait=Number.isFinite(source.wait)?source.wait:3;
+      restored.waveActive=source.waveActive===true;
+      restored.uid=Number.isInteger(source.uid)?Math.max(0,source.uid):0;
+      restored.autoTimer=Number.isFinite(source.autoTimer)?source.autoTimer:.25;
+      for(const raw of Array.isArray(source.towers)?source.towers:[]) {
+        if(!raw||!TYPES[raw.type]||!Number.isInteger(raw.id)||raw.id<0||raw.id>=SIZE*SIZE||restored.towers.has(raw.id))continue;
+        const tower=makeTower(raw.type,raw.id,Number.isFinite(raw.spent)?raw.spent:TYPES[raw.type].cost);
+        for(const key of ['level','upgradeBasis','damage','range','speed','cooldown','angle','kills'])if(Number.isFinite(raw[key]))tower[key]=raw[key];
+        restored.towers.set(tower.id,tower);
+      }
+      for(const raw of Array.isArray(source.devices)?source.devices:[]) {
+        if(!raw||!DEVICE_TYPES[raw.type]||!Number.isInteger(raw.id)||raw.id<0||raw.id>=SIZE*SIZE||restored.devices.has(raw.id)||restored.towers.has(raw.id))continue;
+        const device=makeDevice(raw.type,raw.id);if(Number.isFinite(raw.spent))device.spent=raw.spent;restored.devices.set(device.id,device);
+      }
+      restored.closedGate=['gate1','gate2'].includes(source.closedGate)&&findDevice(source.closedGate,restored.devices)?source.closedGate:null;
+      restored.gateWasReady=source.gateWasReady===true&&restored.devices.size===4;
+      restored.gateQueue=(Array.isArray(source.gateQueue)?source.gateQueue:[]).filter(item=>item&&['gate1','gate2'].includes(item.type)&&Number.isFinite(item.due)).map(item=>({type:item.type,due:item.due}));
+      restored.plans=(Array.isArray(source.plans)?source.plans:[]).filter(item=>item&&Number.isInteger(item.id)&&item.id>=0&&item.id<SIZE*SIZE&&(item.kind==='remove'||item.kind==='tower'&&TYPES[item.type]||item.kind==='device'&&DEVICE_TYPES[item.type])).map(item=>({...item}));
+      restored.queue=(Array.isArray(source.queue)?source.queue:[]).filter(type=>Number.isInteger(type)&&ENEMIES[type]);
+      for(const raw of Array.isArray(source.enemies)?source.enemies:[]) {
+        if(!raw||!ENEMIES[raw.type]||!Number.isInteger(raw.id)||!Number.isInteger(raw.cell)||raw.cell<0||raw.cell>=SIZE*SIZE||!Number.isFinite(raw.hp)||raw.hp<=0)continue;
+        const fallback=center(raw.cell),enemy={
+          id:raw.id,type:raw.type,cell:raw.cell,next:Number.isInteger(raw.next)&&raw.next>=0&&raw.next<SIZE*SIZE?raw.next:null,
+          x:Number.isFinite(raw.x)?raw.x:fallback.x,y:Number.isFinite(raw.y)?raw.y:fallback.y,
+          hp:raw.hp,maxHp:Number.isFinite(raw.maxHp)?raw.maxHp:raw.hp,armor:Number.isFinite(raw.armor)?raw.armor:0,
+          damage:Number.isFinite(raw.damage)?raw.damage:1,reward:Number.isFinite(raw.reward)?raw.reward:1,
+          speed:Number.isFinite(raw.speed)?raw.speed:3,angle:Number.isFinite(raw.angle)?raw.angle:0,
+          shield:Number.isFinite(raw.shield)?raw.shield:(ENEMIES[raw.type].shield||0),alive:true,
+          sensors:new Set(Array.isArray(raw.sensors)?raw.sensors.filter(type=>['sensor1','sensor2'].includes(type)):[])
+        };
+        restored.enemies.push(enemy);restored.uid=Math.max(restored.uid,enemy.id);
+      }
+      restored.field=distances(restored.towers,restored.closedGate,restored.devices);
+      if(restored.field[ENTRY]<0){restored.closedGate=null;restored.field=distances(restored.towers,null,restored.devices);}
+      const enemyById=new Map(restored.enemies.map(enemy=>[enemy.id,enemy]));
+      for(const raw of Array.isArray(source.shots)?source.shots:[]) {
+        const target=enemyById.get(raw.targetId),owner=restored.towers.get(raw.ownerId);
+        if(!target||!owner||!Number.isFinite(raw.x)||!Number.isFinite(raw.y)||!Number.isFinite(raw.life)||raw.life<=0)continue;
+        restored.shots.push({x:raw.x,y:raw.y,sourceX:Number.isFinite(raw.sourceX)?raw.sourceX:raw.x,sourceY:Number.isFinite(raw.sourceY)?raw.sourceY:raw.y,target,owner,damage:Number.isFinite(raw.damage)?raw.damage:0,life:raw.life,color:raw.color||TYPES[owner.type].color});
+      }
+      game=restored;
+      ui.mode=null;ui.autoEnabled=snapshot.ui?.autoEnabled===true;
+      ui.autoTargets=new Set((snapshot.ui?.autoTargets||[]).filter(id=>restored.towers.has(id)&&restored.towers.get(id).type!=='wall'));
+      ui.batchTargets.clear();
+      const lastAuto=snapshot.ui?.lastAuto;
+      ui.lastAuto=lastAuto&&TYPES[lastAuto.type]&&Number.isFinite(lastAuto.level)?{type:lastAuto.type,level:lastAuto.level}:null;
+      selected=null;buildingType=null;deviceType=null;planningRemoval=false;targetId=null;hover=-1;hudCache='';
+      $('auto-upgrade').checked=ui.autoEnabled;
+      message('restoredGame');updateHud();return true;
+    } catch { return false; }
+  }
+  function reset(clearSaved=true) {
+    if(clearSaved)clearRun();
+    game=createGameState();
+    if(prefs.startMode==='random')createRandomStart();game.field=distances();
+    selected=null;buildingType=null;deviceType=null;planningRemoval=false;targetId=null;hover=-1;hudCache='';
+    ui.mode=null;ui.autoEnabled=false;ui.autoTargets.clear();ui.batchTargets.clear();ui.lastAuto=null;
+    $('start-mode').value=prefs.startMode;$('prebuild-enabled').checked=ui.prebuildEnabled;$('overwrite-enabled').checked=ui.overwriteEnabled;$('pause-on-leave').checked=prefs.pauseOnLeave;$('auto-upgrade').checked=false;message(prefs.startMode==='random'?'randomStatus':'initialStatus');updateHud();saveRun();
+  }
+  function applyStartMode(){prefs.startMode=$('start-mode').value==='random'?'random':'blank';savePrefs();reset();message('startApplied',{mode:tr(prefs.startMode==='random'?'startRandom':'startBlank')});updateHud();}
+
+  // ④ 自動升級與批量移除。選取模式互斥，避免誤建或誤拆。
+  function leaveModes(clearBatch=true){ui.mode=null;if(clearBatch)ui.batchTargets.clear();}
+  function selectType(type){if(game.over)return;const next=buildingType===type?null:type;leaveModes(true);buildingType=next;deviceType=null;planningRemoval=false;selected=null;targetId=null;clearBuildError();hudCache='';updateHud();}
+  function selectDevice(type){if(game.over)return;const next=deviceType===type?null:type;leaveModes(true);deviceType=next;buildingType=null;planningRemoval=false;selected=null;targetId=null;clearBuildError();hudCache='';updateHud();}
+  function selectRemoval(){if(game.over)return;const next=!planningRemoval;leaveModes(true);planningRemoval=next;buildingType=null;deviceType=null;selected=null;targetId=null;clearBuildError();hudCache='';updateHud();}
+  function cancel(){buildingType=null;deviceType=null;planningRemoval=false;selected=null;targetId=null;ui.batchTargets.clear();ui.mode=null;clearBuildError();hudCache='';updateHud();}
+  function toggleAutoMode(){buildingType=null;deviceType=null;planningRemoval=false;selected=null;targetId=null;if(ui.mode==='auto'){ui.mode=null;message('autoReady',{count:ui.autoTargets.size});}else{ui.mode='auto';ui.batchTargets.clear();message('autoMode');}hudCache='';updateHud();}
+  function toggleBatchMode(){buildingType=null;deviceType=null;planningRemoval=false;selected=null;targetId=null;if(ui.mode==='batch'){ui.mode=null;message('batchReady',{count:ui.batchTargets.size});}else{ui.mode='batch';ui.batchTargets.clear();message('batchMode');}hudCache='';updateHud();}
+  function toggleAutoTarget(id){const tower=game.towers.get(id);if(!tower||tower.type==='wall')return message('autoOnlyWeapon',{},true);if(ui.autoTargets.has(id)){ui.autoTargets.delete(id);message('autoRemoved',{name:typeName(tower.type),count:ui.autoTargets.size});}else{ui.autoTargets.add(id);message('autoAdded',{name:typeName(tower.type),count:ui.autoTargets.size});}ui.lastAuto=null;hudCache='';updateHud();}
+  function selectAllAutoTargets(){const towers=[...game.towers.values()].filter(tower=>tower.type!=='wall');if(!towers.length)return message('autoAllNone',{},true);towers.forEach(tower=>ui.autoTargets.add(tower.id));ui.lastAuto=null;message('autoAllDone',{count:towers.length});hudCache='';updateHud();}
+  function batchRefund(){let total=0;ui.batchTargets.forEach(id=>{const item=game.towers.get(id)||game.devices.get(id);if(item)total+=refundFor(item);});return total;}
+  function toggleBatchTarget(id){if(!game.towers.has(id)&&!game.devices.has(id))return message('batchOnlyBuilding',{},true);if(ui.batchTargets.has(id))ui.batchTargets.delete(id);else ui.batchTargets.add(id);message('batchSelection',{count:ui.batchTargets.size,refund:batchRefund()});hudCache='';updateHud();}
+  function removeBatch(){if(!ui.batchTargets.size)return;const result=removeIds([...ui.batchTargets]);ui.mode=null;ui.batchTargets.clear();selected=null;message('batchRemoved',result);updateHud();}
+  function cancelBatch(){ui.mode=null;ui.batchTargets.clear();message('batchCancelled');hudCache='';updateHud();}
+  function runAutoUpgrade(dt){game.autoTimer-=dt;if(!ui.autoEnabled||game.plans.length||game.autoTimer>0)return;game.autoTimer=.45;[...ui.autoTargets].forEach(id=>{const tower=game.towers.get(id);if(!tower||tower.type==='wall')ui.autoTargets.delete(id);});const choices=[...ui.autoTargets].map(id=>game.towers.get(id)).filter(tower=>tower&&upgradeCost(tower)<=game.money);choices.sort((a,b)=>a.level-b.level||upgradeCost(a)-upgradeCost(b)||a.id-b.id);const tower=choices[0];if(tower&&upgradeTower(tower,false))ui.lastAuto={type:tower.type,level:tower.level};}
+
+  // ⑤ 波次、戰鬥與遊戲速度
+  // 前 50 波沿用原規則；之後只透過這一處調整困難模式曲線。
+  function waveTuning(wave) {
+    const hard=Math.max(0,wave-HARD_MODE_AFTER);
+    if(!hard)return {hard:0,hp:1,speed:1,count:1,spawnGap:.65,waveGap:3};
+    return {
+      hard,
+      hp:Math.pow(1.022,hard),
+      speed:Math.min(2.4,1+hard*.009),
+      count:1+hard/60,
+      spawnGap:Math.max(.025,.65*Math.pow(.96,hard)),
+      waveGap:Math.max(.5,3*Math.pow(.975,hard))
+    };
+  }
+  function enemyPool(wave) {
+    const result=Array.from({length:Math.min(6,3+Math.floor(wave/10))},(_,index)=>index);
+    if(wave>=SHIELD_WAVE)result.push(6);
+    return result;
+  }
+  function beginWave() {
+    game.wave++; game.waveActive=true; game.wait=3;
+    const groups=WAVES[game.wave]; game.queue=[];
+    if(groups) for(const group of groups) for(let i=0;i<group[0];i++)game.queue.push(group[1]);
+    else {
+      const tuning=waveTuning(game.wave),baseCount=Math.min(100,Math.floor(game.wave**1.1));
+      const count=game.wave<=HARD_MODE_AFTER?baseCount:Math.min(600,Math.floor(baseCount*tuning.count));
+      const pool=enemyPool(game.wave);
+      for(let i=0;i<count;i++)game.queue.push(pool[Math.floor(Math.random()*pool.length)]);
+    }
+    const tuning=waveTuning(game.wave);
+    game.spawnTimer=0;
+    game.wait=tuning.waveGap;
+    message(game.wave>HARD_MODE_AFTER?'hardWaveStart':'waveStart',{wave:game.wave,seconds:tuning.waveGap.toFixed(1)});
+  }
+  function spawn(type) {
+    const base=ENEMIES[type], difficulty=1+Math.max(0,game.wave-1)*.12, tuning=waveTuning(game.wave);
+    const baseSpeed=Math.max(1,Math.min(base.maxSpeed,Math.floor((base.speed+difficulty/2)*(.75+Math.random()*.5))));
+    const speed=baseSpeed*tuning.speed;
+    const hp=Math.max(1,Math.floor(base.hp*(difficulty+1)*(.5+Math.random())*.5*tuning.hp));
+    const armor=Math.floor(base.armor+difficulty/2), damage=Math.max(1,Math.floor(base.damage*(.75+Math.random()*.5)));
+    const calculatedReward=Math.max(1,Math.floor(Math.sqrt((speed+hp)*(armor+1)*damage)));
+    const reward=game.wave<=HARD_MODE_AFTER?(base.reward||calculatedReward):Math.max(base.reward||0,calculatedReward);
+    const p=center(ENTRY);
+    game.enemies.push({id:++game.uid,type,cell:ENTRY,next:null,x:p.x,y:p.y,hp,maxHp:hp,armor,damage,reward,speed:speed*3,angle:0,shield:base.shield||0,alive:true,sensors:new Set()});
+  }
+  function shieldFaces(enemy,sourceX,sourceY) {
+    if(!enemy.shield||!Number.isFinite(sourceX)||!Number.isFinite(sourceY))return false;
+    const dx=sourceX-enemy.x,dy=sourceY-enemy.y,length=Math.hypot(dx,dy);
+    return length>0&&(Math.cos(enemy.angle)*dx+Math.sin(enemy.angle)*dy)/length>=0;
+  }
+  function hurt(enemy,amount,owner,sourceX,sourceY) {
+    if(!enemy.alive) return;
+    let dealt=Math.max(Math.ceil(amount*.1),amount-enemy.armor);
+    if(shieldFaces(enemy,sourceX,sourceY))dealt=Math.max(1,Math.ceil(dealt*(1-enemy.shield)));
+    enemy.hp-=dealt; game.score+=Math.floor(Math.sqrt(dealt));
+    if(enemy.hp<=0) {enemy.alive=false; game.money+=enemy.reward; owner.kills++; game.effects.push({x:enemy.x,y:enemy.y,color:ENEMIES[enemy.type].color,life:.3});}
+  }
+  function scheduleGate(sensor) {
+    if(componentCount()<4)return;
+    const target=sensor.type==='sensor1'?'gate1':'gate2';
+    const last=game.gateQueue[game.gateQueue.length-1];
+    if(last&&last.type===target)return;
+    game.gateQueue.push({type:target,due:game.clock+SENSOR_DELAY});message('gateScheduled',{sensor:typeName(sensor.type)});hudCache='';
+  }
+  function checkSensor(enemy) {
+    const sensor=game.devices.get(enemy.cell);
+    if(!sensor||DEVICE_TYPES[sensor.type].kind!=='sensor'||enemy.sensors.has(sensor.type))return;
+    enemy.sensors.add(sensor.type);scheduleGate(sensor);
+  }
+  function processGateQueue() {
+    while(game.gateQueue.length&&game.gateQueue[0].due<=game.clock) {
+      const action=game.gateQueue.shift();switchGate(action.type,false);
+    }
+  }
+  function step(dt) {
+    if(game.paused || game.over) return;
+    game.clock+=dt;processGateQueue();processPlans();runAutoUpgrade(dt);
+    if(!game.waveActive && (game.wave>0 || [...game.towers.values()].some(tower=>tower.type!=='wall'))) {
+      game.wait-=dt; if(game.wait<=0) beginWave();
+    }
+    if(game.queue.length) {
+      game.spawnTimer-=dt;
+      if(game.spawnTimer<=0){spawn(game.queue.shift());game.spawnTimer=waveTuning(game.wave).spawnGap;}
+    }
+    for(const enemy of game.enemies) {
+      if(!enemy.alive) continue;
+      if(enemy.next===null) {
+        if(enemy.cell===EXIT) {enemy.alive=false; game.life=Math.max(0,game.life-enemy.damage); continue;}
+        enemy.next=neighbors(enemy.cell).filter(id=>game.field[id]>=0 && game.field[id]<game.field[enemy.cell]).sort((a,b)=>game.field[a]-game.field[b])[0]??null;
+      }
+      if(enemy.next===null) continue;
+      const p=center(enemy.next), dx=p.x-enemy.x,dy=p.y-enemy.y,d=Math.hypot(dx,dy),move=enemy.speed*dt;
+      enemy.angle=Math.atan2(dy,dx);
+      if(d<=move) {enemy.x=p.x;enemy.y=p.y;enemy.cell=enemy.next;enemy.next=null;checkSensor(enemy);} else {enemy.x+=dx/d*move;enemy.y+=dy/d*move;}
+    }
+    for(const tower of game.towers.values()) {
+      if(tower.type==='wall')continue; tower.cooldown-=dt; if(tower.cooldown>0)continue;
+      const p=center(tower.id),range=tower.range*CELL;let target=null,bestProgress=Infinity;
+      for(const enemy of game.enemies) {
+        const dx=enemy.x-p.x,dy=enemy.y-p.y;
+        if(!enemy.alive||dx*dx+dy*dy>range*range)continue;
+        if(enemy.id===targetId){target=enemy;break;}
+        const progress=game.field[enemy.next??enemy.cell];
+        if(progress<bestProgress){bestProgress=progress;target=enemy;}
+      }
+      if(!target)continue; tower.angle=Math.atan2(target.y-p.y,target.x-p.x); tower.cooldown=1/tower.speed;
+      if(tower.type==='laser') {
+        hurt(target,tower.damage,tower,p.x,p.y);
+        game.effects.push({x:p.x,y:p.y,x2:target.x,y2:target.y,life:.07,color:'#7125ed'});
+      } else {
+        game.shots.push({x:p.x,y:p.y,sourceX:p.x,sourceY:p.y,target,owner:tower,damage:tower.damage,life:3,color:TYPES[tower.type].color});
+      }
+    }
+    for(const shot of game.shots) {
+      shot.life-=dt; if(!shot.target.alive){shot.life=0;continue;}
+      const dx=shot.target.x-shot.x,dy=shot.target.y-shot.y,d=Math.hypot(dx,dy),move=210*dt;
+      if(d<=move+3) {hurt(shot.target,shot.damage,shot.owner,shot.sourceX,shot.sourceY);shot.life=0;} else {shot.x+=dx/d*move;shot.y+=dy/d*move;}
+    }
+    game.shots=game.shots.filter(shot=>shot.life>0); game.enemies=game.enemies.filter(enemy=>enemy.alive);
+    if(targetId!==null && !game.enemies.some(enemy=>enemy.id===targetId)) targetId=null;
+    game.effects=game.effects.filter(effect=>(effect.life-=dt)>0);
+    if(!game.life) {game.over=true;clearRun();message('gameOver',{wave:game.wave,score:game.score});}
+    else if(game.waveActive && !game.queue.length && (game.wave>HARD_MODE_AFTER||!game.enemies.length)) {
+      game.waveActive=false;game.wait=waveTuning(game.wave).waveGap;
+      const recovery=game.wave%10===0?10:game.wave%5===0?5:0; game.life=Math.min(100,game.life+recovery);
+      if(game.wave<=HARD_MODE_AFTER)message('waveEnd',{wave:game.wave,recovery:Boolean(recovery)});
+    }
+  }
+  function pause() { if(game.over)return; game.paused=!game.paused; hudCache=''; updateHud(); saveRun(); }
+  function setSpeed(speed) {
+    const value=Math.round(Number(speed)*10)/10;
+    if(!Number.isFinite(value)||value<.1||value>100){$('speed-input').value=prefs.speed;message('invalidSpeed',{},true);return;}
+    prefs.speed=value;savePrefs();message('speedChanged',{speed:value});hudCache='';updateHud();
+  }
+  function setQuickSpeed() {
+    const value=Math.round(Number($('speed-input').value)*10)/10;
+    if(!Number.isFinite(value)||value<.1||value>100)return message('invalidSpeed',{},true);
+    prefs.quickSpeed=value;prefs.speed=value;savePrefs();message('quickSpeedSet',{speed:value});hudCache='';updateHud();
+  }
+  function cycleSpeed(){setSpeed(prefs.speed===1?prefs.quickSpeed:1);}
+
+  // ⑥ Canvas 繪圖
+  function circle(c,x,y,r,fill,stroke='#333') {c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fillStyle=fill;c.fill();c.strokeStyle=stroke;c.lineWidth=1;c.stroke();}
+  function drawWeapon(c,type,x,y,scale=1,angle=-Math.PI/2) {
+    c.save();c.translate(x,y);c.scale(scale,scale);
+    if(type==='wall') {c.fillStyle='#777';c.fillRect(-16,-16,32,32);c.strokeStyle='#333';c.lineWidth=1.5;c.strokeRect(-16,-16,32,32);c.beginPath();c.moveTo(-16,-16);c.lineTo(16,16);c.moveTo(16,-16);c.lineTo(-16,16);c.stroke();}
+    else if(type==='laser') {c.fillStyle='#665500';c.beginPath();c.moveTo(0,-17);c.lineTo(16,12);c.lineTo(-16,12);c.closePath();c.fill();circle(c,0,0,12,'#60f');circle(c,0,0,5,'#050505');}
+    else {
+      const r=type==='lmg'?5:type==='hmg'?11:15;
+      circle(c,0,0,r,TYPES[type].color);
+      if(type!=='lmg') {circle(c,0,0,r-3,type==='hmg'?'#40963b':'#763316');circle(c,0,0,4,type==='hmg'?'#b8f2a4':'#efc577');}
+      c.rotate(angle);c.strokeStyle='#333';c.lineWidth=type==='lmg'?1.5:4;c.beginPath();c.moveTo(0,0);c.lineTo(19,0);c.stroke();
+    }
+    c.restore();
+  }
+  function drawDevice(c,item,x,y,alpha=1) {
+    const data=DEVICE_TYPES[item.type];c.save();c.globalAlpha=alpha;c.translate(x,y);
+    if(data.kind==='sensor') {
+      c.rotate(Math.PI/4);c.fillStyle=data.number===1?'#f3c64f':'#6ec5df';c.strokeStyle='#555';c.lineWidth=1.5;c.fillRect(-10,-10,20,20);c.strokeRect(-10,-10,20,20);c.rotate(-Math.PI/4);
+      c.fillStyle='#222';c.font='bold 11px Arial';c.textAlign='center';c.textBaseline='middle';c.fillText('S'+data.number,0,0);
+    } else {
+      const closed=game.closedGate===item.type;c.strokeStyle=data.number===1?'#e57b35':'#4c79cf';c.lineWidth=5;c.beginPath();
+      if(closed){c.moveTo(-14,0);c.lineTo(14,0);}else{c.moveTo(-14,0);c.lineTo(-5,0);c.moveTo(5,0);c.lineTo(14,0);}c.stroke();
+      c.fillStyle='#222';c.font='bold 10px Arial';c.textAlign='center';c.textBaseline='bottom';c.fillText('G'+data.number,0,-4);
+    }
+    c.restore();
+  }
+  function drawPlanNumber(c,p,order,stack=0) {
+    const x=p.x+11-stack*14,y=p.y-11;c.save();c.fillStyle='#17699c';c.beginPath();c.arc(x,y,8,0,Math.PI*2);c.fill();c.fillStyle='#fff';c.font='bold 10px Arial';c.textAlign='center';c.textBaseline='middle';c.fillText(order,x,y);c.restore();
+  }
+  function render() {
+    ctx.clearRect(0,0,560,560);ctx.fillStyle='#f7f7f7';ctx.fillRect(0,0,560,560);
+    ctx.fillStyle='#ffd0d0';ctx.fillRect(8*CELL,5*CELL,CELL,CELL);
+    ctx.strokeStyle='#ddd';ctx.lineWidth=.6;ctx.beginPath();for(let i=0;i<=SIZE;i++){ctx.moveTo(i*CELL,0);ctx.lineTo(i*CELL,560);ctx.moveTo(0,i*CELL);ctx.lineTo(560,i*CELL);}ctx.stroke();
+    circle(ctx,17.5,17.5,11,'white','#999');circle(ctx,542.5,542.5,11,'#555','#999');
+    const tower=game.towers.get(selected);const preview=buildingType && hover>=0?{id:hover,range:TYPES[buildingType].range}:tower;
+    if(preview?.range) {const p=center(preview.id);ctx.fillStyle='rgba(65,105,225,.09)';ctx.strokeStyle='rgba(65,105,225,.3)';ctx.beginPath();ctx.arc(p.x,p.y,preview.range*CELL,0,Math.PI*2);ctx.fill();ctx.stroke();}
+    for(const item of game.towers.values()) {
+      const p=center(item.id);drawWeapon(ctx,item.type,p.x,p.y,1,item.angle);
+      if(item.level>1){ctx.font='10px Arial';ctx.fillStyle='#333';ctx.fillText(item.level,p.x+9,p.y+14);}
+      if(ui.autoTargets.has(item.id)){ctx.strokeStyle='#0a9fb5';ctx.lineWidth=2;ctx.strokeRect(p.x-14,p.y-14,28,28);ctx.fillStyle='#057b8c';ctx.font='bold 10px Arial';ctx.fillText('A',p.x-14,p.y-16);}
+      if(ui.batchTargets.has(item.id)){ctx.strokeStyle='#e33';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(p.x-12,p.y-12);ctx.lineTo(p.x+12,p.y+12);ctx.moveTo(p.x+12,p.y-12);ctx.lineTo(p.x-12,p.y+12);ctx.stroke();}
+    }
+    for(const item of game.devices.values()) {
+      const p=center(item.id);drawDevice(ctx,item,p.x,p.y);
+      if(ui.batchTargets.has(item.id)){ctx.strokeStyle='#e33';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(p.x-12,p.y-12);ctx.lineTo(p.x+12,p.y+12);ctx.moveTo(p.x+12,p.y-12);ctx.lineTo(p.x-12,p.y+12);ctx.stroke();}
+    }
+    game.plans.forEach((item,index)=>{const p=center(item.id),stack=game.plans.slice(0,index).filter(plan=>plan.id===item.id).length;if(item.kind==='tower'){ctx.save();ctx.globalAlpha=.5;drawWeapon(ctx,item.type,p.x,p.y);ctx.restore();}else if(item.kind==='device')drawDevice(ctx,item,p.x,p.y,.5);else{ctx.save();ctx.globalAlpha=.65;ctx.fillStyle='#fff';ctx.fillRect(p.x-12,p.y-12,24,24);ctx.setLineDash([3,3]);ctx.strokeStyle='#666';ctx.strokeRect(p.x-12,p.y-12,24,24);ctx.restore();}drawPlanNumber(ctx,p,index+1,stack);});
+    if(selected!==null){ctx.strokeStyle='#f93';ctx.lineWidth=2;ctx.strokeRect((selected%SIZE)*CELL+1,Math.floor(selected/SIZE)*CELL+1,CELL-2,CELL-2);}
+    if((buildingType||deviceType||planningRemoval) && hover>=0 && !game.over) {
+      if(planningRemoval){const p=center(hover);ctx.fillStyle='rgba(130,130,130,.18)';ctx.fillRect(p.x-CELL/2,p.y-CELL/2,CELL,CELL);ctx.save();ctx.setLineDash([4,3]);ctx.strokeStyle='#666';ctx.strokeRect(p.x-12,p.y-12,24,24);ctx.restore();}
+      else {
+      const kind=buildingType?'tower':'device',type=buildingType||deviceType,state=projectedState();
+      const issue=buildPlanAt(hover)>=0?null:(ui.prebuildEnabled?baseIssue(hover,kind==='device'):(kind==='tower'?towerIssue(hover,type,state.towers,state.devices,false):deviceIssue(hover,type,state.towers,state.devices,false)));const p=center(hover);
+      ctx.fillStyle=issue?'rgba(255,0,0,.16)':'rgba(50,120,255,.14)';ctx.fillRect(p.x-CELL/2,p.y-CELL/2,CELL,CELL);
+      if(kind==='tower'){ctx.globalAlpha=.55;drawWeapon(ctx,type,p.x,p.y);ctx.globalAlpha=1;}else drawDevice(ctx,{type},p.x,p.y,.55);
+      }
+    }
+    for(const enemy of game.enemies) {
+      const r=Math.min(13,Math.max(4,enemy.damage*1.2));circle(ctx,enemy.x,enemy.y,r,ENEMIES[enemy.type].color);
+      if(enemy.shield){
+        ctx.strokeStyle='#b8e7f2';ctx.lineWidth=4;ctx.beginPath();
+        ctx.arc(enemy.x,enemy.y,r+3,enemy.angle-Math.PI/2,enemy.angle+Math.PI/2);ctx.stroke();
+      }
+      ctx.fillStyle='#ddd';ctx.fillRect(enemy.x-10,enemy.y-r-6,20,3);ctx.fillStyle='#49a544';ctx.fillRect(enemy.x-10,enemy.y-r-6,20*Math.max(0,enemy.hp/enemy.maxHp),3);
+      if(enemy.id===targetId){ctx.strokeStyle='#e33';ctx.lineWidth=1;ctx.strokeRect(enemy.x-r-4,enemy.y-r-4,2*r+8,2*r+8);}
+    }
+    for(const shot of game.shots)circle(ctx,shot.x,shot.y,shot.owner.type==='cannon'?3:1.5,shot.color,shot.color);
+    for(const effect of game.effects){ctx.globalAlpha=Math.min(1,effect.life*12);ctx.strokeStyle=effect.color;ctx.lineWidth=1.5;ctx.beginPath();if(effect.x2!==undefined){ctx.moveTo(effect.x,effect.y);ctx.lineTo(effect.x2,effect.y2);}else ctx.arc(effect.x,effect.y,(.35-effect.life)*25,0,Math.PI*2);ctx.stroke();}ctx.globalAlpha=1;
+    if(game.paused || game.over) {
+      ctx.fillStyle='rgba(247,247,247,.8)';ctx.fillRect(0,240,560,76);ctx.fillStyle='#333';ctx.font='24px sans-serif';ctx.textAlign='center';
+      ctx.fillText(tr(game.over?'overOverlay':'pausedOverlay'),280,270);ctx.font='14px sans-serif';
+      ctx.fillText(game.over?tr('overDetail',{wave:game.wave,score:game.score}):tr('pauseHint'),280,297);ctx.textAlign='left';
+    }
+  }
+
+  // ⑦ 所有控制狀態集中更新，切換語言時也不會遺漏動態文字。
+  function updateHud() {
+    if(!game)return;
+    const tower=game.towers.get(selected),device=game.devices.get(selected),enemy=game.enemies.find(item=>item.id===targetId);
+    const autoKey=[...ui.autoTargets].sort((a,b)=>a-b).join(','), batchKey=[...ui.batchTargets].sort((a,b)=>a-b).join(',');
+    const planKey=game.plans.map(item=>item.id+':'+item.type).join(','),deviceKey=[...game.devices.values()].map(item=>item.id+':'+item.type).sort().join(',');
+    const pendingSeconds=game.gateQueue.length?Math.max(0,game.gateQueue[0].due-game.clock).toFixed(1):'';
+    const values=[prefs.lang,prefs.speed,prefs.quickSpeed,prefs.startMode,prefs.pauseOnLeave,ui.prebuildEnabled,ui.overwriteEnabled,game.money,game.score,game.life,game.wave,game.towers.size,game.enemies.length,game.paused,game.over,selected,buildingType,deviceType,planningRemoval,targetId,tower?.level,tower?.kills,enemy?Math.ceil(enemy.hp):null,ui.mode,ui.autoEnabled,autoKey,batchKey,planKey,deviceKey,game.closedGate,pendingSeconds,ui.lastAuto?.type,ui.lastAuto?.level];
+    const key=values.join('|');if(key===hudCache)return;hudCache=key;
+    for(const pair of Object.entries({money:formatCompact(game.money),score:formatCompact(game.score),life:game.life,wave:game.wave,buildings:game.towers.size+game.devices.size,monsters:formatCompact(game.enemies.length)}))$(pair[0]).textContent=pair[1];
+    document.title=tr(game.wave>HARD_MODE_AFTER?'hardPageTitle':'pageTitle');
+    $('mode-label').textContent=tr(game.wave>HARD_MODE_AFTER?'hardMode':'classicMode');
+    $('mode-label').classList.toggle('hard',game.wave>HARD_MODE_AFTER);
+    buildButtons.forEach(button=>{button.setAttribute('aria-pressed',String(button.dataset.type===buildingType));button.disabled=game.over;});
+    $('plan-remove').setAttribute('aria-pressed',String(planningRemoval));$('plan-remove').disabled=game.over;
+    const projected=projectedState();
+    deviceButtons.forEach(button=>{button.setAttribute('aria-pressed',String(button.dataset.device===deviceType));button.disabled=game.over||Boolean(findDevice(button.dataset.device,projected.devices));});
+    $('quick-speed').dataset.speed=String(prefs.quickSpeed);$('quick-speed').textContent=prefs.quickSpeed+'×';
+    speedButtons.forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.speed)===prefs.speed)));
+    if(document.activeElement!==$('speed-input'))$('speed-input').value=prefs.speed;
+    $('pause').textContent=game.paused?tr('resume'):tr('pause');$('pause').disabled=game.over;
+    $('restart').textContent=tr('restart');
+    $('upgrade').hidden=!tower || tower.type==='wall';$('sell').hidden=!tower&&!device;$('cancel').hidden=!buildingType&&!deviceType&&!planningRemoval;
+    $('upgrade').disabled=game.over;$('sell').disabled=game.over;$('upgrade').textContent=tower&&tower.type!=='wall'?tr('upgrade')+' \u0024'+formatCompact(upgradeCost(tower)):tr('upgrade');
+    $('sell').textContent=tower||device?tr('sell')+' \u0024'+formatCompact(refundFor(tower||device)):tr('sell');$('cancel').textContent=tr('cancelBuild');
+    if(document.activeElement!==$('start-mode'))$('start-mode').value=prefs.startMode;
+    $('prebuild-enabled').checked=ui.prebuildEnabled;$('overwrite-enabled').checked=ui.overwriteEnabled;$('pause-on-leave').checked=prefs.pauseOnLeave;$('clear-plans').disabled=!game.plans.length;
+    if(game.plans.length){const next=game.plans[0],data=next.kind==='remove'?null:(TYPES[next.type]||DEVICE_TYPES[next.type]);$('plan-summary').textContent=tr(next.kind==='remove'?'planCountRemove':'planCount',{count:game.plans.length,name:next.kind==='remove'?tr('planRemove'):typeName(next.type),cost:data?data.cost:0});}
+    else $('plan-summary').textContent=tr('planNone');
+    $('auto-upgrade').checked=ui.autoEnabled;
+    $('auto-target').textContent=tr(ui.mode==='auto'?'autoFinish':'autoChoose',{count:ui.autoTargets.size});
+    $('auto-target').classList.toggle('is-active',ui.mode==='auto');$('auto-clear').disabled=!ui.autoTargets.size;
+    const eligible=[...game.towers.values()].filter(item=>item.type!=='wall');$('auto-all').disabled=!eligible.length||eligible.every(item=>ui.autoTargets.has(item.id));
+    let autoSummary=tr(ui.autoTargets.size?'autoSummaryCount':'autoSummaryNone',{count:ui.autoTargets.size});
+    if(ui.lastAuto) autoSummary+='\n'+tr('autoSummaryLast',{name:typeName(ui.lastAuto.type),level:ui.lastAuto.level});
+    $('auto-summary').textContent=autoSummary;
+    $('batch-mode').textContent=tr(ui.mode==='batch'?'batchFinish':'batchStart');$('batch-mode').classList.toggle('is-active',ui.mode==='batch');
+    $('batch-remove').textContent=tr('batchRemove',{count:ui.batchTargets.size});$('batch-remove').disabled=!ui.batchTargets.size;
+    $('batch-cancel').hidden=ui.mode!=='batch'&&!ui.batchTargets.size;
+    $('batch-summary').textContent=ui.batchTargets.size?tr('batchSummary',{count:ui.batchTargets.size,refund:batchRefund()}):tr('batchNote');
+    if(game.gateQueue.length)$('gate-summary').textContent=tr('gatePending',{seconds:pendingSeconds});
+    else if(componentCount()<4)$('gate-summary').textContent=tr('gateIncomplete',{count:componentCount()});
+    else if(game.closedGate)$('gate-summary').textContent=tr('gateClosed',{name:typeName(game.closedGate)});
+    else $('gate-summary').textContent=tr('gateOpen');
+    if(tower) {
+      const auto=ui.autoTargets.has(tower.id)?tr('autoMark'):'';
+      $('info').textContent=tower.type==='wall'?tr('infoWall',{name:typeName(tower.type)}):tr('infoTower',{name:typeName(tower.type),level:tower.level,damage:Math.floor(tower.damage),range:tower.range.toFixed(1),speed:tower.speed.toFixed(1),kills:tower.kills,auto});
+    } else if(device) {
+      const state=DEVICE_TYPES[device.type].kind==='gate'?tr(game.closedGate===device.type?'gateStateClosed':'gateStateOpen'):'';
+      $('info').textContent=tr('infoDevice',{name:typeName(device.type),state});
+    } else if(buildingType) {
+      const type=TYPES[buildingType], params={name:typeName(buildingType),cost:type.cost,damage:type.damage,range:type.range,speed:type.speed};
+      $('info').textContent=tr(buildingType==='wall'?'infoBuildWall':'infoBuildWeapon',params);
+    } else if(deviceType) {
+      const type=DEVICE_TYPES[deviceType];$('info').textContent=tr('infoBuildDevice',{name:typeName(deviceType),cost:type.cost});
+    } else if(planningRemoval) $('info').textContent=tr('infoPlanRemove');
+    else if(enemy) $('info').textContent=tr('infoEnemy',{name:enemyName(enemy.type),hp:formatCompact(Math.ceil(enemy.hp)),maxHp:formatCompact(enemy.maxHp),armor:formatCompact(enemy.armor),damage:formatCompact(enemy.damage),shield:enemy.shield?tr('infoShield'):''});
+    else if(ui.mode==='auto') $('info').textContent=tr('infoAutoMode');
+    else if(ui.mode==='batch') $('info').textContent=tr('infoBatchMode');
+    else $('info').textContent=tr('infoIdle');
+  }
+
+  // ⑧ 滑鼠、觸控與快捷鍵
+  function point(event){const r=board.getBoundingClientRect();return{x:(event.clientX-r.left)*560/r.width,y:(event.clientY-r.top)*560/r.height};}
+  board.addEventListener('pointermove',event=>{const p=point(event);hover=p.x>=0&&p.x<560&&p.y>=0&&p.y<560?Math.floor(p.y/CELL)*SIZE+Math.floor(p.x/CELL):-1;});
+  board.addEventListener('pointerleave',()=>hover=-1);
+  board.addEventListener('pointerdown',event=>{
+    if(event.button!==0 || game.over)return;
+    const p=point(event);if(p.x<0||p.x>=560||p.y<0||p.y>=560)return;
+    const id=Math.floor(p.y/CELL)*SIZE+Math.floor(p.x/CELL);hover=id;
+    if(ui.mode==='auto'){toggleAutoTarget(id);return;}
+    if(ui.mode==='batch'){toggleBatchTarget(id);return;}
+    if(planningRemoval){queueRemoval(id);return;}
+    if(buildingType||deviceType){buildSelected(id);return;}
+    const enemy=game.enemies.find(item=>Math.hypot(item.x-p.x,item.y-p.y)<Math.max(10,item.damage*1.2+3));
+    if(enemy){targetId=enemy.id;selected=null;message('focus');}
+    else {targetId=null;selected=game.towers.has(id)||game.devices.has(id)?id:null;}
+    hudCache='';updateHud();
+  });
+  board.addEventListener('contextmenu',event=>{event.preventDefault();cancel();});
+  buildButtons.forEach(button=>{button.addEventListener('click',()=>selectType(button.dataset.type));drawWeapon(button.querySelector('canvas').getContext('2d'),button.dataset.type,32,32,1.8);});
+  $('plan-remove').addEventListener('click',selectRemoval);
+  deviceButtons.forEach(button=>button.addEventListener('click',()=>selectDevice(button.dataset.device)));
+  speedButtons.forEach(button=>button.addEventListener('click',()=>setSpeed(Number(button.dataset.speed))));
+  $('quick-speed').addEventListener('contextmenu',event=>{event.preventDefault();setQuickSpeed();});
+  $('speed-input').addEventListener('change',event=>setSpeed(event.target.value));
+  $('speed-input').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();setSpeed(event.currentTarget.value);event.currentTarget.blur();}});
+  $('language').addEventListener('click',()=>{prefs.lang=prefs.lang==='zh'?'en':'zh';savePrefs();applyLanguage();});
+  $('cancel').addEventListener('click',cancel);$('upgrade').addEventListener('click',upgrade);$('sell').addEventListener('click',sell);$('pause').addEventListener('click',pause);
+  $('restart').addEventListener('click',()=>{if(game.over || confirm(tr('restartConfirm')))reset();});
+  $('apply-start').addEventListener('click',applyStartMode);
+  $('prebuild-enabled').addEventListener('change',event=>{ui.prebuildEnabled=event.target.checked;prefs.prebuild=ui.prebuildEnabled;savePrefs();message(ui.prebuildEnabled?'prebuildOn':'prebuildOff');hudCache='';updateHud();});
+  $('overwrite-enabled').addEventListener('change',event=>{ui.overwriteEnabled=event.target.checked;prefs.overwrite=ui.overwriteEnabled;savePrefs();message(ui.overwriteEnabled?'overwriteOn':'overwriteOff');hudCache='';updateHud();});
+  $('pause-on-leave').addEventListener('change',event=>{prefs.pauseOnLeave=event.target.checked;savePrefs();message(prefs.pauseOnLeave?'pauseOnLeaveOn':'pauseOnLeaveOff');hudCache='';updateHud();});
+  $('clear-plans').addEventListener('click',()=>{game.plans=[];message('plansCleared');hudCache='';updateHud();});
+  $('auto-upgrade').addEventListener('change',event=>{ui.autoEnabled=event.target.checked;message(ui.autoEnabled?(ui.autoTargets.size?'autoOn':'autoNeedTargets'):'autoOff');hudCache='';updateHud();});
+  $('auto-target').addEventListener('click',toggleAutoMode);
+  $('auto-all').addEventListener('click',selectAllAutoTargets);
+  $('auto-clear').addEventListener('click',()=>{ui.autoTargets.clear();ui.lastAuto=null;message('autoCleared');hudCache='';updateHud();});
+  $('batch-mode').addEventListener('click',toggleBatchMode);$('batch-remove').addEventListener('click',removeBatch);$('batch-cancel').addEventListener('click',cancelBatch);
+  document.addEventListener('keydown',event=>{
+    if(event.ctrlKey||event.metaKey||event.altKey||event.repeat||event.target.matches('input,select,textarea'))return;
+    const actions={p:pause,s:upgrade,c:sell,x:cycleSpeed,Escape:cancel};
+    const action=actions[event.key]||actions[event.key.toLowerCase()];if(action){event.preventDefault();action();}
+  });
+  document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden)return;
+    if(prefs.pauseOnLeave&&!game.over){game.paused=true;hudCache='';updateHud();}
+    saveRun();
+  });
+  window.addEventListener('pagehide',saveRun);
+  window.addEventListener('beforeunload',saveRun);
+
+  if(!restoreRun())reset(false);
+  applyLanguage();
+  setInterval(saveRun,1000);
+  let last=performance.now(),accumulator=0;
+  function frame(now){
+    accumulator+=Math.min(.1,(now-last)/1000)*prefs.speed;last=now;
+    while(accumulator>=1/60){step(1/60);accumulator-=1/60;}
+    updateHud();render();requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

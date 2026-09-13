@@ -12,8 +12,12 @@
 body { margin: 0; padding: 16px 10px; }
 main { position: relative; width: min(100%, 720px); margin: auto; }
 h1 { margin: 0 0 8px; text-align: center; font-size: 26px; color: #1684c9; }
-.mode { text-align: center; color: #1684c9; margin: 0 0 14px; font-size: 14px; }
+.mode-row { display: flex; align-items: center; justify-content: center; gap: 9px; margin: 0 0 14px; font-size: 14px; }
+.mode { color: #1684c9; }
 .mode.hard { color: #a52d2d; font-weight: 700; }
+.mode-link { border: 0; border-left: 1px solid #bbb; padding: 0 0 0 9px; color: #8b5b18; background: transparent; font: inherit; cursor: pointer; }
+.mode-link:hover, .mode-link:focus-visible { color: #54350c; text-decoration: underline; }
+.mode-link[aria-pressed="true"] { font-weight: 700; }
 button, select, input { font: inherit; color: inherit; }
 button { cursor: pointer; }
 button:disabled { opacity: .45; cursor: default; }
@@ -25,13 +29,13 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
 .wave { font-family: serif; font-size: 23px; margin: 3px 0 25px; }
 .stats { display: grid; gap: 10px; font-variant-numeric: tabular-nums; }
 .stats span { display: inline-block; width: 25px; }
-.palette { display: grid; grid-template-columns: repeat(3, 34px); grid-template-rows: repeat(2, 34px); margin: 30px 0 10px; }
+.palette { display: grid; grid-template-columns: repeat(4, 34px); grid-template-rows: repeat(3, 34px); margin: 30px 0 10px; }
 .weapon { padding: 0; background: transparent; border: 1px solid #bbb; }
 .weapon canvas { display: block; width: 32px; height: 32px; pointer-events: none; }
-.remove-tool { grid-column: 2; grid-row: 2; position: relative; background: #fff; }
+.remove-tool { grid-column: 1; grid-row: 3; position: relative; background: #fff; }
 .remove-tool::after { content: ""; position: absolute; inset: 8px; border: 1px dashed #999; }
 .weapon[aria-pressed="true"] { background: #dcefff; outline: 2px solid #1684c9; z-index: 1; }
-.weapon[data-type="wall"] { grid-column: 3; }
+.weapon[data-type="wall"] { grid-column: 4; grid-row: 2; }
 .controls { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .controls button, .speed-controls button, .tool-actions button { border: 1px solid #aaa; border-radius: 2px; padding: 5px 7px; background: #eee; font-size: 13px; }
 .speed-controls { display: grid; grid-template-columns: 1fr 1fr 1.5fr 1.2fr; gap: 3px; margin-top: 10px; }
@@ -41,6 +45,26 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
 #info { margin: 9px 0; min-height: 94px; line-height: 1.6; font-size: 12px; white-space: pre-line; }
 #status { min-height: 38px; margin: 10px 0 5px; color: #505050; font-size: 13px; line-height: 1.5; }
 #status.error { color: #b12b2b; }
+.upgrade-panel { margin-top: 12px; border: 1px solid #b9cbd6; background: #fff; }
+.upgrade-panel__head { padding: 9px 11px 7px; background: #f1f7fa; }
+.upgrade-panel h2 { margin: 0; color: #17699c; font-size: 15px; }
+.upgrade-panel p { margin: 4px 0 0; color: #5c6870; font-size: 11px; line-height: 1.45; }
+.comparison-level { display: inline-flex; align-items: center; gap: 6px; margin-top: 7px; font-size: 12px; }
+.comparison-level input { width: 72px; border: 1px solid #9fb0ba; border-radius: 2px; padding: 3px 5px; background: #fff; }
+.upgrade-table-wrap { max-width: 100%; overflow-x: auto; }
+.upgrade-table { width: 100%; min-width: 610px; border-collapse: collapse; font-size: 11px; font-variant-numeric: tabular-nums; }
+.upgrade-table th, .upgrade-table td { border-top: 1px solid #d9e1e5; border-right: 1px solid #e6ecef; padding: 6px 7px; text-align: center; white-space: nowrap; }
+.upgrade-table th:last-child, .upgrade-table td:last-child { border-right: 0; }
+.upgrade-table th { color: #3d5664; background: #f8fafb; font-weight: 700; }
+.upgrade-table td:first-child { font-weight: 700; }
+.upgrade-table tr.is-current td { color: #075f91; background: #e9f6fd; }
+.upgrade-table small { display: block; margin-top: 2px; color: #71808a; font-size: 9px; }
+.tower-dialog { width: min(92vw, 760px); max-height: 86vh; border: 1px solid #7f9aaa; border-radius: 4px; padding: 0; background: #fff; box-shadow: 0 12px 45px rgba(0,0,0,.28); }
+.tower-dialog::backdrop { background: rgba(24,36,44,.48); }
+.tower-dialog__bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 11px; background: #eaf4f9; }
+.tower-dialog__bar h2 { margin: 0; color: #17699c; font-size: 16px; }
+.tower-dialog__bar button { border: 1px solid #9aabb5; border-radius: 2px; padding: 3px 8px; background: #fff; }
+.tower-dialog > p { margin: 0; padding: 8px 11px; color: #5c6870; font-size: 11px; line-height: 1.5; }
 .tools { margin-top: 12px; border: 1px solid #ccc; background: #fff; }
 .tools > summary { padding: 8px 10px; color: #17699c; background: #f1f6f9; cursor: pointer; font-weight: 700; font-size: 14px; }
 .tools-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 10px; padding: 10px; }
@@ -59,8 +83,17 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
 .help { border-top: 1px solid #ddd; margin-top: 8px; padding-top: 9px; font-size: 13px; line-height: 1.7; }
 .help p { margin: 4px 0; }
 .legend { color: #777; font-size: 12px; }
+.bestiary { margin-top: 12px; border: 1px solid #ccc; background: #fff; }
+.bestiary > summary { padding: 8px 10px; color: #7a4014; background: #fff5ea; cursor: pointer; font-weight: 700; font-size: 14px; }
+.bestiary-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; padding: 10px; }
+.enemy-card { min-width: 0; padding: 9px; border: 1px solid #ddd; border-left: 5px solid var(--enemy-color); background: #fafafa; }
+.enemy-card h3 { display: flex; align-items: center; gap: 7px; margin: 0 0 5px; font-size: 13px; }
+.enemy-card__dot { width: 14px; height: 14px; flex: 0 0 14px; border-radius: 50%; background: var(--enemy-color); box-shadow: inset 0 0 0 1px rgba(0,0,0,.25); }
+.enemy-card p { margin: 3px 0; color: #555; font-size: 11px; line-height: 1.45; }
+.enemy-card__stats { color: #333 !important; font-variant-numeric: tabular-nums; }
 @media(max-width:720px) {
   .tools-grid { grid-template-columns: 1fr; }
+  .bestiary-grid { grid-template-columns: 1fr; }
   .tool-note { min-height: 0; }
 }
 @media(max-width:540px) {
@@ -68,7 +101,7 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
   h1 { font-size: 22px; padding: 0 54px; }
   .language { top: -1px; }
   .game { grid-template-columns: 1fr; gap: 8px; }
-  aside { display: grid; grid-template-columns: 112px 1fr; gap: 0 12px; }
+  aside { display: grid; grid-template-columns: 148px 1fr; gap: 0 12px; }
   .wave { grid-column: 1/-1; margin: 0 0 6px; font-size: 19px; }
   .stats { grid-column: 1/-1; display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 13px; }
   .palette { grid-column: 1; grid-row: 3/7; margin: 12px 0 0; }
@@ -83,7 +116,7 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
 <main>
 <button id="language" class="language" type="button" aria-label="切換到英文">EN</button>
 <h1 data-i18n="gameTitle">塔防遊戲</h1>
-<p id="mode-label" class="mode" data-i18n="classicMode">經典模式</p>
+<div class="mode-row"><span id="mode-label" class="mode" data-i18n="classicMode">經典模式</span><button id="daily-challenge" class="mode-link" type="button">今日隨機關卡</button></div>
 <div class="game">
   <div class="board"><canvas id="board" width="560" height="560" tabindex="0" aria-label="16乘16塔防地圖，白色入口位於左上，黑色出口位於右下">請使用支援 Canvas 的瀏覽器。</canvas></div>
   <aside id="game-panel" aria-label="遊戲面板">
@@ -100,11 +133,15 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
       <button class="weapon" data-type="hmg" aria-pressed="false"><canvas width="64" height="64"></canvas></button>
       <button class="weapon" data-type="cannon" aria-pressed="false"><canvas width="64" height="64"></canvas></button>
       <button class="weapon" data-type="laser" aria-pressed="false"><canvas width="64" height="64"></canvas></button>
+      <button class="weapon" data-type="piercer" aria-pressed="false"><canvas width="64" height="64"></canvas></button>
+      <button class="weapon" data-type="beacon" aria-pressed="false"><canvas width="64" height="64"></canvas></button>
+      <button class="weapon" data-type="repulsor" aria-pressed="false"><canvas width="64" height="64"></canvas></button>
       <button id="plan-remove" class="weapon remove-tool" type="button" aria-pressed="false"></button>
       <button class="weapon" data-type="wall" aria-pressed="false"><canvas width="64" height="64"></canvas></button>
     </div>
     <div id="info"></div>
     <div class="controls selection-controls">
+      <button id="tower-details" hidden></button>
       <button id="upgrade" hidden></button>
       <button id="sell" hidden></button>
       <button id="cancel" hidden></button>
@@ -118,9 +155,35 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
     <div class="controls game-controls">
       <button id="pause"></button>
       <button id="restart"></button>
+      <button id="retry-layout" hidden></button>
     </div>
   </aside>
 </div>
+
+<section id="tower-comparison" class="upgrade-panel">
+  <div class="upgrade-panel__head">
+    <h2 data-i18n="comparisonTitle">砲塔能力一覽</h2>
+    <label class="comparison-level"><span data-i18n="comparisonLevel">比較等級</span><input id="comparison-level" type="number" min="1" max="999" step="1" value="1" inputmode="numeric"></label>
+    <p data-i18n="comparisonNote">所有數值皆以指定等級計算；特殊能力會依砲塔種類顯示。</p>
+  </div>
+  <div class="upgrade-table-wrap">
+    <table class="upgrade-table">
+      <thead><tr id="comparison-table-head"></tr></thead>
+      <tbody id="comparison-table-body"></tbody>
+    </table>
+  </div>
+</section>
+
+<dialog id="tower-detail-dialog" class="tower-dialog">
+  <div class="tower-dialog__bar"><h2 id="upgrade-preview-title"></h2><button id="close-tower-details" type="button" data-i18n="closeDetails">關閉</button></div>
+  <p id="upgrade-preview-note"></p>
+  <div class="upgrade-table-wrap">
+    <table class="upgrade-table">
+      <thead><tr id="upgrade-table-head"></tr></thead>
+      <tbody id="upgrade-table-body"></tbody>
+    </table>
+  </div>
+</dialog>
 
 <details class="tools">
   <summary data-i18n="toolsTitle">進階工具</summary>
@@ -131,10 +194,12 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
         <select id="start-mode">
           <option value="blank" data-i18n="startBlank">空白</option>
           <option value="random" data-i18n="startRandom">隨機路障</option>
+          <option value="daily" data-i18n="startDaily">每日地圖</option>
         </select>
       </label>
       <div class="tool-actions"><button id="apply-start" type="button" data-i18n="applyStart">套用並重來</button></div>
-      <p class="tool-note" data-i18n="startNote">隨機模式每局重新產生合法路障；空白模式不放置任何建築。</p>
+      <p class="tool-note" data-i18n="startNote">隨機模式每局重新產生合法路障；每日地圖會依 UTC 日期固定入口、出口與禁建格。</p>
+      <p id="daily-summary" class="tool-note" hidden></p>
     </section>
 
     <section class="tool-section">
@@ -170,7 +235,7 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
 
     <section class="tool-section">
       <h2 data-i18n="gateTitle">感應閥門</h2>
-      <p class="tool-note" data-i18n="gateNote">放置兩個感應器與兩個閥門。怪物踏上感應器後，系統會延遲 10 秒切換閥門。</p>
+      <p class="tool-note" data-i18n="gateNote">怪物踏上感應器時立即切換閥門；切換後需要冷卻 5 秒才能再次切換。</p>
       <div id="device-options" class="device-options" aria-label="感應閥門選單">
         <button type="button" data-device="sensor1" aria-pressed="false">感應器 1 · $20</button>
         <button type="button" data-device="gate1" aria-pressed="false">閥門 1 · $50</button>
@@ -181,11 +246,22 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
     </section>
 
     <section class="tool-section">
+      <h2 data-i18n="simulationTitle">戰力掃蕩</h2>
+      <div class="tool-actions"><button id="run-simulation" type="button" data-i18n="simulationRun">電腦模擬掃蕩</button></div>
+      <p id="simulation-summary" class="tool-note" data-i18n="simulationIdle" aria-live="polite">使用目前的路線、砲塔等級與敵人剋制關係，瞬間估算可守到的波數。</p>
+    </section>
+
+    <section class="tool-section">
       <h2 data-i18n="pauseSettingsTitle">暫停設定</h2>
       <label class="tool-check"><input id="pause-on-leave" type="checkbox"><span data-i18n="pauseOnLeave">離開頁面時自動暫停</span></label>
       <p class="tool-note" data-i18n="pauseOnLeaveNote">切換到其他分頁、視窗或將頁面縮到背景時生效。</p>
     </section>
   </div>
+</details>
+
+<details class="bestiary">
+  <summary data-i18n="bestiaryTitle">敵人圖鑑</summary>
+  <div id="bestiary-grid" class="bestiary-grid"></div>
 </details>
 
 <p id="status" role="status" aria-live="polite"></p>
@@ -194,7 +270,7 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
   <p data-i18n="help2">開啟預先架設後，資金不足的物品會以半透明編號排隊；任何買得起的物品都可立即架設。P 暫停、S 升級、C 出售、X 在 1× 與快捷倍率間切換。</p>
   <p data-i18n="hardHelp">前 50 波維持經典節奏；第 51 波起，下一波不再等待清場。持盾怪物從第 101 波出現，請從側面或後方攻擊。</p>
   <p data-i18n="saveHelp">遊戲每秒自動保存；重新開啟時會以暫停狀態恢復。</p>
-  <p class="legend" data-i18n="legend">輕機槍 $100 · 重機槍 $800 · 大砲 $300 · 雷射砲 $2000 · 路障 $5 · 感應器 $20 · 閥門 $50</p>
+  <p class="legend" data-i18n="legend">所有砲塔免費建造；升級費用依角色不同。路障 $5 · 感應器 $20 · 閥門 $50</p>
 </div>
 </main>
 <script>
@@ -204,20 +280,21 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
   // ① 語言、偏好與固定資料
   const I18N = {
     zh: {
-      pageTitle:'塔防遊戲・經典模式', hardPageTitle:'塔防遊戲・困難模式', gameTitle:'塔防遊戲', classicMode:'經典模式', hardMode:'困難模式',
-      languageLabel:'切換到英文', boardLabel:'16乘16塔防地圖，白色入口位於左上，黑色出口位於右下',
+      pageTitle:'塔防遊戲・經典模式', hardPageTitle:'塔防遊戲・困難模式', dailyPageTitle:'塔防遊戲・今日隨機關卡', gameTitle:'塔防遊戲', classicMode:'經典模式', hardMode:'困難模式', dailyMode:'今日隨機關卡',
+      languageLabel:'切換到英文', boardLabel:'16乘16塔防地圖，白色圓圈是入口，黑色圓圈是出口',
       canvasFallback:'請使用支援 Canvas 的瀏覽器。', panelLabel:'遊戲面板', paletteLabel:'建築選單',
       wavePrefix:'第 ', waveSuffix:' 波', money:'金幣', score:'分數', life:'生命', buildings:'建築數', monsters:'場上怪物',
-      wall:'路障', lmg:'輕機槍', hmg:'重機槍', cannon:'大砲', laser:'雷射砲',
+      wall:'路障', lmg:'哨戒砲', hmg:'遠擊砲', cannon:'寒霜砲', laser:'震盪砲', piercer:'穿甲砲', beacon:'標記塔', repulsor:'斥力砲',
       sensor1:'感應器 1', sensor2:'感應器 2', gate1:'閥門 1', gate2:'閥門 2',
-      normalEnemy:'普通怪物', strongEnemy:'強化怪物', fastEnemy:'快速怪物', toughEnemy:'高生命怪物', armoredEnemy:'重甲怪物', damageEnemy:'高傷害怪物', shieldEnemy:'持盾怪物',
+      normalEnemy:'行軍者', strongEnemy:'疾行者', fastEnemy:'群聚體', toughEnemy:'重裝體', armoredEnemy:'鐵甲體', damageEnemy:'破城體', shieldEnemy:'盾衛', frostEnemy:'抗寒體', regenEnemy:'再生體', rageEnemy:'狂暴體', anchorEnemy:'錨定者', adaptiveEnemy:'適應體',
       weaponChoice:'{name}，{cost} 金幣', weaponTitle:'{name} \u0024{cost}',
-      upgrade:'升級', sell:'出售', cancelBuild:'取消建造', pause:'■ 暫停', resume:'▶ 繼續', restart:'↻ 重來',
+      upgrade:'升級', sell:'出售', cancelBuild:'取消建造', towerDetails:'等級細節', closeDetails:'關閉', pause:'■ 暫停', resume:'▶ 繼續', restart:'↻ 重新開局', dailyChallenge:'◆ 今日隨機關卡', dailyChallengeTitle:'開啟今天固定的隨機地圖與敵人順序', retryLayout:'保留配置重玩',
       planRemove:'排程移除', planRemoveTitle:'空白：排程移除這一格的物品', infoPlanRemove:'排程移除\n點格子將移除動作加入預先架設清單。', removePlanned:'已將移除動作排入第 {order} 位。', nothingToRemove:'這格目前沒有可移除的物品；排程會等待物品出現。',
       upgradeShortcut:'S：升級', sellShortcut:'C：出售', pauseShortcut:'P：暫停／繼續', restartTitle:'重新開始',
       speedLabel:'遊戲速度', speedInputLabel:'自訂遊戲速度倍率', quickSpeedTitle:'左鍵套用；右鍵將欄位中的倍率存成這個快捷鍵', quickSpeedSet:'快捷倍率已設為 {speed}×。',
-      toolsTitle:'進階工具', startTitle:'開局模式', startLabel:'地圖內容', startBlank:'空白', startRandom:'隨機路障', applyStart:'套用並重來',
-      startNote:'隨機模式每局重新產生合法路障；空白模式不放置任何建築。', startApplied:'已套用「{mode}」開局。', randomStatus:'隨機路障已產生；所有路障都保留通往出口的路。',
+      toolsTitle:'進階工具', startTitle:'開局模式', startLabel:'地圖內容', startBlank:'空白', startRandom:'隨機路障', startDaily:'每日隨機關卡', applyStart:'套用並重來',
+      startNote:'隨機模式每局重新產生合法路障；每日地圖會依 UTC 日期固定入口、出口與禁建格。', startApplied:'已套用「{mode}」開局。', randomStatus:'隨機路障已產生；所有路障都保留通往出口的路。',
+      dailyStatus:'每日隨機關卡 {date} · 代碼 {code} · {count} 個禁建格。今天的入口、出口、禁建格與敵人順序皆固定。', dailyStarted:'已進入今日隨機關卡：{date}，代碼 {code}。',
       prebuildTitle:'預先架設', prebuildEnable:'資金不足時將物品排入架設順序', overwriteEnable:'允許新物品覆蓋現有物品', clearPlans:'清除預設內容',
       planNone:'目前沒有預先架設內容。', planCount:'已排入 {count} 個物品；最早排入的是{name}，需要 \u0024{cost}。', planCountRemove:'已排入 {count} 個動作；最早排入的是免費移除。',
       autoTitle:'自動升級', autoEnable:'資金足夠時自動升級', autoAll:'全選砲塔', autoClear:'清除目標',
@@ -226,14 +303,16 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
       batchTitle:'批量移除', batchStart:'選取建築', batchFinish:'完成選取', batchRemove:'移除選取 ({count})', batchCancel:'取消選取',
       batchNote:'進入選取模式，點選多座建築後一次移除並回收半價。',
       batchSummary:'已選 {count} 座，可回收 \u0024{refund}。',
-      gateTitle:'感應閥門', gateNote:'放置兩個感應器與兩個閥門。怪物踏上感應器後，系統會延遲 10 秒切換閥門；遊戲加速時延遲也會一起加速。', gatePaletteLabel:'感應閥門選單',
-      gateIncomplete:'已放置 {count}／4 個元件。四個元件齊全後才會運作。', gateOpen:'兩個閥門目前都開啟。', gateClosed:'{name}目前關閉。', gatePending:'切換已排程，還有 {seconds} 秒。',
+      gateTitle:'感應閥門', gateNote:'放置兩個感應器與兩個閥門。怪物踏上感應器時立即切換；成功切換後需冷卻 5 個遊戲秒。', gatePaletteLabel:'感應閥門選單',
+      gateIncomplete:'已放置 {count}／4 個元件。四個元件齊全後才會運作。', gateOpen:'兩個閥門目前都開啟。', gateClosed:'{name}目前關閉。', gateCooldown:'閥門冷卻中，還有 {seconds} 秒。',
+      simulationTitle:'戰力掃蕩', simulationRun:'電腦模擬掃蕩', simulationIdle:'使用目前進度模擬戰鬥收益與升級；若已指定自動升級目標就沿用，否則平均升級全部砲塔。', simulationNeedTower:'至少要有一座砲塔才能進行模擬。',
+      simulationResult:'模擬結果：從第 {start} 波起，預計可守過第 {wave} 波，第 {failed} 波失守；過程已計入擊殺收益與 {upgrades} 次升級。', simulationResultCap:'模擬結果：從第 {start} 波起可守過第 {wave} 波以上；過程已計入 {upgrades} 次升級。',
       pauseSettingsTitle:'暫停設定', pauseOnLeave:'離開頁面時自動暫停', pauseOnLeaveNote:'切換到其他分頁、視窗或將頁面縮到背景時生效。', pauseOnLeaveOn:'離開頁面自動暫停已開啟。', pauseOnLeaveOff:'離開頁面自動暫停已關閉。',
       help1:'怪物從白圈走向黑圈。用路障、砲塔和閥門改變路線；任何操作都不能封死出口或困住怪物。',
       help2:'開啟預先架設後，資金不足的物品會以半透明編號排隊；任何買得起的物品都可立即架設。P 暫停、S 升級、C 出售、X 在 1× 與快捷倍率間切換。',
-      hardHelp:'前 50 波維持經典節奏；第 51 波起，下一波不再等待清場。持盾怪物從第 101 波出現，請從側面或後方攻擊。',
+      hardHelp:'前 50 波維持經典節奏；第 51 波起不再等待清場，且敵軍每 8 波輪替主力兵種。同一時間與單波敵人最多 512 隻。持盾怪物從第 101 波出現。',
       saveHelp:'遊戲每秒自動保存；重新開啟時會以暫停狀態恢復。',
-      legend:'輕機槍 \u0024100 · 重機槍 \u0024800 · 大砲 \u0024300 · 雷射砲 \u00242000 · 路障 \u00245 · 感應器 \u002420 · 閥門 \u002450',
+      legend:'所有砲塔免費建造；升級費用依角色不同。路障 \u00245 · 感應器 \u002420 · 閥門 \u002450',
       initialStatus:'先用路障規劃路線，再建武器。入口與出口之間必須保留通路。',
       keepPathShort:'入口與出口之間必須保留通路。',
       outOfMap:'請選擇地圖內的格子。', entryExit:'不能在入口或出口建造。', redTile:'這個紅色格子可以通行，但不能建造。',
@@ -246,13 +325,18 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
       sold:'已出售，回收 \u0024{refund}。怪物會重新選擇路線。', replacedBuilt:'已出售原物品並回收 \u0024{refund}，再建造{name}。',
       waveStart:'第 {wave} 波開始。', hardWaveStart:'困難模式第 {wave} 波開始；本波敵人出完後只間隔 {seconds} 秒，下一波不等待清場。', waveEnd:'第 {wave} 波結束，3 秒後接續下一波。', waveEndHeal:' 生命恢復。',
       restoredGame:'已恢復上次的遊戲進度並暫停；準備好後按「繼續」。',
-      gameOver:'遊戲結束：第 {wave} 波，分數 {score}。', focus:'已指定集火；射程內的武器會優先攻擊這隻怪物。',
+      gameOver:'遊戲結束：第 {wave} 波，分數 {score}。可保留目前配置，將砲塔重設為 1 級再挑戰。', retryStarted:'已保留全部配置並重設砲塔；即將從第 1 波重新開始。', focus:'已指定集火；射程內的武器會優先攻擊這隻怪物。',
       infoIdle:'選擇建築後，點擊格子放置。\n建好第一座武器後，怪物將自動出發。',
-      infoWall:'{name}', infoTower:'{name} · {level} 級\n傷害 {damage}／射程 {range}\n射速 {speed}／擊殺 {kills}{auto}',
-      autoMark:'\n自動升級目標', infoBuildWeapon:'{name} \u0024{cost}\n傷害 {damage}／射程 {range}\n射速 {speed}\n點格子連續建造。',
+      infoWall:'{name}', infoTower:'{name} · {level} 級\n傷害 {damage}／射程 {range}／命中 {accuracy}%\n射速 {speed}／擊殺 {kills}\n{role}{special}{auto}',
+      autoMark:'\n自動升級目標', infoBuildWeapon:'{name} · 免費建造\n傷害 {damage}／射程 {range}／命中 {accuracy}%\n首次升級 {upgradeCost}\n{role}{special}',
+      specialSlow:'\n範圍減速半徑 {splash} 格／持續 {duration} 秒', specialSplash:'\n爆炸半徑 {splash} 格', specialPierce:'\n忽略 {pierce}% 護甲', specialMark:'\n標記增傷 {power}%／持續 {duration} 秒', specialKnock:'\n擊退 {distance} 格',
+      roleLmg:'可靠的近距離單體火力；升級主要提高射速。', roleHmg:'超遠距離高傷害但容易射失；升級主要改善命中。', roleCannon:'低射速的範圍減速砲；初始控場很短，升級可延長減速並縮短發射間隔。', roleLaser:'範圍傷害砲；升級主要擴大爆炸範圍與縮短發射間隔。', rolePiercer:'忽略大部分護甲；升級主要提高穿甲與射速。', roleBeacon:'標記敵人，使所有砲塔增傷；升級主要延長並強化標記。', roleRepulsor:'把單一敵人推回入口方向；擊退距離長，但每次發射後要等待很久。',
+      upgradePreviewTitle:'{name}升級資料', upgradePreviewNote:'顯示 10 個等級；括號內是相較前一級的變化。選到已建砲塔時，藍色列是目前等級。',
+      comparisonTitle:'砲塔能力一覽', comparisonLevel:'比較等級', comparisonNote:'所有數值皆以指定等級計算；特殊能力會依砲塔種類顯示。',
+      levelColumn:'等級', nameColumn:'砲塔', priceColumn:'升至此級', nextPriceColumn:'下一級價格', freeLabel:'免費', damageColumn:'傷害', rangeColumn:'射程', intervalColumn:'發射間隔', accuracyColumn:'命中', slowColumn:'減速幅度', durationColumn:'減速時間', blastColumn:'作用半徑', pierceColumn:'穿甲', markColumn:'標記增傷', markTimeColumn:'標記時間', knockColumn:'擊退距離', specialColumn:'特殊能力',
       infoBuildWall:'{name} \u0024{cost}\n阻擋怪物，改變路線。\n點格子連續建造。',
       infoBuildDevice:'{name} \u0024{cost}\n可放在道路上，怪物能通過。\n點格子放置。', infoDevice:'{name}\n可通行的閥門系統元件。{state}', gateStateOpen:'\n目前：開啟', gateStateClosed:'\n目前：關閉',
-      infoEnemy:'集火：{name}\n生命 {hp}／{maxHp}\n防禦 {armor}／傷害 {damage}{shield}', infoShield:'\n盾牌：正面抵擋 80% 傷害',
+      infoEnemy:'集火：{name}\n生命 {hp}／{maxHp}\n防禦 {armor}／傷害 {damage}{shield}\n{trait}{resists}', infoShield:'\n盾牌：正面抵擋 80% 傷害', infoControlResists:'\n目前抗性：減速 {slow}%／擊退 {knock}%',
       infoAutoMode:'自動升級目標選取中。\n點砲塔可加入或移除；路障不會升級。',
       infoBatchMode:'批量移除選取中。\n點建築切換選取，再按「移除選取」。',
       autoMode:'點擊要自動升級的砲塔；可以選擇多座。', autoReady:'已完成目標選擇，共 {count} 座。',
@@ -262,25 +346,30 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
       batchMode:'點擊要批量移除的建築；可以選擇多座。', batchReady:'已完成選取，共 {count} 座。',
       batchOnlyBuilding:'這個格子沒有可移除的建築。', batchSelection:'已選 {count} 座，將回收 \u0024{refund}。',
       batchRemoved:'已移除 {count} 座建築，回收 \u0024{refund}。', batchCancelled:'已取消批量移除。',
-      gateScheduled:'{sensor}已感應到怪物；10 秒後切換閥門。', gateSwitched:'閥門已切換，{name}關閉。', gateRefused:'為避免封死道路或困住怪物，閥門保持開啟。', gateReady:'四個元件已完成，{name}先關閉。',
-      restartConfirm:'重新開始這局遊戲？', speedChanged:'速度已切換為 {speed}×。', invalidSpeed:'請輸入 0.1 到 100 之間的倍率。',
+      gateCooling:'{sensor}已感應到怪物，但閥門仍在冷卻中。', gateSwitched:'閥門已立即切換，{name}關閉；5 秒後才能再次切換。', gateRefused:'為避免封死道路或困住怪物，閥門保持開啟。', gateReady:'四個元件已完成，{name}先關閉。',
+      defenseHitSlow:'敵人突破防線，遊戲速度已自動降為 1×。',
+      bestiaryTitle:'敵人圖鑑', bestiaryStats:'基礎生命 {hp} · 速度 {speed} · 護甲 {armor} · 突破傷害 {damage}', bestiaryUnlock:'第 {wave} 波起出現', bestiaryCounter:'建議：{counter}', bestiaryResists:'減速抗性 {slow}% · 擊退抗性 {knock}%',
+      enemyDesc0:'能力平均的基礎敵人。後期也會逐漸適應連續控場。', enemyDesc1:'生命較低但移動迅速，容易穿過火力空檔。', enemyDesc2:'數量多、體型小，會消耗單體砲塔的射擊次數。', enemyDesc3:'擁有大量生命，會長時間停留在防線中。', enemyDesc4:'護甲大幅削減每次攻擊的傷害。', enemyDesc5:'抵達出口時會造成很高的生命傷害。', enemyDesc6:'盾牌抵擋來自正面 80% 的傷害。', enemyDesc7:'只能承受 30% 的減速效果。', enemyDesc8:'一段時間未受傷後會持續恢復生命。', enemyDesc9:'生命低於 35% 時移動速度提高 70%。', enemyDesc10:'重量極高，幾乎無法被擊退，但速度較慢。', enemyDesc11:'每次遭到減速或擊退後，都會暫時提高對後續控場的抗性。',
+      enemyCounter0:'依路線搭配即可', enemyCounter1:'哨戒砲或寒霜砲', enemyCounter2:'震盪砲', enemyCounter3:'遠擊砲加標記塔', enemyCounter4:'穿甲砲', enemyCounter5:'寒霜砲延長輸出時間', enemyCounter6:'改變路線，從側面或背面攻擊', enemyCounter7:'直接傷害與標記', enemyCounter8:'持續射擊，不要讓它脫離火力', enemyCounter9:'寒霜砲與高命中火力', enemyCounter10:'穿甲砲與遠擊砲，不要依賴斥力砲', enemyCounter11:'分散不同控制塔的覆蓋區，再配合直接傷害',
+      restartConfirm:'清空目前配置並重新開始？', speedChanged:'速度已切換為 {speed}×。', invalidSpeed:'請輸入 0.1 到 100 之間的倍率。',
       pausedOverlay:'已暫停', overOverlay:'遊戲結束', pauseHint:'按 P 或「繼續」恢復', overDetail:'第 {wave} 波 · 分數 {score}'
     },
     en: {
-      pageTitle:'Tower Defense · Classic Mode', hardPageTitle:'Tower Defense · Hard Mode', gameTitle:'Tower Defense', classicMode:'Classic mode', hardMode:'Hard mode',
-      languageLabel:'Switch to Chinese', boardLabel:'16 by 16 tower-defense map, with the white entrance at top left and the dark exit at bottom right',
+      pageTitle:'Tower Defense · Classic Mode', hardPageTitle:'Tower Defense · Hard Mode', dailyPageTitle:'Tower Defense · Daily Challenge', gameTitle:'Tower Defense', classicMode:'Classic mode', hardMode:'Hard mode', dailyMode:'Daily challenge',
+      languageLabel:'Switch to Chinese', boardLabel:'16 by 16 tower-defense map; the white circle is the entrance and the dark circle is the exit',
       canvasFallback:'Please use a browser that supports Canvas.', panelLabel:'Game panel', paletteLabel:'Build menu',
       wavePrefix:'Wave ', waveSuffix:'', money:'Money', score:'Score', life:'Life', buildings:'Buildings', monsters:'Monsters',
-      wall:'Wall', lmg:'Light machine gun', hmg:'Heavy machine gun', cannon:'Cannon', laser:'Laser',
+      wall:'Wall', lmg:'Sentry', hmg:'Longshot', cannon:'Frost cannon', laser:'Shock mortar', piercer:'Armor piercer', beacon:'Marker tower', repulsor:'Repulsor',
       sensor1:'Sensor 1', sensor2:'Sensor 2', gate1:'Gate 1', gate2:'Gate 2',
-      normalEnemy:'Normal monster', strongEnemy:'Reinforced monster', fastEnemy:'Fast monster', toughEnemy:'High-health monster', armoredEnemy:'Armored monster', damageEnemy:'High-damage monster', shieldEnemy:'Shield bearer',
+      normalEnemy:'Marcher', strongEnemy:'Runner', fastEnemy:'Swarm', toughEnemy:'Juggernaut', armoredEnemy:'Ironclad', damageEnemy:'Siegebreaker', shieldEnemy:'Shield guard', frostEnemy:'Coldproof', regenEnemy:'Regenerator', rageEnemy:'Berserker', anchorEnemy:'Anchor', adaptiveEnemy:'Adapter',
       weaponChoice:'{name}, {cost} coins', weaponTitle:'{name} \u0024{cost}',
-      upgrade:'Upgrade', sell:'Sell', cancelBuild:'Cancel build', pause:'■ Pause', resume:'▶ Resume', restart:'↻ Restart',
+      upgrade:'Upgrade', sell:'Sell', cancelBuild:'Cancel build', towerDetails:'Level details', closeDetails:'Close', pause:'■ Pause', resume:'▶ Resume', restart:'↻ New layout', dailyChallenge:'◆ Daily challenge', dailyChallengeTitle:"Open today's fixed random map and enemy order", retryLayout:'Replay with layout',
       planRemove:'Queue removal', planRemoveTitle:'Blank: queue removal of the item on this tile', infoPlanRemove:'Queue removal\nClick a tile to add a removal action to the planned list.', removePlanned:'Queued removal in position {order}.', nothingToRemove:'There is nothing to remove on this tile yet. The action will wait for an item to appear.',
       upgradeShortcut:'S: Upgrade', sellShortcut:'C: Sell', pauseShortcut:'P: Pause / resume', restartTitle:'Restart game',
       speedLabel:'Game speed', speedInputLabel:'Custom game speed multiplier', quickSpeedTitle:'Left-click to apply; right-click to save the field value as this shortcut', quickSpeedSet:'Shortcut speed set to {speed}×.',
-      toolsTitle:'Advanced tools', startTitle:'Starting mode', startLabel:'Map contents', startBlank:'Blank', startRandom:'Random walls', applyStart:'Apply and restart',
-      startNote:'Random mode creates a new legal wall layout each game. Blank mode starts without buildings.', startApplied:'Started with “{mode}”.', randomStatus:'Random walls created. Every wall preserves a route to the exit.',
+      toolsTitle:'Advanced tools', startTitle:'Starting mode', startLabel:'Map contents', startBlank:'Blank', startRandom:'Random walls', startDaily:'Daily random challenge', applyStart:'Apply and restart',
+      startNote:'Random mode creates a new legal wall layout each game. The daily map fixes its entrance, exit, and no-build tiles from the UTC date.', startApplied:'Started with “{mode}”.', randomStatus:'Random walls created. Every wall preserves a route to the exit.',
+      dailyStatus:'Daily random challenge {date} · code {code} · {count} no-build tiles. Entry, exit, blocked tiles, and enemy order are fixed for today.', dailyStarted:'Daily challenge started: {date}, code {code}.',
       prebuildTitle:'Planned building', prebuildEnable:'Queue items when there is not enough money', overwriteEnable:'Allow new items to replace existing items', clearPlans:'Clear planned items',
       planNone:'No items are planned.', planCount:'{count} item(s) queued. Earliest: {name}, costing \u0024{cost}.', planCountRemove:'{count} action(s) queued. The earliest is a free removal.',
       autoTitle:'Auto upgrade', autoEnable:'Upgrade automatically when affordable', autoAll:'Select all towers', autoClear:'Clear targets',
@@ -289,14 +378,16 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
       batchTitle:'Batch removal', batchStart:'Select buildings', batchFinish:'Finish selecting', batchRemove:'Remove selected ({count})', batchCancel:'Cancel selection',
       batchNote:'Enter selection mode, choose several buildings, then remove them together for half-price refunds.',
       batchSummary:'{count} selected; refund \u0024{refund}.',
-      gateTitle:'Sensor gates', gateNote:'Place two sensors and two gates. Ten seconds after a monster crosses a sensor, the gates switch; game speed also accelerates the delay.', gatePaletteLabel:'Sensor gate menu',
-      gateIncomplete:'{count}/4 components placed. The system starts after all four are present.', gateOpen:'Both gates are open.', gateClosed:'{name} is closed.', gatePending:'A switch is queued in {seconds} seconds.',
+      gateTitle:'Sensor gates', gateNote:'Place two sensors and two gates. A sensor switches the gates immediately; a successful switch then has a 5-game-second cooldown.', gatePaletteLabel:'Sensor gate menu',
+      gateIncomplete:'{count}/4 components placed. The system starts after all four are present.', gateOpen:'Both gates are open.', gateClosed:'{name} is closed.', gateCooldown:'Gate cooldown: {seconds} seconds remaining.',
+      simulationTitle:'Power sweep', simulationRun:'Run computer sweep', simulationIdle:'Simulate combat income and upgrades from the current state. Selected auto-upgrade targets are used; otherwise all towers are upgraded evenly.', simulationNeedTower:'Build at least one tower before running a simulation.',
+      simulationResult:'Simulation from wave {start}: about wave {wave} cleared, then defeat on wave {failed}, including kill income and {upgrades} upgrades.', simulationResultCap:'Simulation from wave {start}: the layout clears beyond wave {wave}, including {upgrades} upgrades.',
       pauseSettingsTitle:'Pause settings', pauseOnLeave:'Pause automatically when leaving the page', pauseOnLeaveNote:'Applies when switching tabs or windows, or moving the page into the background.', pauseOnLeaveOn:'Automatic pause when leaving is on.', pauseOnLeaveOff:'Automatic pause when leaving is off.',
       help1:'Monsters move from the white circle to the dark circle. Use walls, towers, and gates to change their route. No action may block the exit or trap a monster.',
       help2:'With planned building on, unaffordable items appear as numbered translucent previews. Any item you can afford may be built immediately. P pauses, S upgrades, C sells, and X toggles between 1× and the shortcut speed.',
-      hardHelp:'The first 50 waves keep the classic pace. From wave 51, the next wave no longer waits for a clear. Shield bearers appear from wave 101; attack them from the side or rear.',
+      hardHelp:'The first 50 waves keep the classic pace. From wave 51, waves no longer wait for a clear and the featured enemy changes every 8 waves. A wave and the field are each capped at 512 enemies. Shield guards appear from wave 101.',
       saveHelp:'The game saves every second and restores in a paused state when reopened.',
-      legend:'LMG \u0024100 · HMG \u0024800 · Cannon \u0024300 · Laser \u00242000 · Wall \u00245 · Sensor \u002420 · Gate \u002450',
+      legend:'All towers are free to build; upgrade costs depend on their role. Wall \u00245 · Sensor \u002420 · Gate \u002450',
       initialStatus:'Plan a route with walls, then build a weapon. A path must remain between the entrance and exit.',
       keepPathShort:'A path must remain between the entrance and exit.',
       outOfMap:'Choose a tile inside the map.', entryExit:'You cannot build on the entrance or exit.', redTile:'The red tile can be crossed but cannot be built on.',
@@ -309,13 +400,18 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
       sold:'Sold for \u0024{refund}. Monsters will recalculate their route.', replacedBuilt:'Sold the old item for \u0024{refund}, then built {name}.',
       waveStart:'Wave {wave} started.', hardWaveStart:'Hard-mode wave {wave} started. After this wave finishes spawning, only {seconds} seconds pass before the next wave, without waiting for a clear.', waveEnd:'Wave {wave} cleared. The next wave starts in 3 seconds.', waveEndHeal:' Life restored.',
       restoredGame:'Your previous game was restored and paused. Press Resume when ready.',
-      gameOver:'Game over at wave {wave}, score {score}.', focus:'Focus target set. Towers in range will prioritize this monster.',
+      gameOver:'Game over at wave {wave}, score {score}. You may keep the layout and reset every tower to level 1.', retryStarted:'Layout kept and towers reset. Wave 1 will begin shortly.', focus:'Focus target set. Towers in range will prioritize this monster.',
       infoIdle:'Choose a building, then click a tile to place it.\nWave 1 starts automatically after you build a weapon.',
-      infoWall:'{name}', infoTower:'{name} · Level {level}\nDamage {damage} / Range {range}\nRate {speed} / Kills {kills}{auto}',
-      autoMark:'\nAuto-upgrade target', infoBuildWeapon:'{name} \u0024{cost}\nDamage {damage} / Range {range}\nRate {speed}\nClick tiles to keep building.',
+      infoWall:'{name}', infoTower:'{name} · Level {level}\nDamage {damage} / Range {range} / Accuracy {accuracy}%\nRate {speed} / Kills {kills}\n{role}{special}{auto}',
+      autoMark:'\nAuto-upgrade target', infoBuildWeapon:'{name} · Free to build\nDamage {damage} / Range {range} / Accuracy {accuracy}%\nFirst upgrade {upgradeCost}\n{role}{special}',
+      specialSlow:'\nArea slow radius {splash} tiles / {duration} sec', specialSplash:'\nBlast radius {splash} tiles', specialPierce:'\nIgnores {pierce}% armor', specialMark:'\nMark bonus {power}% / {duration} sec', specialKnock:'\nKnockback {distance} tiles',
+      roleLmg:'Reliable close-range fire; upgrades mainly improve firing rate.', roleHmg:'Long-range damage that often misses; upgrades mainly improve accuracy.', roleCannon:'A slow area-control cannon. Its brief slow gains duration and a shorter firing interval through upgrades.', roleLaser:'Area damage whose upgrades mainly widen the blast and shorten the firing interval.', rolePiercer:'Ignores armor; upgrades mainly improve penetration and firing rate.', roleBeacon:'Marks enemies for bonus damage; upgrades mainly strengthen and extend the mark.', roleRepulsor:'Pushes one enemy back toward the entrance. Its knockback is long, and so is its cooldown.',
+      upgradePreviewTitle:'{name} upgrade data', upgradePreviewNote:'Shows 10 levels. Parentheses show the change from the previous level; the blue row is the selected tower’s current level.',
+      comparisonTitle:'Tower comparison', comparisonLevel:'Comparison level', comparisonNote:'Every value is calculated at the chosen level; the special column changes by tower type.',
+      levelColumn:'Level', nameColumn:'Tower', priceColumn:'Cost to reach', nextPriceColumn:'Next upgrade', freeLabel:'Free', damageColumn:'Damage', rangeColumn:'Range', intervalColumn:'Fire interval', accuracyColumn:'Accuracy', slowColumn:'Slow amount', durationColumn:'Slow time', blastColumn:'Effect radius', pierceColumn:'Piercing', markColumn:'Mark bonus', markTimeColumn:'Mark time', knockColumn:'Knockback', specialColumn:'Special',
       infoBuildWall:'{name} \u0024{cost}\nBlocks monsters and changes their route.\nClick tiles to keep building.',
       infoBuildDevice:'{name} \u0024{cost}\nMonsters can pass through it on the path.\nClick a tile to place it.', infoDevice:'{name}\nPassable sensor-gate component.{state}', gateStateOpen:'\nCurrent state: open', gateStateClosed:'\nCurrent state: closed',
-      infoEnemy:'Focus: {name}\nHealth {hp} / {maxHp}\nArmor {armor} / Damage {damage}{shield}', infoShield:'\nShield: blocks 80% of frontal damage',
+      infoEnemy:'Focus: {name}\nHealth {hp} / {maxHp}\nArmor {armor} / Damage {damage}{shield}\n{trait}{resists}', infoShield:'\nShield: blocks 80% of frontal damage', infoControlResists:'\nCurrent resistance: slow {slow}% / knockback {knock}%',
       infoAutoMode:'Choosing auto-upgrade targets.\nClick towers to add or remove them. Walls cannot be upgraded.',
       infoBatchMode:'Choosing buildings for batch removal.\nToggle buildings, then press Remove selected.',
       autoMode:'Click the towers you want to upgrade automatically. You may choose several.', autoReady:'Target selection finished: {count} tower(s).',
@@ -325,21 +421,30 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
       batchMode:'Click the buildings to remove. You may choose several.', batchReady:'Selection finished: {count} building(s).',
       batchOnlyBuilding:'There is no building on this tile.', batchSelection:'{count} selected; refund \u0024{refund}.',
       batchRemoved:'Removed {count} building(s) and refunded \u0024{refund}.', batchCancelled:'Batch removal cancelled.',
-      gateScheduled:'{sensor} detected a monster. The gates switch in 10 seconds.', gateSwitched:'Gates switched; {name} is closed.', gateRefused:'The gates stayed open to avoid blocking the route or trapping a monster.', gateReady:'All four components are ready; {name} starts closed.',
-      restartConfirm:'Restart this game?', speedChanged:'Speed changed to {speed}×.', invalidSpeed:'Enter a multiplier from 0.1 to 100.',
+      gateCooling:'{sensor} detected a monster, but the gates are still cooling down.', gateSwitched:'Gates switched immediately; {name} is closed. They can switch again in 5 seconds.', gateRefused:'The gates stayed open to avoid blocking the route or trapping a monster.', gateReady:'All four components are ready; {name} starts closed.',
+      defenseHitSlow:'An enemy breached the defense. Game speed returned to 1×.',
+      bestiaryTitle:'Enemy encyclopedia', bestiaryStats:'Base HP {hp} · Speed {speed} · Armor {armor} · Leak damage {damage}', bestiaryUnlock:'Appears from wave {wave}', bestiaryCounter:'Suggested: {counter}', bestiaryResists:'Slow resistance {slow}% · knockback resistance {knock}%',
+      enemyDesc0:'A balanced baseline enemy that gradually adapts to repeated control in late waves.', enemyDesc1:'Low health and high speed let it slip through gaps in fire.', enemyDesc2:'Numerous small bodies consume single-target shots.', enemyDesc3:'A huge health pool keeps it in the defense line for a long time.', enemyDesc4:'Heavy armor sharply reduces each incoming hit.', enemyDesc5:'Deals severe life damage if it reaches the exit.', enemyDesc6:'Its shield blocks 80% of damage arriving from the front.', enemyDesc7:'Receives only 30% of normal slowing strength.', enemyDesc8:'Regenerates continuously after avoiding damage for a short time.', enemyDesc9:'Moves 70% faster below 35% health.', enemyDesc10:'Its extreme weight makes it nearly immune to knockback, though it moves slowly.', enemyDesc11:'Every slow or knockback hit temporarily raises its resistance to further control.',
+      enemyCounter0:'Any balanced route setup', enemyCounter1:'Sentry or Frost cannon', enemyCounter2:'Shock mortar', enemyCounter3:'Longshot plus Marker tower', enemyCounter4:'Armor piercer', enemyCounter5:'Frost cannon to extend damage time', enemyCounter6:'Reroute it and attack from the side or rear', enemyCounter7:'Direct damage and marking', enemyCounter8:'Continuous fire without coverage gaps', enemyCounter9:'Frost cannon and accurate fire', enemyCounter10:'Armor piercer and Longshot; do not rely on Repulsors', enemyCounter11:'Separate control coverage and add direct damage',
+      restartConfirm:'Clear the current layout and start over?', speedChanged:'Speed changed to {speed}×.', invalidSpeed:'Enter a multiplier from 0.1 to 100.',
       pausedOverlay:'Paused', overOverlay:'Game over', pauseHint:'Press P or Resume to continue', overDetail:'Wave {wave} · Score {score}'
     }
   };
 
-  const SIZE = 16, CELL = 35, ENTRY = 0, EXIT = 255;
+  const SIZE = 16, CELL = 35;
+  let ENTRY = 0, EXIT = 255, UNBUILDABLE = new Set([88]), DAILY_KEY = '', DAILY_CODE = '';
   const PREF_KEY = 'towerDefenseClassicPrefs', RUN_KEY = 'towerDefenseRunV2';
-  const HARD_MODE_AFTER = 50, SHIELD_WAVE = 101, SENSOR_DELAY = 10;
+  const HARD_MODE_AFTER = 50, GATE_COOLDOWN = 5;
+  const MAX_EFFECTS = 80, MAX_SPAWNS_PER_STEP = 24, MAX_STEPS_PER_FRAME = 6, MAX_ACTIVE_ENEMIES = 512, MAX_SIM_WAVES = 1000;
   const TYPES = {
     wall: {nameKey:'wall', cost:5, damage:0, range:0, speed:0, maxRange:0, maxSpeed:0, color:'#777'},
-    lmg: {nameKey:'lmg', cost:100, damage:5, range:5, speed:3, maxRange:10, maxSpeed:6, color:'#6356b2'},
-    hmg: {nameKey:'hmg', cost:800, damage:35, range:3, speed:4, maxRange:5, maxSpeed:5, color:'#268432'},
-    cannon: {nameKey:'cannon', cost:300, damage:12, range:4, speed:2, maxRange:8, maxSpeed:6, color:'#99552d'},
-    laser: {nameKey:'laser', cost:2000, damage:25, range:6, speed:20, maxRange:10, maxSpeed:Infinity, color:'#6521cc'}
+    lmg: {nameKey:'lmg', roleKey:'roleLmg', cost:0, upgradeBase:500, costGrowth:1.75, damage:18, damageGrowth:1.14, range:3, rangeGrowth:1.02, speed:2.2, speedGrowth:1.11, accuracy:.96, accuracyGain:.004, maxRange:4.2, maxSpeed:6, color:'#3569b8'},
+    hmg: {nameKey:'hmg', roleKey:'roleHmg', cost:0, upgradeBase:950, costGrowth:1.82, damage:120, damageGrowth:1.22, range:10, rangeGrowth:1.012, speed:.42, speedGrowth:1.055, accuracy:.58, accuracyGain:.035, maxAccuracy:.93, maxRange:12.5, maxSpeed:.9, color:'#9b3b32'},
+    cannon: {nameKey:'cannon', roleKey:'roleCannon', cost:0, upgradeBase:700, costGrowth:1.72, damage:3, damageGrowth:1.06, range:5, rangeGrowth:1.035, speed:.3, speedGrowth:1.12, accuracy:.92, accuracyGain:.005, slowFactor:.6, slowFactorGrowth:.97, slowDuration:.8, slowDurationGrowth:1.14, splash:1.8, splashGrowth:1.035, maxSplash:3.5, maxRange:7.5, maxSpeed:1.4, color:'#3a9eb9'},
+    laser: {nameKey:'laser', roleKey:'roleLaser', cost:0, upgradeBase:850, costGrowth:1.78, damage:11, damageGrowth:1.12, range:7, rangeGrowth:1.02, speed:.55, speedGrowth:1.09, accuracy:.82, accuracyGain:.01, splash:2.2, splashGrowth:1.07, maxSplash:4.2, maxRange:9, maxSpeed:2, color:'#b4762d'},
+    piercer: {nameKey:'piercer', roleKey:'rolePiercer', cost:0, upgradeBase:800, costGrowth:1.76, damage:30, damageGrowth:1.14, range:5, rangeGrowth:1.02, speed:1, speedGrowth:1.08, accuracy:.88, accuracyGain:.008, armorPierce:.8, armorPierceGain:.025, maxRange:7.5, maxSpeed:2.5, color:'#50555b'},
+    beacon: {nameKey:'beacon', roleKey:'roleBeacon', cost:0, upgradeBase:650, costGrowth:1.7, damage:2, damageGrowth:1.02, range:6, rangeGrowth:1.025, speed:.45, speedGrowth:1.08, accuracy:1, accuracyGain:0, markPower:1.35, markPowerGain:.04, markDuration:2.2, markDurationGrowth:1.12, maxRange:8.5, maxSpeed:1.5, color:'#a13fa9'},
+    repulsor: {nameKey:'repulsor', roleKey:'roleRepulsor', cost:0, upgradeBase:1050, costGrowth:1.84, damage:5, damageGrowth:1.06, range:4.5, rangeGrowth:1.025, speed:.12, speedGrowth:1.09, accuracy:1, knockback:1.4, knockbackGrowth:1.075, maxKnockback:3.8, maxRange:6.5, maxSpeed:.5, color:'#6c4fc2'}
   };
   const DEVICE_TYPES = {
     sensor1:{nameKey:'sensor1',cost:20,number:1,kind:'sensor'},
@@ -349,13 +454,18 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
   };
   const WAVES = [[],[[1,0]],[[1,0],[1,1]],[[2,0],[1,1]],[[2,0],[1,1]],[[3,0],[2,1]],[[4,0],[2,1]],[[5,0],[3,1],[1,2]],[[6,0],[4,1],[1,2]],[[7,0],[3,1],[2,2]],[[8,0],[4,1],[3,2]]];
   const ENEMIES = [
-    {nameKey:'normalEnemy', hp:50, speed:3, maxSpeed:10, armor:0, damage:1, reward:5, color:'#aa7035'},
-    {nameKey:'strongEnemy', hp:50, speed:6, maxSpeed:20, armor:1, damage:2, color:'#529966'},
-    {nameKey:'fastEnemy', hp:50, speed:12, maxSpeed:30, armor:1, damage:3, color:'#6465c7'},
-    {nameKey:'toughEnemy', hp:500, speed:5, maxSpeed:10, armor:1, damage:3, color:'#bd6363'},
-    {nameKey:'armoredEnemy', hp:50, speed:5, maxSpeed:10, armor:20, damage:3, color:'#666'},
-    {nameKey:'damageEnemy', hp:50, speed:7, maxSpeed:14, armor:2, damage:10, color:'#ab32b1'},
-    {nameKey:'shieldEnemy', hp:260, speed:5, maxSpeed:12, armor:3, damage:5, shield:.8, color:'#39748e'}
+    {nameKey:'normalEnemy', hp:50, speed:3, maxSpeed:10, armor:0, damage:1, reward:6, unlock:1, weight:5, color:'#aa7035'},
+    {nameKey:'strongEnemy', hp:30, speed:11, maxSpeed:32, armor:0, damage:2, unlock:2, weight:3, color:'#54a36d'},
+    {nameKey:'fastEnemy', hp:16, speed:7, maxSpeed:22, armor:0, damage:1, unlock:5, weight:5, color:'#7778cf'},
+    {nameKey:'toughEnemy', hp:500, speed:4, maxSpeed:11, armor:2, damage:4, knockResist:.65, unlock:12, weight:2, color:'#bd6363'},
+    {nameKey:'armoredEnemy', hp:100, speed:5, maxSpeed:12, armor:25, damage:4, knockResist:.35, unlock:20, weight:2, color:'#666'},
+    {nameKey:'damageEnemy', hp:180, speed:6, maxSpeed:16, armor:4, damage:15, unlock:35, weight:1, color:'#ab32b1'},
+    {nameKey:'shieldEnemy', hp:280, speed:5, maxSpeed:12, armor:3, damage:5, shield:.8, knockResist:.25, unlock:101, weight:2, color:'#39748e'},
+    {nameKey:'frostEnemy', hp:220, speed:8, maxSpeed:20, armor:3, damage:5, slowResist:.7, unlock:55, weight:2, color:'#2f8a9a'},
+    {nameKey:'regenEnemy', hp:350, speed:5, maxSpeed:13, armor:5, damage:6, regen:.025, unlock:70, weight:2, color:'#4d9b48'},
+    {nameKey:'rageEnemy', hp:260, speed:7, maxSpeed:18, armor:4, damage:8, rage:1.7, slowResist:.25, unlock:85, weight:2, color:'#ce542f'},
+    {nameKey:'anchorEnemy', hp:420, speed:4, maxSpeed:10, armor:16, damage:7, slowResist:.55, knockResist:.94, unlock:45, weight:2, color:'#594b45'},
+    {nameKey:'adaptiveEnemy', hp:320, speed:8, maxSpeed:20, armor:6, damage:7, slowResist:.35, knockResist:.45, controlAdapt:.16, unlock:120, weight:2, color:'#cf4f87'}
   ];
   const $ = id => document.getElementById(id);
   const board = $('board'), ctx = board.getContext('2d');
@@ -364,7 +474,7 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
   const speedButtons = [...document.querySelectorAll('[data-speed]')];
   const prefs = loadPrefs();
   const ui = {mode:null, prebuildEnabled:prefs.prebuild, overwriteEnabled:prefs.overwrite, autoEnabled:false, autoTargets:new Set(), batchTargets:new Set(), lastAuto:null};
-  let game, selected = null, buildingType = null, deviceType = null, planningRemoval = false, targetId = null, hover = -1, hudCache = '', lastSavedPayload = '';
+  let game, selected = null, buildingType = null, deviceType = null, planningRemoval = false, targetId = null, hover = -1, hudCache = '', lastSavedPayload = '', simulationResult = null, forceSpeedBreak = false;
   let statusState = {key:'initialStatus', params:{}, error:false};
 
   function loadPrefs() {
@@ -377,7 +487,7 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
       if(saved) result.prebuild = saved.prebuild === true;
       if(saved) result.overwrite = saved.overwrite === true;
       if(saved && typeof saved.pauseOnLeave==='boolean') result.pauseOnLeave=saved.pauseOnLeave;
-      if(saved && ['blank','random'].includes(saved.startMode)) result.startMode = saved.startMode;
+      if(saved && ['blank','random','daily'].includes(saved.startMode)) result.startMode = saved.startMode;
     } catch {}
     return result;
   }
@@ -414,6 +524,94 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
   }
   function typeName(type) { return tr((TYPES[type] || DEVICE_TYPES[type]).nameKey); }
   function enemyName(type) { return tr(ENEMIES[type].nameKey); }
+  function towerSpecial(data) {
+    if(data.slowFactor>0)return tr('specialSlow',{splash:data.splash.toFixed(1),duration:data.slowDuration.toFixed(1)});
+    if(data.markPower>1)return tr('specialMark',{power:Math.round((data.markPower-1)*100),duration:data.markDuration.toFixed(1)});
+    if(data.armorPierce>0)return tr('specialPierce',{pierce:Math.round(data.armorPierce*100)});
+    if(data.knockback>0)return tr('specialKnock',{distance:data.knockback.toFixed(1)});
+    if(data.splash>0)return tr('specialSplash',{splash:data.splash.toFixed(1)});
+    return '';
+  }
+  const weaponTypeKeys=()=>Object.keys(TYPES).filter(type=>type!=='wall');
+  function towerAtLevel(type,level) { return rebuildTowerLevel(makeTower(type,-1,0),level); }
+  function priceToReachLevel(type,level) {
+    const base=TYPES[type];
+    return level<=1?0:Math.max(1,Math.floor(base.upgradeBase*Math.pow(base.costGrowth||1.75,level-2)));
+  }
+  function statNumber(value,decimals=2) {
+    if(Math.abs(value)>=1000)return formatCompact(value);
+    if(Math.abs(value)>=100)return String(Math.round(value));
+    return String(Number(Number(value).toFixed(decimals)));
+  }
+  function signedStat(value,decimals=2,suffix='') {
+    if(Math.abs(value)<Math.pow(10,-decimals)/2)return '±0'+suffix;
+    return (value>0?'+':'−')+statNumber(Math.abs(value),decimals)+suffix;
+  }
+  function statColumns(type) {
+    const columns=[
+      {key:'damageColumn',value:t=>t.damage,decimals:2},
+      {key:'rangeColumn',value:t=>t.range,decimals:2},
+      {key:'intervalColumn',value:t=>1/Math.max(.001,t.speed),decimals:2,suffix:'s'},
+      {key:'accuracyColumn',value:t=>t.accuracy*100,decimals:1,suffix:'%'}
+    ];
+    if(type==='cannon')columns.push(
+      {key:'slowColumn',value:t=>(1-t.slowFactor)*100,decimals:1,suffix:'%'},
+      {key:'durationColumn',value:t=>t.slowDuration,decimals:2,suffix:'s'},
+      {key:'blastColumn',value:t=>t.splash,decimals:2}
+    );
+    else if(type==='laser')columns.push({key:'blastColumn',value:t=>t.splash,decimals:2});
+    else if(type==='piercer')columns.push({key:'pierceColumn',value:t=>t.armorPierce*100,decimals:1,suffix:'%'});
+    else if(type==='beacon')columns.push(
+      {key:'markColumn',value:t=>(t.markPower-1)*100,decimals:1,suffix:'%'},
+      {key:'markTimeColumn',value:t=>t.markDuration,decimals:2,suffix:'s'}
+    );
+    else if(type==='repulsor')columns.push({key:'knockColumn',value:t=>t.knockback,decimals:2});
+    return columns;
+  }
+  function addTableHeader(row,keys) {
+    row.replaceChildren(...keys.map(key=>{const cell=document.createElement('th');cell.scope='col';cell.textContent=tr(key);return cell;}));
+  }
+  function addStatCell(row,column,tower,previous=null) {
+    const cell=document.createElement('td'),value=column.value(tower);
+    cell.textContent=statNumber(value,column.decimals)+(column.suffix||'');
+    if(previous){const delta=document.createElement('small');delta.textContent=signedStat(value-column.value(previous),column.decimals,column.suffix||'');cell.append(delta);}
+    row.append(cell);
+  }
+  function renderTowerDetail(type,currentLevel=0) {
+    if(!TYPES[type]||type==='wall')return;
+    const start=currentLevel?Math.max(1,currentLevel-1):1,columns=statColumns(type),head=$('upgrade-table-head'),body=$('upgrade-table-body');
+    $('upgrade-preview-title').textContent=tr('upgradePreviewTitle',{name:typeName(type)});$('upgrade-preview-note').textContent=tr('upgradePreviewNote');
+    addTableHeader(head,['levelColumn','priceColumn',...columns.map(column=>column.key)]);
+    const rows=[];
+    for(let level=start;level<start+10;level++){
+      const tower=towerAtLevel(type,level),previous=level>1?towerAtLevel(type,level-1):null,row=document.createElement('tr');
+      if(level===currentLevel)row.className='is-current';
+      const levelCell=document.createElement('td');levelCell.textContent=String(level);row.append(levelCell);
+      const price=document.createElement('td');price.textContent=level===1?tr('freeLabel'):'$'+formatCompact(priceToReachLevel(type,level));row.append(price);
+      columns.forEach(column=>addStatCell(row,column,tower,previous));rows.push(row);
+    }
+    body.replaceChildren(...rows);
+  }
+  function selectedWeapon() {
+    const tower=game?.towers.get(selected);
+    if(tower&&tower.type!=='wall')return {type:tower.type,level:tower.level};
+    return buildingType&&buildingType!=='wall'?{type:buildingType,level:0}:null;
+  }
+  function showTowerDetails() {
+    const weapon=selectedWeapon();if(!weapon)return;
+    renderTowerDetail(weapon.type,weapon.level);$('tower-detail-dialog').showModal();
+  }
+  function comparisonSpecial(tower) { return towerSpecial(tower).trim()||'—'; }
+  function renderTowerComparison() {
+    const field=$('comparison-level'),parsed=Math.floor(Number(field.value)),level=Math.max(1,Math.min(999,Number.isFinite(parsed)?parsed:1));
+    if(document.activeElement!==field)field.value=String(level);
+    addTableHeader($('comparison-table-head'),['nameColumn','levelColumn','nextPriceColumn','damageColumn','rangeColumn','intervalColumn','accuracyColumn','specialColumn']);
+    const rows=weaponTypeKeys().map(type=>{
+      const tower=towerAtLevel(type,level),row=document.createElement('tr'),values=[typeName(type),level,'$'+formatCompact(upgradeCost(tower)),statNumber(tower.damage),statNumber(tower.range),statNumber(1/tower.speed,2)+'s',statNumber(tower.accuracy*100,1)+'%',comparisonSpecial(tower)];
+      values.forEach(value=>{const cell=document.createElement('td');cell.textContent=String(value);row.append(cell);});return row;
+    });
+    $('comparison-table-body').replaceChildren(...rows);
+  }
   function message(key, params={}, error=false) {
     statusState = {key,params,error};
     renderMessage();
@@ -422,6 +620,26 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
     $('status').textContent = tr(statusState.key,statusState.params) + (statusState.params.recovery ? tr('waveEndHeal') : '');
     $('status').classList.toggle('error',statusState.error);
   }
+  function renderBestiary() {
+    const grid=$('bestiary-grid'),fragment=document.createDocumentFragment();
+    ENEMIES.forEach((enemy,index)=>{
+      const card=document.createElement('article');card.className='enemy-card';card.style.setProperty('--enemy-color',enemy.color);
+      const heading=document.createElement('h3'),dot=document.createElement('span');dot.className='enemy-card__dot';dot.setAttribute('aria-hidden','true');
+      heading.append(dot,document.createTextNode(enemyName(index)));
+      const stats=document.createElement('p');stats.className='enemy-card__stats';stats.textContent=tr('bestiaryStats',{hp:enemy.hp,speed:enemy.speed,armor:enemy.armor,damage:enemy.damage});
+      const unlock=document.createElement('p');unlock.textContent=tr('bestiaryUnlock',{wave:enemy.unlock});
+      const description=document.createElement('p');description.textContent=tr('enemyDesc'+index);
+      const counter=document.createElement('p');counter.textContent=tr('bestiaryCounter',{counter:tr('enemyCounter'+index)});
+      const resists=document.createElement('p');resists.textContent=tr('bestiaryResists',{slow:Math.round((enemy.slowResist||0)*100),knock:Math.round((enemy.knockResist||0)*100)});
+      card.append(heading,stats,resists,unlock,description,counter);fragment.append(card);
+    });
+    grid.replaceChildren(fragment);grid.setAttribute('aria-label',tr('bestiaryTitle'));
+  }
+  function renderSimulation() {
+    const summary=$('simulation-summary');
+    summary.textContent=simulationResult?tr(simulationResult.capped?'simulationResultCap':'simulationResult',simulationResult):tr('simulationIdle');
+  }
+  function invalidateSimulation(){simulationResult=null;renderSimulation();}
   function clearBuildError() { if(statusState.error) message('keepPathShort'); }
   function applyLanguage() {
     document.documentElement.lang = prefs.lang === 'en' ? 'en' : 'zh-Hant';
@@ -456,6 +674,12 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
     $('sell').title = tr('sellShortcut');
     $('pause').title = tr('pauseShortcut');
     $('restart').title = tr('restartTitle');
+    $('daily-challenge').title = tr('dailyChallengeTitle');
+    $('retry-layout').title = tr('retryLayout');
+    renderBestiary();
+    renderTowerComparison();
+    if($('tower-detail-dialog').open){const weapon=selectedWeapon();if(weapon)renderTowerDetail(weapon.type,weapon.level);}
+    renderSimulation();
     renderMessage();
     hudCache = '';
     updateHud();
@@ -468,9 +692,68 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
     if(x<SIZE-1) out.push(id+1); if(y<SIZE-1) out.push(id+SIZE);
     if(x>0) out.push(id-1); if(y>0) out.push(id-SIZE); return out;
   }
+  function utcDateKey() { return new Date().toISOString().slice(0,10); }
+  // 日期先經四組 32 位元雪崩雜湊，再交給 xoshiro128**；狀態空間為 2^128-1。
+  function seedWords(text) {
+    let h1=1779033703,h2=3144134277,h3=1013904242,h4=2773480762;
+    for(let i=0;i<text.length;i++) {
+      const code=text.charCodeAt(i);
+      h1=h2^Math.imul(h1^code,597399067);h2=h3^Math.imul(h2^code,2869860233);
+      h3=h4^Math.imul(h3^code,951274213);h4=h1^Math.imul(h4^code,2716044179);
+    }
+    h1=Math.imul(h3^(h1>>>18),597399067);h2=Math.imul(h4^(h2>>>22),2869860233);
+    h3=Math.imul(h1^(h3>>>17),951274213);h4=Math.imul(h2^(h4>>>19),2716044179);
+    const words=[(h1^h2^h3^h4)>>>0,(h2^h1)>>>0,(h3^h1)>>>0,(h4^h1)>>>0];
+    if(words.every(value=>value===0))words[0]=1;
+    return words;
+  }
+  function xoshiro128(words) {
+    let [a,b,c,d]=words;
+    const rotate=(value,bits)=>((value<<bits)|(value>>>(32-bits)))>>>0;
+    return () => {
+      const result=Math.imul(rotate(Math.imul(b,5)>>>0,7),9)>>>0,t=b<<9;
+      c^=a;d^=b;b^=c;a^=d;c^=t;d=rotate(d,11);
+      return result/4294967296;
+    };
+  }
+  function dailyValue(channel,index=0,wave=game?.wave||0) {
+    if(!game?.dailyKey)return Math.random();
+    return xoshiro128(seedWords(`tower-defense-daily-run-v1:${game.dailyKey}:${wave}:${channel}:${index}`))();
+  }
+  function setMap(entry=0,exit=SIZE*SIZE-1,unbuildable=[88],dailyKey='',dailyCode='') {
+    ENTRY=entry;EXIT=exit;UNBUILDABLE=new Set(unbuildable.filter(id=>Number.isInteger(id)&&id>=0&&id<SIZE*SIZE&&id!==entry&&id!==exit));
+    DAILY_KEY=dailyKey;DAILY_CODE=dailyCode;
+    if(game){game.entry=ENTRY;game.exit=EXIT;game.unbuildable=[...UNBUILDABLE];game.dailyKey=DAILY_KEY;game.dailyCode=DAILY_CODE;}
+  }
+  function dailyLayout(dateKey=utcDateKey()) {
+    const seed=seedWords(`tower-defense-daily-map-v3:${dateKey}`),random=xoshiro128(seed);
+    const perimeter=[];
+    for(let x=0;x<SIZE;x++)perimeter.push(x);
+    for(let y=1;y<SIZE;y++)perimeter.push(y*SIZE+SIZE-1);
+    for(let x=SIZE-2;x>=0;x--)perimeter.push((SIZE-1)*SIZE+x);
+    for(let y=SIZE-2;y>0;y--)perimeter.push(y*SIZE);
+    const entry=perimeter[Math.floor(random()*perimeter.length)],entryX=entry%SIZE,entryY=Math.floor(entry/SIZE);
+    const exitChoices=perimeter.filter(id=>Math.abs(id%SIZE-entryX)+Math.abs(Math.floor(id/SIZE)-entryY)>=SIZE+4);
+    const exit=exitChoices[Math.floor(random()*exitChoices.length)];
+    const protectedTiles=new Set([entry,exit,...neighbors(entry),...neighbors(exit)]);
+    const candidates=Array.from({length:SIZE*SIZE},(_,id)=>id).filter(id=>!protectedTiles.has(id));
+    for(let i=candidates.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[candidates[i],candidates[j]]=[candidates[j],candidates[i]];}
+    const count=32+Math.floor(random()*17),blocked=[];
+    for(const id of candidates) {
+      if(blocked.length>=count)break;
+      const adjacent=neighbors(id).filter(next=>blocked.includes(next)).length;
+      if(adjacent<2)blocked.push(id);
+    }
+    for(const id of candidates)if(blocked.length<count&&!blocked.includes(id))blocked.push(id);
+    const code=seed.map(value=>value.toString(36).padStart(7,'0')).join('').slice(0,10).toUpperCase();
+    return {entry,exit,blocked,key:dateKey,code};
+  }
+  function createDailyMap() {
+    const layout=dailyLayout();setMap(layout.entry,layout.exit,layout.blocked,layout.key,layout.code);
+  }
   function makeTower(type,id,spent=TYPES[type].cost) {
     const base=TYPES[type];
-    return {type,id,level:1,spent,upgradeBasis:base.cost,damage:base.damage,range:base.range,speed:base.speed,cooldown:0,angle:-Math.PI/2,kills:0};
+    return {type,id,level:1,spent,upgradeBasis:base.upgradeBase||base.cost,damage:base.damage,range:base.range,speed:base.speed,accuracy:base.accuracy??1,slowFactor:base.slowFactor||0,slowDuration:base.slowDuration||0,splash:base.splash||0,armorPierce:base.armorPierce||0,markPower:base.markPower||1,markDuration:base.markDuration||0,knockback:base.knockback||0,cooldown:0,angle:-Math.PI/2,kills:0};
   }
   function makeDevice(type,id) { return {type,id,spent:DEVICE_TYPES[type].cost}; }
   function findDevice(type,devices=game.devices) { return [...devices.values()].find(item=>item.type===type) || null; }
@@ -487,7 +770,7 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
   function baseIssue(id,allowRed=false) {
     if(id<0 || id>=SIZE*SIZE) return {key:'outOfMap'};
     if(id===ENTRY || id===EXIT) return {key:'entryExit'};
-    if(id===88 && !allowRed) return {key:'redTile'};
+    if(UNBUILDABLE.has(id) && !allowRed) return {key:'redTile'};
     return null;
   }
   function towerIssue(id,type,towers=game.towers,devices=game.devices,checkEnemies=true,allowOverwrite=ui.overwriteEnabled) {
@@ -559,7 +842,7 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
   function updateGateReadiness() {
     const ready=componentCount()===4;
     if(ready && !game.gateWasReady) {game.gateWasReady=true;switchGate('gate2',true);}
-    if(!ready) {game.gateWasReady=false;game.closedGate=null;game.gateQueue=[];game.field=distances();}
+    if(!ready) {game.gateWasReady=false;game.closedGate=null;game.gateCooldownUntil=0;game.field=distances();}
   }
   function placeItem(id,kind,type,announce=true) {
     const data=kind==='tower'?TYPES[type]:DEVICE_TYPES[type];
@@ -567,13 +850,16 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
     game.money+=refund-data.cost;game.towers.delete(id);game.devices.delete(id);ui.autoTargets.delete(id);ui.batchTargets.delete(id);
     if(kind==='tower')game.towers.set(id,makeTower(type,id));
     else {game.devices.set(id,makeDevice(type,id));deviceType=null;}
-    updateGateReadiness();game.field=distances();
+    updateGateReadiness();game.field=distances();invalidateSimulation();
     if(announce)message(old&&ui.overwriteEnabled?'replacedBuilt':'built',{name:typeName(type),refund});
     hudCache='';
   }
   function buildSelected(id) {
     if(game.over || (!buildingType&&!deviceType))return;
     const kind=buildingType?'tower':'device', type=buildingType||deviceType;
+    const current=kind==='tower'?game.towers.get(id):game.devices.get(id);
+    // 已經是同一種物品時不建立永遠無法執行的預設項目。
+    if(current?.type===type)return message('sameItem',{},true);
     if(buildPlanAt(id)>=0) {queuePlan(id,kind,type);return;}
     const data=kind==='tower'?TYPES[type]:DEVICE_TYPES[type];
     const old=game.towers.get(id)||game.devices.get(id),available=game.money+(ui.overwriteEnabled&&old?refundFor(old):0);
@@ -594,6 +880,8 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
           game.plans.splice(index,1);removeIds([plan.id]);progress=true;placed=true;break;
         }
         const data=plan.kind==='tower'?TYPES[plan.type]:DEVICE_TYPES[plan.type],old=game.towers.get(plan.id)||game.devices.get(plan.id);
+        const same=plan.kind==='tower'?game.towers.get(plan.id)?.type===plan.type:game.devices.get(plan.id)?.type===plan.type;
+        if(same){game.plans.splice(index,1);progress=true;placed=true;break;}
         const available=game.money+(ui.overwriteEnabled&&old?refundFor(old):0);if(available<data.cost)continue;
         const issue=plan.kind==='tower'?towerIssue(plan.id,plan.type):deviceIssue(plan.id,plan.type);if(issue)continue;
         game.plans.splice(index,1);progress=true;placeItem(plan.id,plan.kind,plan.type,false);placed=true;break;
@@ -601,17 +889,26 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
     }
     if(placed) {const first=game.plans[0],data=first&&first.kind!=='remove'?(TYPES[first.type]||DEVICE_TYPES[first.type]):null;message(game.plans.length?(first.kind==='remove'?'planCountRemove':'planCount'):'plansCompleted',game.plans.length?{count:game.plans.length,name:first.kind==='remove'?tr('planRemove'):typeName(first.type),cost:data?data.cost:0}:{});hudCache='';}
   }
-  function upgradeCost(tower) { return Math.max(1,Math.floor(tower.upgradeBasis*.75)); }
+  function upgradeCost(tower) { return Math.max(1,Math.floor(tower.upgradeBasis)); }
   function refundFor(item) { return Math.floor(item.spent/2); }
+  function rebuildTowerLevel(tower,level) {
+    const base=TYPES[tower.type];if(!base||tower.type==='wall')return tower;
+    const upgrades=Math.max(0,Math.min(1000,Math.floor(level)-1));
+    tower.level=upgrades+1;tower.upgradeBasis=base.upgradeBase*Math.pow(base.costGrowth||1.75,upgrades);
+    tower.damage=base.damage*Math.pow(base.damageGrowth||1,upgrades);tower.range=Math.min(base.maxRange,base.range*Math.pow(base.rangeGrowth||1,upgrades));tower.speed=Math.min(base.maxSpeed,base.speed*Math.pow(base.speedGrowth||1,upgrades));
+    tower.accuracy=Math.min(base.maxAccuracy??1,(base.accuracy??1)+(base.accuracyGain||0)*upgrades);
+    tower.slowFactor=base.slowFactor?Math.max(.25,base.slowFactor*Math.pow(base.slowFactorGrowth||1,upgrades)):0;tower.slowDuration=base.slowDuration?base.slowDuration*Math.pow(base.slowDurationGrowth||1,upgrades):0;
+    tower.splash=base.splash?Math.min(base.maxSplash,base.splash*Math.pow(base.splashGrowth||1,upgrades)):0;tower.armorPierce=base.armorPierce?Math.min(.97,base.armorPierce+(base.armorPierceGain||0)*upgrades):0;
+    tower.markPower=base.markPower?Math.min(base.maxMarkPower||2,base.markPower+(base.markPowerGain||0)*upgrades):1;tower.markDuration=base.markDuration?base.markDuration*Math.pow(base.markDurationGrowth||1,upgrades):0;
+    tower.knockback=base.knockback?Math.min(base.maxKnockback||8,base.knockback*Math.pow(base.knockbackGrowth||1,upgrades)):0;
+    return tower;
+  }
   function upgradeTower(tower,announce=true) {
     if(!tower || tower.type==='wall' || game.over)return false;
     const cost=upgradeCost(tower);
     if(game.money<cost){if(announce)message('upgradeNeed',{cost},true);return false;}
-    const base=TYPES[tower.type];
-    game.money-=cost;tower.spent+=cost;tower.upgradeBasis+=cost;tower.level++;
-    tower.damage*=tower.type==='hmg'?1.3:tower.type==='cannon'?(tower.level>=10?1.2:1.3):(tower.level>=10?1.1:1.2);
-    tower.range=Math.min(base.maxRange,tower.range*1.05);tower.speed=Math.min(base.maxSpeed,tower.speed*1.05);
-    if(announce)message('upgraded',{name:typeName(tower.type),level:tower.level});hudCache='';return true;
+    game.money-=cost;tower.spent+=cost;rebuildTowerLevel(tower,tower.level+1);
+    invalidateSimulation();if(announce)message('upgraded',{name:typeName(tower.type),level:tower.level});hudCache='';return true;
   }
   function upgrade(){upgradeTower(game.towers.get(selected),true);updateHud();}
   function removeIds(ids) {
@@ -620,16 +917,16 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
       const tower=game.towers.get(id),device=game.devices.get(id),item=tower||device;if(!item)continue;
       refund+=refundFor(item);count++;game.towers.delete(id);game.devices.delete(id);ui.autoTargets.delete(id);ui.batchTargets.delete(id);
     }
-    game.money+=refund;updateGateReadiness();game.field=distances();
+    game.money+=refund;updateGateReadiness();game.field=distances();invalidateSimulation();
     if(selected!==null&&!game.towers.has(selected)&&!game.devices.has(selected))selected=null;
     if(game.wave===0&&![...game.towers.values()].some(tower=>tower.type!=='wall'))game.wait=3;
     hudCache='';return {count,refund};
   }
   function sell(){const item=game.towers.get(selected)||game.devices.get(selected);if(!item||game.over)return;const result=removeIds([selected]);selected=null;message('sold',{refund:result.refund});updateHud();}
 
-  // ③ 開局只分空白與隨機；隨機路障逐一驗證，保證入口仍可走到出口。
+  // ③ 空白、隨機路障與每日地圖；隨機路障逐一驗證，保證入口仍可走到出口。
   function createRandomStart() {
-    const protectedTiles=new Set([ENTRY,EXIT,88,...neighbors(ENTRY),...neighbors(EXIT)]);
+    const protectedTiles=new Set([ENTRY,EXIT,...UNBUILDABLE,...neighbors(ENTRY),...neighbors(EXIT)]);
     const candidates=Array.from({length:SIZE*SIZE},(_,id)=>id).filter(id=>!protectedTiles.has(id));
     for(let i=candidates.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[candidates[i],candidates[j]]=[candidates[j],candidates[i]];}
     let count=0;
@@ -641,7 +938,7 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
     }
   }
   function createGameState() {
-    return {money:500,life:100,score:0,wave:0,paused:false,over:false,towers:new Map(),devices:new Map(),plans:[],closedGate:null,gateQueue:[],gateWasReady:false,clock:0,enemies:[],shots:[],effects:[],queue:[],spawnTimer:0,wait:3,waveActive:false,uid:0,autoTimer:.25};
+    return {money:500,life:100,score:0,wave:0,paused:false,over:false,towers:new Map(),devices:new Map(),plans:[],closedGate:null,gateCooldownUntil:0,gateWasReady:false,clock:0,enemies:[],shots:[],effects:[],queue:[],spawnTimer:0,wait:3,waveActive:false,waveSpawned:0,uid:0,autoTimer:.25,entry:ENTRY,exit:EXIT,unbuildable:[...UNBUILDABLE],dailyKey:DAILY_KEY,dailyCode:DAILY_CODE};
   }
   // 完整當局另存一份；Map、Set 與飛彈的物件參照會轉成可安全保存的 JSON。
   function clearRun() {
@@ -655,14 +952,16 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
     try {
       const {towers,devices,enemies,shots,effects,field,...plain}=game;
       const snapshot={
-        version:2,
+        version:5,
         game:{
           ...plain,
           towers:[...towers.values()].map(item=>({...item})),
           devices:[...devices.values()].map(item=>({...item})),
           enemies:enemies.map(({sensors,...enemy})=>({...enemy,sensors:[...sensors]})),
           shots:shots.filter(shot=>shot.target?.alive&&shot.owner).map(shot=>({
-            x:shot.x,y:shot.y,sourceX:shot.sourceX,sourceY:shot.sourceY,damage:shot.damage,life:shot.life,color:shot.color,
+             x:shot.x,y:shot.y,sourceX:shot.sourceX,sourceY:shot.sourceY,damage:shot.damage,hits:shot.hits||1,life:shot.life,color:shot.color,
+             splash:shot.splash||0,slowFactor:shot.slowFactor||0,slowDuration:shot.slowDuration||0,
+             armorPierce:shot.armorPierce||0,markPower:shot.markPower||1,markDuration:shot.markDuration||0,knockback:shot.knockback||0,
             targetId:shot.target.id,ownerId:shot.owner.id
           }))
         },
@@ -675,7 +974,15 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
   function restoreRun() {
     try {
       const snapshot=JSON.parse(localStorage.getItem(RUN_KEY)||'null'),source=snapshot?.game;
-      if(snapshot?.version!==2||!source||source.over||!Number.isFinite(source.money)||!Number.isFinite(source.life)||source.life<=0)return false;
+      if(![2,3,4,5].includes(snapshot?.version)||!source||source.over||!Number.isFinite(source.money)||!Number.isFinite(source.life)||source.life<=0)return false;
+      const modernSave=snapshot.version>=4;
+      if(source.dailyKey&&source.dailyKey!==utcDateKey()){clearRun();return false;}
+      const savedEntry=Number.isInteger(source.entry)&&source.entry>=0&&source.entry<SIZE*SIZE?source.entry:0;
+      const savedExit=Number.isInteger(source.exit)&&source.exit>=0&&source.exit<SIZE*SIZE&&source.exit!==savedEntry?source.exit:SIZE*SIZE-1;
+      const savedUnavailable=Array.isArray(source.unbuildable)?source.unbuildable:[88];
+      let savedCode=typeof source.dailyCode==='string'?source.dailyCode:'';
+      if(source.dailyKey&&!savedCode)savedCode=dailyLayout(source.dailyKey).code;
+      setMap(savedEntry,savedExit,savedUnavailable,typeof source.dailyKey==='string'?source.dailyKey:'',savedCode);
       const restored=createGameState();
       restored.money=Math.max(0,source.money);
       restored.life=Math.max(0,source.life);
@@ -686,12 +993,20 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
       restored.spawnTimer=Number.isFinite(source.spawnTimer)?source.spawnTimer:0;
       restored.wait=Number.isFinite(source.wait)?source.wait:3;
       restored.waveActive=source.waveActive===true;
+      restored.waveSpawned=Number.isInteger(source.waveSpawned)?Math.max(0,source.waveSpawned):0;
       restored.uid=Number.isInteger(source.uid)?Math.max(0,source.uid):0;
       restored.autoTimer=Number.isFinite(source.autoTimer)?source.autoTimer:.25;
       for(const raw of Array.isArray(source.towers)?source.towers:[]) {
         if(!raw||!TYPES[raw.type]||!Number.isInteger(raw.id)||raw.id<0||raw.id>=SIZE*SIZE||restored.towers.has(raw.id))continue;
         const tower=makeTower(raw.type,raw.id,Number.isFinite(raw.spent)?raw.spent:TYPES[raw.type].cost);
-        for(const key of ['level','upgradeBasis','damage','range','speed','cooldown','angle','kills'])if(Number.isFinite(raw[key]))tower[key]=raw[key];
+        if(modernSave) {
+          for(const key of ['level','upgradeBasis','damage','range','speed','accuracy','slowFactor','slowDuration','splash','armorPierce','markPower','markDuration','knockback','cooldown','angle','kills'])if(Number.isFinite(raw[key]))tower[key]=raw[key];
+        } else if(raw.type!=='wall') {
+          // 舊版砲塔數值已沒有相同意義；保留位置、等級與投入資源，改用新版角色成長曲線重建。
+          rebuildTowerLevel(tower,Number.isFinite(raw.level)?raw.level:1);
+          tower.spent=Number.isFinite(raw.spent)?raw.spent:tower.spent;
+          tower.kills=Number.isFinite(raw.kills)?raw.kills:0;
+        }
         restored.towers.set(tower.id,tower);
       }
       for(const raw of Array.isArray(source.devices)?source.devices:[]) {
@@ -700,7 +1015,7 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
       }
       restored.closedGate=['gate1','gate2'].includes(source.closedGate)&&findDevice(source.closedGate,restored.devices)?source.closedGate:null;
       restored.gateWasReady=source.gateWasReady===true&&restored.devices.size===4;
-      restored.gateQueue=(Array.isArray(source.gateQueue)?source.gateQueue:[]).filter(item=>item&&['gate1','gate2'].includes(item.type)&&Number.isFinite(item.due)).map(item=>({type:item.type,due:item.due}));
+      restored.gateCooldownUntil=Number.isFinite(source.gateCooldownUntil)?Math.max(restored.clock,source.gateCooldownUntil):0;
       restored.plans=(Array.isArray(source.plans)?source.plans:[]).filter(item=>item&&Number.isInteger(item.id)&&item.id>=0&&item.id<SIZE*SIZE&&(item.kind==='remove'||item.kind==='tower'&&TYPES[item.type]||item.kind==='device'&&DEVICE_TYPES[item.type])).map(item=>({...item}));
       restored.queue=(Array.isArray(source.queue)?source.queue:[]).filter(type=>Number.isInteger(type)&&ENEMIES[type]);
       for(const raw of Array.isArray(source.enemies)?source.enemies:[]) {
@@ -712,6 +1027,10 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
           damage:Number.isFinite(raw.damage)?raw.damage:1,reward:Number.isFinite(raw.reward)?raw.reward:1,
           speed:Number.isFinite(raw.speed)?raw.speed:3,angle:Number.isFinite(raw.angle)?raw.angle:0,
           shield:Number.isFinite(raw.shield)?raw.shield:(ENEMIES[raw.type].shield||0),alive:true,
+          slowUntil:Number.isFinite(raw.slowUntil)?raw.slowUntil:0,slowFactor:Number.isFinite(raw.slowFactor)?raw.slowFactor:1,
+           markedUntil:Number.isFinite(raw.markedUntil)?raw.markedUntil:0,markMultiplier:Number.isFinite(raw.markMultiplier)?raw.markMultiplier:1,
+           lastHit:Number.isFinite(raw.lastHit)?raw.lastHit:-Infinity,history:Array.isArray(raw.history)?raw.history.filter(id=>Number.isInteger(id)&&id>=0&&id<SIZE*SIZE).slice(-SIZE*SIZE):[],
+           controlGuard:Number.isFinite(raw.controlGuard)?Math.max(0,Math.min(.9,raw.controlGuard)):0,controlGuardUntil:Number.isFinite(raw.controlGuardUntil)?raw.controlGuardUntil:0,
           sensors:new Set(Array.isArray(raw.sensors)?raw.sensors.filter(type=>['sensor1','sensor2'].includes(type)):[])
         };
         restored.enemies.push(enemy);restored.uid=Math.max(restored.uid,enemy.id);
@@ -719,10 +1038,10 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
       restored.field=distances(restored.towers,restored.closedGate,restored.devices);
       if(restored.field[ENTRY]<0){restored.closedGate=null;restored.field=distances(restored.towers,null,restored.devices);}
       const enemyById=new Map(restored.enemies.map(enemy=>[enemy.id,enemy]));
-      for(const raw of Array.isArray(source.shots)?source.shots:[]) {
+      for(const raw of modernSave&&Array.isArray(source.shots)?source.shots:[]) {
         const target=enemyById.get(raw.targetId),owner=restored.towers.get(raw.ownerId);
         if(!target||!owner||!Number.isFinite(raw.x)||!Number.isFinite(raw.y)||!Number.isFinite(raw.life)||raw.life<=0)continue;
-        restored.shots.push({x:raw.x,y:raw.y,sourceX:Number.isFinite(raw.sourceX)?raw.sourceX:raw.x,sourceY:Number.isFinite(raw.sourceY)?raw.sourceY:raw.y,target,owner,damage:Number.isFinite(raw.damage)?raw.damage:0,life:raw.life,color:raw.color||TYPES[owner.type].color});
+         restored.shots.push({x:raw.x,y:raw.y,sourceX:Number.isFinite(raw.sourceX)?raw.sourceX:raw.x,sourceY:Number.isFinite(raw.sourceY)?raw.sourceY:raw.y,target,owner,damage:Number.isFinite(raw.damage)?raw.damage:0,hits:Number.isFinite(raw.hits)?Math.max(1,Math.floor(raw.hits)):1,splash:Number.isFinite(raw.splash)?raw.splash:0,slowFactor:Number.isFinite(raw.slowFactor)?raw.slowFactor:0,slowDuration:Number.isFinite(raw.slowDuration)?raw.slowDuration:0,armorPierce:Number.isFinite(raw.armorPierce)?raw.armorPierce:0,markPower:Number.isFinite(raw.markPower)?raw.markPower:1,markDuration:Number.isFinite(raw.markDuration)?raw.markDuration:0,knockback:Number.isFinite(raw.knockback)?raw.knockback:0,life:raw.life,color:raw.color||TYPES[owner.type].color});
       }
       game=restored;
       ui.mode=null;ui.autoEnabled=snapshot.ui?.autoEnabled===true;
@@ -737,13 +1056,28 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
   }
   function reset(clearSaved=true) {
     if(clearSaved)clearRun();
-    game=createGameState();
-    if(prefs.startMode==='random')createRandomStart();game.field=distances();
+    setMap();
+    game=createGameState();simulationResult=null;
+    if(prefs.startMode==='random')createRandomStart();
+    else if(prefs.startMode==='daily')createDailyMap();
+    game.field=distances();
     selected=null;buildingType=null;deviceType=null;planningRemoval=false;targetId=null;hover=-1;hudCache='';
     ui.mode=null;ui.autoEnabled=false;ui.autoTargets.clear();ui.batchTargets.clear();ui.lastAuto=null;
-    $('start-mode').value=prefs.startMode;$('prebuild-enabled').checked=ui.prebuildEnabled;$('overwrite-enabled').checked=ui.overwriteEnabled;$('pause-on-leave').checked=prefs.pauseOnLeave;$('auto-upgrade').checked=false;message(prefs.startMode==='random'?'randomStatus':'initialStatus');updateHud();saveRun();
+    $('start-mode').value=prefs.startMode;$('prebuild-enabled').checked=ui.prebuildEnabled;$('overwrite-enabled').checked=ui.overwriteEnabled;$('pause-on-leave').checked=prefs.pauseOnLeave;$('auto-upgrade').checked=false;message(prefs.startMode==='random'?'randomStatus':prefs.startMode==='daily'?'dailyStatus':'initialStatus',prefs.startMode==='daily'?{date:DAILY_KEY,code:DAILY_CODE,count:UNBUILDABLE.size}:{});renderSimulation();updateHud();saveRun();
   }
-  function applyStartMode(){prefs.startMode=$('start-mode').value==='random'?'random':'blank';savePrefs();reset();message('startApplied',{mode:tr(prefs.startMode==='random'?'startRandom':'startBlank')});updateHud();}
+  function applyStartMode(){const selectedMode=$('start-mode').value;prefs.startMode=['blank','random','daily'].includes(selectedMode)?selectedMode:'blank';savePrefs();reset();const key=prefs.startMode==='random'?'startRandom':prefs.startMode==='daily'?'startDaily':'startBlank';message('startApplied',{mode:tr(key)});updateHud();}
+  function startDailyChallenge(){prefs.startMode='daily';savePrefs();reset();message('dailyStarted',{date:DAILY_KEY,code:DAILY_CODE});updateHud();}
+  function retryWithLayout() {
+    if(!game.over)return;
+    const oldTowers=game.towers,oldDevices=game.devices,keptAuto=new Set(ui.autoTargets);
+    game=createGameState();simulationResult=null;
+    for(const old of oldTowers.values())game.towers.set(old.id,makeTower(old.type,old.id,old.type==='wall'?old.spent:0));
+    for(const old of oldDevices.values())game.devices.set(old.id,{...old});
+    game.field=distances();updateGateReadiness();
+    selected=null;buildingType=null;deviceType=null;planningRemoval=false;targetId=null;hover=-1;hudCache='';
+    ui.mode=null;ui.autoEnabled=false;ui.autoTargets=new Set([...keptAuto].filter(id=>game.towers.has(id)&&game.towers.get(id).type!=='wall'));ui.batchTargets.clear();ui.lastAuto=null;
+    $('auto-upgrade').checked=false;message('retryStarted');renderSimulation();updateHud();saveRun();
+  }
 
   // ④ 自動升級與批量移除。選取模式互斥，避免誤建或誤拆。
   function leaveModes(clearBatch=true){ui.mode=null;if(clearBatch)ui.batchTargets.clear();}
@@ -761,6 +1095,79 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
   function cancelBatch(){ui.mode=null;ui.batchTargets.clear();message('batchCancelled');hudCache='';updateHud();}
   function runAutoUpgrade(dt){game.autoTimer-=dt;if(!ui.autoEnabled||game.plans.length||game.autoTimer>0)return;game.autoTimer=.45;[...ui.autoTargets].forEach(id=>{const tower=game.towers.get(id);if(!tower||tower.type==='wall')ui.autoTargets.delete(id);});const choices=[...ui.autoTargets].map(id=>game.towers.get(id)).filter(tower=>tower&&upgradeCost(tower)<=game.money);choices.sort((a,b)=>a.level-b.level||upgradeCost(a)-upgradeCost(b)||a.id-b.id);const tower=choices[0];if(tower&&upgradeTower(tower,false))ui.lastAuto={type:tower.type,level:tower.level};}
 
+  // 掃蕩只讀取目前配置，以平均生成值估算；不推進波次、不改錢，也不替玩家假設後續升級。
+  function simulationPath() {
+    if(game.field[ENTRY]<0)return [];
+    const result=[ENTRY],seen=new Set(result);let cell=ENTRY;
+    while(cell!==EXIT&&result.length<=SIZE*SIZE){const next=neighbors(cell).filter(id=>game.field[id]>=0&&game.field[id]<game.field[cell]).sort((a,b)=>game.field[a]-game.field[b])[0];if(next===undefined||seen.has(next))return [];result.push(next);seen.add(next);cell=next;}
+    return cell===EXIT?result:[];
+  }
+  function generatedWaveCount(wave) {
+    return Math.min(MAX_ACTIVE_ENEMIES,Math.floor(Math.min(100,wave**1.1)*waveTuning(wave).count));
+  }
+  // 困難模式每八波更換一次主力兵種，迫使玩家輪流處理群體、護甲與不同控場抗性。
+  const THREAT_ROTATION=[2,4,7,10,6,8,9,11,3,5];
+  function enemyWeight(type,wave) {
+    const base=ENEMIES[type],weight=base.weight||1;
+    if(wave<=HARD_MODE_AFTER)return weight;
+    const phase=Math.floor((wave-HARD_MODE_AFTER-1)/8)%THREAT_ROTATION.length;
+    let focus=THREAT_ROTATION[phase];
+    for(let offset=0;offset<THREAT_ROTATION.length&&wave<(ENEMIES[focus].unlock||1);offset++)focus=THREAT_ROTATION[(phase+offset+1)%THREAT_ROTATION.length];
+    return type===focus?weight*4:weight;
+  }
+  function waveComposition(wave) {
+    const exact=WAVES[wave],counts=new Map();
+    if(exact){for(const [count,type] of exact)counts.set(type,(counts.get(type)||0)+count);return [...counts].map(([type,count])=>({type,count}));}
+    const total=generatedWaveCount(wave),available=ENEMIES.map((enemy,type)=>({type,weight:wave>=(enemy.unlock||1)?enemyWeight(type,wave):0})).filter(item=>item.weight>0),weightTotal=available.reduce((sum,item)=>sum+item.weight,0);
+    let assigned=0;const result=available.map(item=>{const count=Math.floor(total*item.weight/weightTotal);assigned+=count;return{type:item.type,count};});
+    for(let i=0;assigned<total;i++,assigned++)result[i%result.length].count++;
+    return result.filter(item=>item.count>0);
+  }
+  function runDefenseSimulation() {
+    const towers=[...game.towers.values()].filter(tower=>tower.type!=='wall').map(tower=>({...tower}));
+    if(!towers.length){simulationResult=null;renderSimulation();return message('simulationNeedTower',{},true);}
+    const path=simulationPath();if(!path.length)return message('keepPathShort',{},true);
+    const points=path.map(center),pathPixels=Math.max(CELL,(path.length-1)*CELL);
+    const profiles=towers.map(tower=>{
+      const origin=center(tower.id);return {tower,distances:points.map(point=>Math.hypot(point.x-origin.x,point.y-origin.y))};
+    });
+    const chosen=new Set([...ui.autoTargets].filter(id=>towers.some(tower=>tower.id===id))),upgradeTargets=chosen.size?chosen:new Set(towers.map(tower=>tower.id));
+    const start=game.over?1:Math.max(1,game.wave+1),endWave=Math.max(MAX_SIM_WAVES,start+500);let life=game.over?100:Math.max(1,game.life),money=game.over?500:Math.max(0,game.money),lastCleared=start-1,upgradeCount=0;
+    const buyUpgrades=()=>{let guard=0;while(guard++<10000){const choices=towers.filter(tower=>upgradeTargets.has(tower.id)&&upgradeCost(tower)<=money).sort((a,b)=>a.level-b.level||upgradeCost(a)-upgradeCost(b)||a.id-b.id),tower=choices[0];if(!tower)break;const cost=upgradeCost(tower);money-=cost;tower.spent+=cost;rebuildTowerLevel(tower,tower.level+1);upgradeCount++;}};
+    buyUpgrades();
+    for(let wave=start;wave<=endWave;wave++) {
+      const composition=waveComposition(wave),count=composition.reduce((sum,item)=>sum+item.count,0),difficulty=1+Math.max(0,wave-1)*.12,tuning=waveTuning(wave);
+      let required=0,totalSpeed=0,totalLeakDamage=0,totalSlowResistance=0,totalKnockResistance=0;
+      const scaled=composition.map(item=>{
+        const base=ENEMIES[item.type],hp=Math.max(1,base.hp*(difficulty+1)*.5*tuning.hp)*(base.regen?1.2:1),armor=Math.floor(base.armor+difficulty/2),rageSpeed=base.rage?1+(base.rage-1)*.35:1,speed=Math.max(1,Math.min(base.maxSpeed,base.speed+difficulty/2))*tuning.speed*3*rageSpeed;
+        const rewardBase=Math.max(1,Math.floor(Math.sqrt((speed/3+hp)*(armor+1)*base.damage))),reward=wave<=HARD_MODE_AFTER?(base.reward||rewardBase):Math.max(base.reward||0,rewardBase);
+        required+=hp*item.count;totalSpeed+=speed*item.count;totalLeakDamage+=base.damage*item.count;totalSlowResistance+=Math.min(.9,(base.slowResist||0)+(base.controlAdapt||0)*1.5)*item.count;totalKnockResistance+=Math.min(.98,(base.knockResist||0)+(base.controlAdapt||0)*1.5)*item.count;return{...item,base,hp,armor,speed,reward};
+      });
+      const averageSpeed=Math.max(1,totalSpeed/count),pathTime=pathPixels/averageSpeed,spawnDuration=Math.max(0,count-1)*tuning.spawnGap;
+      profiles.forEach(profile=>profile.coverage=profile.distances.filter(distance=>distance<=profile.tower.range*CELL).length/path.length);
+      const slowResistance=totalSlowResistance/count,knockResistance=totalKnockResistance/count;
+      const frostStrength=Math.min(.8,profiles.filter(profile=>profile.tower.slowFactor>0).reduce((best,profile)=>Math.max(best,(1-profile.tower.slowFactor)*(1-slowResistance)*profile.coverage*Math.min(1,profile.tower.speed*profile.tower.slowDuration)),0));
+      const knockStrength=Math.min(.75,profiles.filter(profile=>profile.tower.knockback>0).reduce((sum,profile)=>sum+profile.tower.knockback*CELL*profile.tower.speed*profile.coverage*(1-knockResistance)/averageSpeed,0));
+      const duration=(spawnDuration+pathTime)*(1+frostStrength+knockStrength),concurrency=Math.max(1,count*pathTime/Math.max(pathTime,spawnDuration+pathTime));
+      const markerBonus=Math.min(1,profiles.filter(profile=>profile.tower.markPower>1).reduce((best,profile)=>Math.max(best,(profile.tower.markPower-1)*Math.min(1,profile.coverage*(1+concurrency))),0));
+      let capacity=0;
+      for(const {tower,coverage} of profiles) {
+        if(!coverage)continue;
+        let averageHit=0;
+        for(const item of scaled){const armor=item.armor*(1-(tower.armorPierce||0)),hit=Math.max(Math.ceil(tower.damage*.1),tower.damage-armor),shield=item.base.shield?0.6:1;averageHit+=hit*shield*item.count/count;}
+        const availability=Math.min(1,coverage*(1+concurrency*.9)),density=Math.max(1,concurrency*coverage);
+        const splash=tower.splash>0?1+Math.min(1.2,(density-1)*.45):1,mark=tower.markPower>1?1:1+markerBonus;
+        capacity+=averageHit*tower.speed*tower.accuracy*duration*availability*splash*mark;
+      }
+      if(wave>HARD_MODE_AFTER)capacity*=.92;
+      const killFraction=Math.max(0,Math.min(1,capacity/required));money+=Math.floor(scaled.reduce((sum,item)=>sum+item.reward*item.count*killFraction,0));
+      if(killFraction<1){const leaks=Math.max(1,Math.ceil(count*(1-killFraction))),averageLeak=totalLeakDamage/count;life-=leaks*averageLeak;}
+      if(life<=0){simulationResult={start,wave:lastCleared,failed:wave,upgrades:upgradeCount,capped:false};renderSimulation();return;}
+      lastCleared=wave;if(wave%10===0)life=Math.min(100,life+10);else if(wave%5===0)life=Math.min(100,life+5);buyUpgrades();
+    }
+    simulationResult={start,wave:endWave,failed:endWave+1,upgrades:upgradeCount,capped:true};renderSimulation();
+  }
+
   // ⑤ 波次、戰鬥與遊戲速度
   // 前 50 波沿用原規則；之後只透過這一處調整困難模式曲線。
   function waveTuning(wave) {
@@ -776,19 +1183,21 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
     };
   }
   function enemyPool(wave) {
-    const result=Array.from({length:Math.min(6,3+Math.floor(wave/10))},(_,index)=>index);
-    if(wave>=SHIELD_WAVE)result.push(6);
+    const result=[];
+    ENEMIES.forEach((enemy,index)=>{
+      if(wave<(enemy.unlock||1))return;
+      for(let weight=0;weight<enemyWeight(index,wave);weight++)result.push(index);
+    });
     return result;
   }
   function beginWave() {
-    game.wave++; game.waveActive=true; game.wait=3;
+    game.wave++; game.waveActive=true; game.wait=3;game.waveSpawned=0;
     const groups=WAVES[game.wave]; game.queue=[];
     if(groups) for(const group of groups) for(let i=0;i<group[0];i++)game.queue.push(group[1]);
     else {
-      const tuning=waveTuning(game.wave),baseCount=Math.min(100,Math.floor(game.wave**1.1));
-      const count=game.wave<=HARD_MODE_AFTER?baseCount:Math.min(600,Math.floor(baseCount*tuning.count));
+      const count=generatedWaveCount(game.wave);
       const pool=enemyPool(game.wave);
-      for(let i=0;i<count;i++)game.queue.push(pool[Math.floor(Math.random()*pool.length)]);
+      for(let i=0;i<count;i++)game.queue.push(pool[Math.floor(dailyValue('queue',i,game.wave)*pool.length)]);
     }
     const tuning=waveTuning(game.wave);
     game.spawnTimer=0;
@@ -797,64 +1206,129 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
   }
   function spawn(type) {
     const base=ENEMIES[type], difficulty=1+Math.max(0,game.wave-1)*.12, tuning=waveTuning(game.wave);
-    const baseSpeed=Math.max(1,Math.min(base.maxSpeed,Math.floor((base.speed+difficulty/2)*(.75+Math.random()*.5))));
+    const spawnIndex=game.waveSpawned++,random=channel=>dailyValue('spawn-'+channel,spawnIndex,game.wave);
+    const baseSpeed=Math.max(1,Math.min(base.maxSpeed,Math.floor((base.speed+difficulty/2)*(.75+random('speed')*.5))));
     const speed=baseSpeed*tuning.speed;
-    const hp=Math.max(1,Math.floor(base.hp*(difficulty+1)*(.5+Math.random())*.5*tuning.hp));
-    const armor=Math.floor(base.armor+difficulty/2), damage=Math.max(1,Math.floor(base.damage*(.75+Math.random()*.5)));
+    const hp=Math.max(1,Math.floor(base.hp*(difficulty+1)*(.5+random('hp'))*.5*tuning.hp));
+    const armor=Math.floor(base.armor+difficulty/2), damage=Math.max(1,Math.floor(base.damage*(.75+random('damage')*.5)));
     const calculatedReward=Math.max(1,Math.floor(Math.sqrt((speed+hp)*(armor+1)*damage)));
     const reward=game.wave<=HARD_MODE_AFTER?(base.reward||calculatedReward):Math.max(base.reward||0,calculatedReward);
     const p=center(ENTRY);
-    game.enemies.push({id:++game.uid,type,cell:ENTRY,next:null,x:p.x,y:p.y,hp,maxHp:hp,armor,damage,reward,speed:speed*3,angle:0,shield:base.shield||0,alive:true,sensors:new Set()});
+    game.enemies.push({id:++game.uid,type,cell:ENTRY,next:null,x:p.x,y:p.y,hp,maxHp:hp,armor,damage,reward,speed:speed*3,angle:0,shield:base.shield||0,slowUntil:0,slowFactor:1,markedUntil:0,markMultiplier:1,lastHit:-Infinity,history:[],controlGuard:0,controlGuardUntil:0,alive:true,sensors:new Set()});
   }
   function shieldFaces(enemy,sourceX,sourceY) {
     if(!enemy.shield||!Number.isFinite(sourceX)||!Number.isFinite(sourceY))return false;
     const dx=sourceX-enemy.x,dy=sourceY-enemy.y,length=Math.hypot(dx,dy);
     return length>0&&(Math.cos(enemy.angle)*dx+Math.sin(enemy.angle)*dy)/length>=0;
   }
-  function hurt(enemy,amount,owner,sourceX,sourceY) {
+  function addEffect(effect) {
+    if(game.effects.length<MAX_EFFECTS)game.effects.push(effect);
+  }
+  function rolledHits(accuracy,hits) {
+    const shots=Math.max(0,Math.floor(hits||0)),chance=Math.max(0,Math.min(1,accuracy));
+    if(chance>=1)return shots;if(chance<=0)return 0;
+    if(shots<=64){let result=0;for(let i=0;i<shots;i++)if(Math.random()<chance)result++;return result;}
+    return Math.max(0,Math.min(shots,Math.round(shots*chance)));
+  }
+  function hurtBurst(enemy,amount,hits,owner,sourceX,sourceY,armorPierce=0) {
     if(!enemy.alive) return;
-    let dealt=Math.max(Math.ceil(amount*.1),amount-enemy.armor);
+    const effectiveArmor=enemy.armor*(1-Math.max(0,Math.min(.98,armorPierce)));
+    let dealt=Math.max(Math.ceil(amount*.1),amount-effectiveArmor);
     if(shieldFaces(enemy,sourceX,sourceY))dealt=Math.max(1,Math.ceil(dealt*(1-enemy.shield)));
-    enemy.hp-=dealt; game.score+=Math.floor(Math.sqrt(dealt));
-    if(enemy.hp<=0) {enemy.alive=false; game.money+=enemy.reward; owner.kills++; game.effects.push({x:enemy.x,y:enemy.y,color:ENEMIES[enemy.type].color,life:.3});}
+    if(game.clock<enemy.markedUntil)dealt*=enemy.markMultiplier;
+    dealt=Math.max(1,Math.round(dealt));
+    const applied=Math.min(Math.max(1,Math.floor(hits||1)),Math.max(1,Math.ceil(enemy.hp/dealt)));
+    enemy.hp-=dealt*applied;enemy.lastHit=game.clock;game.score+=Math.floor(Math.sqrt(dealt))*applied;
+    if(enemy.hp<=0) {enemy.alive=false; game.money+=enemy.reward; owner.kills++; addEffect({x:enemy.x,y:enemy.y,color:ENEMIES[enemy.type].color,life:.3});}
+  }
+  function controlResistance(enemy,kind) {
+    const base=ENEMIES[enemy.type],natural=kind==='slow'?(base.slowResist||0):(base.knockResist||0);
+    const temporary=game.clock<enemy.controlGuardUntil?(enemy.controlGuard||0):0;
+    return Math.min(.98,1-(1-natural)*(1-temporary));
+  }
+  // 依敵人走過的實際路徑向入口回推；不穿過後來新建的牆或已關閉的閥門。
+  function pushEnemy(enemy,distance) {
+    let remaining=Math.max(0,distance),guard=0;
+    const closedId=game.closedGate?findDevice(game.closedGate)?.id:-1;
+    while(remaining>.01&&guard++<SIZE*SIZE) {
+      const anchor=center(enemy.cell),toAnchor=Math.hypot(anchor.x-enemy.x,anchor.y-enemy.y);
+      if(toAnchor>.01) {
+        const step=Math.min(remaining,toAnchor);enemy.x+=(anchor.x-enemy.x)/toAnchor*step;enemy.y+=(anchor.y-enemy.y)/toAnchor*step;remaining-=step;
+        if(step+.01<toAnchor)break;
+        enemy.x=anchor.x;enemy.y=anchor.y;enemy.next=null;continue;
+      }
+      const previous=enemy.history.pop();
+      if(previous===undefined||game.towers.has(previous)||previous===closedId){enemy.history.length=0;break;}
+      const point=center(previous),segment=Math.hypot(point.x-anchor.x,point.y-anchor.y),step=Math.min(remaining,segment),forward=enemy.cell;
+      enemy.x=anchor.x+(point.x-anchor.x)/segment*step;enemy.y=anchor.y+(point.y-anchor.y)/segment*step;remaining-=step;
+      enemy.cell=previous;
+      if(step+.01<segment){enemy.next=forward;break;}
+      enemy.x=point.x;enemy.y=point.y;enemy.next=null;
+    }
+  }
+  function applyAttack(target,attack,hits,owner,sourceX,sourceY) {
+    if(!target.alive||hits<=0)return;
+    const victims=attack.splash>0?game.enemies.filter(enemy=>enemy.alive&&Math.hypot(enemy.x-target.x,enemy.y-target.y)<=attack.splash*CELL):[target];
+    for(const enemy of victims) {
+      hurtBurst(enemy,attack.damage*(enemy===target?1:.65),hits,owner,sourceX,sourceY,attack.armorPierce||0);
+      if(!enemy.alive)continue;
+      const usesControl=attack.slowFactor>0||attack.knockback>0;
+      if(attack.slowFactor>0){const resistance=controlResistance(enemy,'slow'),effective=1-(1-attack.slowFactor)*(1-resistance),duration=attack.slowDuration*(1-resistance*.75);enemy.slowFactor=Math.min(enemy.slowFactor,effective);enemy.slowUntil=Math.max(enemy.slowUntil,game.clock+duration);}
+      if(attack.knockback>0){const resistance=controlResistance(enemy,'knock');pushEnemy(enemy,attack.knockback*CELL*(1-resistance)*Math.max(1,hits));addEffect({x:enemy.x,y:enemy.y,color:'#7358ca',life:.22});}
+      if(usesControl&&ENEMIES[enemy.type].controlAdapt){const active=game.clock<enemy.controlGuardUntil?(enemy.controlGuard||0):0;enemy.controlGuard=Math.min(.88,active+ENEMIES[enemy.type].controlAdapt*Math.max(1,hits));enemy.controlGuardUntil=game.clock+5;}
+      if(attack.markPower>1){enemy.markMultiplier=Math.max(enemy.markMultiplier,attack.markPower);enemy.markedUntil=Math.max(enemy.markedUntil,game.clock+attack.markDuration);}
+    }
   }
   function scheduleGate(sensor) {
     if(componentCount()<4)return;
     const target=sensor.type==='sensor1'?'gate1':'gate2';
-    const last=game.gateQueue[game.gateQueue.length-1];
-    if(last&&last.type===target)return;
-    game.gateQueue.push({type:target,due:game.clock+SENSOR_DELAY});message('gateScheduled',{sensor:typeName(sensor.type)});hudCache='';
+    if(game.closedGate===target)return;
+    if(game.clock<game.gateCooldownUntil){message('gateCooling',{sensor:typeName(sensor.type)});hudCache='';return;}
+    if(switchGate(target,false))game.gateCooldownUntil=game.clock+GATE_COOLDOWN;
+    hudCache='';
   }
   function checkSensor(enemy) {
     const sensor=game.devices.get(enemy.cell);
     if(!sensor||DEVICE_TYPES[sensor.type].kind!=='sensor'||enemy.sensors.has(sensor.type))return;
     enemy.sensors.add(sensor.type);scheduleGate(sensor);
   }
-  function processGateQueue() {
-    while(game.gateQueue.length&&game.gateQueue[0].due<=game.clock) {
-      const action=game.gateQueue.shift();switchGate(action.type,false);
+  function nextPathCell(cell) {
+    let result=null,best=Infinity;
+    for(const id of neighbors(cell)) {
+      const distance=game.field[id];
+      if(distance>=0&&distance<game.field[cell]&&distance<best){best=distance;result=id;}
     }
+    return result;
   }
   function step(dt) {
     if(game.paused || game.over) return;
-    game.clock+=dt;processGateQueue();processPlans();runAutoUpgrade(dt);
+    game.clock+=dt;processPlans();runAutoUpgrade(dt);
     if(!game.waveActive && (game.wave>0 || [...game.towers.values()].some(tower=>tower.type!=='wall'))) {
       game.wait-=dt; if(game.wait<=0) beginWave();
     }
     if(game.queue.length) {
       game.spawnTimer-=dt;
-      if(game.spawnTimer<=0){spawn(game.queue.shift());game.spawnTimer=waveTuning(game.wave).spawnGap;}
+      const spawnGap=waveTuning(game.wave).spawnGap;
+      let spawned=0;
+      while(game.queue.length&&game.enemies.length<MAX_ACTIVE_ENEMIES&&game.spawnTimer<=0&&spawned<MAX_SPAWNS_PER_STEP){spawn(game.queue.shift());game.spawnTimer+=spawnGap;spawned++;}
     }
     for(const enemy of game.enemies) {
       if(!enemy.alive) continue;
-      if(enemy.next===null) {
-        if(enemy.cell===EXIT) {enemy.alive=false; game.life=Math.max(0,game.life-enemy.damage); continue;}
-        enemy.next=neighbors(enemy.cell).filter(id=>game.field[id]>=0 && game.field[id]<game.field[enemy.cell]).sort((a,b)=>game.field[a]-game.field[b])[0]??null;
+      const enemyType=ENEMIES[enemy.type];
+      if(enemyType.regen&&game.clock-enemy.lastHit>1.5)enemy.hp=Math.min(enemy.maxHp,enemy.hp+enemy.maxHp*enemyType.regen*dt);
+      const slow=game.clock<enemy.slowUntil?enemy.slowFactor:1,rage=enemyType.rage&&enemy.hp/enemy.maxHp<.35?enemyType.rage:1;
+      let movement=enemy.speed*slow*rage*dt,transitions=0;
+      while(enemy.alive&&movement>0&&transitions<64) {
+        if(enemy.next===null) {
+          if(enemy.cell===EXIT) {enemy.alive=false;game.life=Math.max(0,game.life-enemy.damage);if(prefs.speed!==1){prefs.speed=1;forceSpeedBreak=true;savePrefs();message('defenseHitSlow');hudCache='';}break;}
+          enemy.next=nextPathCell(enemy.cell);
+        }
+        if(enemy.next===null)break;
+        const p=center(enemy.next),dx=p.x-enemy.x,dy=p.y-enemy.y,d=Math.hypot(dx,dy);
+        enemy.angle=Math.atan2(dy,dx);
+        if(d<=movement+.001){const previous=enemy.cell;enemy.x=p.x;enemy.y=p.y;enemy.cell=enemy.next;enemy.next=null;enemy.history.push(previous);if(enemy.history.length>SIZE*SIZE)enemy.history.shift();movement=Math.max(0,movement-d);transitions++;checkSensor(enemy);}
+        else{enemy.x+=dx/d*movement;enemy.y+=dy/d*movement;movement=0;}
       }
-      if(enemy.next===null) continue;
-      const p=center(enemy.next), dx=p.x-enemy.x,dy=p.y-enemy.y,d=Math.hypot(dx,dy),move=enemy.speed*dt;
-      enemy.angle=Math.atan2(dy,dx);
-      if(d<=move) {enemy.x=p.x;enemy.y=p.y;enemy.cell=enemy.next;enemy.next=null;checkSensor(enemy);} else {enemy.x+=dx/d*move;enemy.y+=dy/d*move;}
     }
     for(const tower of game.towers.values()) {
       if(tower.type==='wall')continue; tower.cooldown-=dt; if(tower.cooldown>0)continue;
@@ -866,18 +1340,25 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
         const progress=game.field[enemy.next??enemy.cell];
         if(progress<bestProgress){bestProgress=progress;target=enemy;}
       }
-      if(!target)continue; tower.angle=Math.atan2(target.y-p.y,target.x-p.x); tower.cooldown=1/tower.speed;
-      if(tower.type==='laser') {
-        hurt(target,tower.damage,tower,p.x,p.y);
-        game.effects.push({x:p.x,y:p.y,x2:target.x,y2:target.y,life:.07,color:'#7125ed'});
+      if(!target){tower.cooldown=0;continue;}
+      tower.angle=Math.atan2(target.y-p.y,target.x-p.x);
+      const interval=1/tower.speed;
+      const hits=Math.max(1,Math.min(100000,Math.floor(-tower.cooldown/interval)+1));
+      tower.cooldown+=hits*interval;
+      const landed=rolledHits(tower.accuracy,hits);
+      if(!landed){addEffect({x:p.x,y:p.y,x2:target.x+(Math.random()-.5)*24,y2:target.y+(Math.random()-.5)*24,life:.06,color:'#aaa'});continue;}
+      if(prefs.speed>=15||dt>=.1) {
+        // 高速模式直接結算一批子彈，只保留一道短暫軌跡，避免建立大量飛彈物件。
+        applyAttack(target,tower,landed,tower,p.x,p.y);
+        addEffect({x:p.x,y:p.y,x2:target.x,y2:target.y,life:.045,color:TYPES[tower.type].color});
       } else {
-        game.shots.push({x:p.x,y:p.y,sourceX:p.x,sourceY:p.y,target,owner:tower,damage:tower.damage,life:3,color:TYPES[tower.type].color});
+        game.shots.push({x:p.x,y:p.y,sourceX:p.x,sourceY:p.y,target,owner:tower,damage:tower.damage,hits:landed,splash:tower.splash||0,slowFactor:tower.slowFactor||0,slowDuration:tower.slowDuration||0,armorPierce:tower.armorPierce||0,markPower:tower.markPower||1,markDuration:tower.markDuration||0,knockback:tower.knockback||0,life:3,color:TYPES[tower.type].color});
       }
     }
     for(const shot of game.shots) {
       shot.life-=dt; if(!shot.target.alive){shot.life=0;continue;}
       const dx=shot.target.x-shot.x,dy=shot.target.y-shot.y,d=Math.hypot(dx,dy),move=210*dt;
-      if(d<=move+3) {hurt(shot.target,shot.damage,shot.owner,shot.sourceX,shot.sourceY);shot.life=0;} else {shot.x+=dx/d*move;shot.y+=dy/d*move;}
+      if(d<=move+3) {applyAttack(shot.target,shot,shot.hits||1,shot.owner,shot.sourceX,shot.sourceY);shot.life=0;} else {shot.x+=dx/d*move;shot.y+=dy/d*move;}
     }
     game.shots=game.shots.filter(shot=>shot.life>0); game.enemies=game.enemies.filter(enemy=>enemy.alive);
     if(targetId!==null && !game.enemies.some(enemy=>enemy.id===targetId)) targetId=null;
@@ -906,13 +1387,25 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
   function circle(c,x,y,r,fill,stroke='#333') {c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fillStyle=fill;c.fill();c.strokeStyle=stroke;c.lineWidth=1;c.stroke();}
   function drawWeapon(c,type,x,y,scale=1,angle=-Math.PI/2) {
     c.save();c.translate(x,y);c.scale(scale,scale);
-    if(type==='wall') {c.fillStyle='#777';c.fillRect(-16,-16,32,32);c.strokeStyle='#333';c.lineWidth=1.5;c.strokeRect(-16,-16,32,32);c.beginPath();c.moveTo(-16,-16);c.lineTo(16,16);c.moveTo(16,-16);c.lineTo(-16,16);c.stroke();}
-    else if(type==='laser') {c.fillStyle='#665500';c.beginPath();c.moveTo(0,-17);c.lineTo(16,12);c.lineTo(-16,12);c.closePath();c.fill();circle(c,0,0,12,'#60f');circle(c,0,0,5,'#050505');}
-    else {
-      const r=type==='lmg'?5:type==='hmg'?11:15;
-      circle(c,0,0,r,TYPES[type].color);
-      if(type!=='lmg') {circle(c,0,0,r-3,type==='hmg'?'#40963b':'#763316');circle(c,0,0,4,type==='hmg'?'#b8f2a4':'#efc577');}
-      c.rotate(angle);c.strokeStyle='#333';c.lineWidth=type==='lmg'?1.5:4;c.beginPath();c.moveTo(0,0);c.lineTo(19,0);c.stroke();
+    if(type==='wall') {
+      c.fillStyle='#777';c.fillRect(-16,-16,32,32);c.strokeStyle='#333';c.lineWidth=1.5;c.strokeRect(-16,-16,32,32);c.beginPath();c.moveTo(-16,-16);c.lineTo(16,16);c.moveTo(16,-16);c.lineTo(-16,16);c.stroke();
+    } else if(type==='beacon') {
+      c.rotate(Math.PI/4);c.fillStyle=TYPES[type].color;c.strokeStyle='#52205a';c.lineWidth=2;c.fillRect(-10,-10,20,20);c.strokeRect(-10,-10,20,20);c.rotate(-Math.PI/4);circle(c,0,0,4,'#fff','#52205a');
+    } else {
+      c.rotate(angle);
+      if(type==='lmg') {
+        circle(c,0,0,9,TYPES[type].color,'#234b87');c.fillStyle='#dae9ff';c.fillRect(1,-3,17,6);c.strokeStyle='#234b87';c.strokeRect(1,-3,17,6);
+      } else if(type==='hmg') {
+        circle(c,0,0,8,TYPES[type].color,'#61201b');c.fillStyle='#333';c.fillRect(-1,-2,24,4);c.fillStyle='#e6afa9';c.fillRect(5,-1,17,2);
+      } else if(type==='cannon') {
+        circle(c,0,0,13,TYPES[type].color,'#216678');circle(c,0,0,7,'#d9f8ff','#216678');c.strokeStyle='#216678';c.lineWidth=5;c.beginPath();c.moveTo(5,0);c.lineTo(18,0);c.stroke();
+      } else if(type==='laser') {
+        circle(c,0,0,13,TYPES[type].color,'#6b4216');circle(c,0,0,6,'#ffcf6b','#6b4216');c.fillStyle='#6b4216';c.beginPath();c.moveTo(3,-6);c.lineTo(19,0);c.lineTo(3,6);c.closePath();c.fill();
+      } else if(type==='piercer') {
+        c.fillStyle=TYPES[type].color;c.strokeStyle='#222';c.lineWidth=1.5;c.beginPath();for(let i=0;i<6;i++){const a=i*Math.PI/3;c[i?'lineTo':'moveTo'](Math.cos(a)*12,Math.sin(a)*12);}c.closePath();c.fill();c.stroke();c.lineWidth=3;c.beginPath();c.moveTo(2,-4);c.lineTo(21,-4);c.moveTo(2,4);c.lineTo(21,4);c.stroke();
+      } else if(type==='repulsor') {
+        circle(c,0,0,12,TYPES[type].color,'#382579');c.strokeStyle='#eee8ff';c.lineWidth=2.5;c.beginPath();c.moveTo(-5,-7);c.lineTo(2,0);c.lineTo(-5,7);c.moveTo(3,-7);c.lineTo(10,0);c.lineTo(3,7);c.stroke();
+      }
     }
     c.restore();
   }
@@ -933,9 +1426,14 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
   }
   function render() {
     ctx.clearRect(0,0,560,560);ctx.fillStyle='#f7f7f7';ctx.fillRect(0,0,560,560);
-    ctx.fillStyle='#ffd0d0';ctx.fillRect(8*CELL,5*CELL,CELL,CELL);
+    for(const id of UNBUILDABLE) {
+      const x=(id%SIZE)*CELL,y=Math.floor(id/SIZE)*CELL;
+      ctx.fillStyle='#ffd0d0';ctx.fillRect(x,y,CELL,CELL);
+      ctx.strokeStyle='rgba(155,55,55,.28)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+5,y+CELL-5);ctx.lineTo(x+CELL-5,y+5);ctx.stroke();
+    }
     ctx.strokeStyle='#ddd';ctx.lineWidth=.6;ctx.beginPath();for(let i=0;i<=SIZE;i++){ctx.moveTo(i*CELL,0);ctx.lineTo(i*CELL,560);ctx.moveTo(0,i*CELL);ctx.lineTo(560,i*CELL);}ctx.stroke();
-    circle(ctx,17.5,17.5,11,'white','#999');circle(ctx,542.5,542.5,11,'#555','#999');
+    const entryPoint=center(ENTRY),exitPoint=center(EXIT);
+    circle(ctx,entryPoint.x,entryPoint.y,11,'white','#777');circle(ctx,exitPoint.x,exitPoint.y,11,'#555','#222');
     const tower=game.towers.get(selected);const preview=buildingType && hover>=0?{id:hover,range:TYPES[buildingType].range}:tower;
     if(preview?.range) {const p=center(preview.id);ctx.fillStyle='rgba(65,105,225,.09)';ctx.strokeStyle='rgba(65,105,225,.3)';ctx.beginPath();ctx.arc(p.x,p.y,preview.range*CELL,0,Math.PI*2);ctx.fill();ctx.stroke();}
     for(const item of game.towers.values()) {
@@ -961,14 +1459,19 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
     }
     for(const enemy of game.enemies) {
       const r=Math.min(13,Math.max(4,enemy.damage*1.2));circle(ctx,enemy.x,enemy.y,r,ENEMIES[enemy.type].color);
+      if(enemy.type===10){ctx.strokeStyle='#eee';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(enemy.x,enemy.y-r+2);ctx.lineTo(enemy.x,enemy.y+r-2);ctx.moveTo(enemy.x-r+3,enemy.y+3);ctx.quadraticCurveTo(enemy.x,enemy.y+r,enemy.x+r-3,enemy.y+3);ctx.stroke();}
+      if(enemy.type===11){ctx.strokeStyle='#ffe0ef';ctx.lineWidth=2;ctx.beginPath();ctx.arc(enemy.x,enemy.y,r-3,0,Math.PI*2);ctx.stroke();}
       if(enemy.shield){
         ctx.strokeStyle='#b8e7f2';ctx.lineWidth=4;ctx.beginPath();
         ctx.arc(enemy.x,enemy.y,r+3,enemy.angle-Math.PI/2,enemy.angle+Math.PI/2);ctx.stroke();
       }
+      if(game.clock<enemy.slowUntil){ctx.strokeStyle='#55cde8';ctx.lineWidth=2;ctx.beginPath();ctx.arc(enemy.x,enemy.y,r+5,0,Math.PI*2);ctx.stroke();}
+      if(game.clock<enemy.markedUntil){ctx.strokeStyle='#c34bd1';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(enemy.x,enemy.y-r-7);ctx.lineTo(enemy.x+r+7,enemy.y);ctx.lineTo(enemy.x,enemy.y+r+7);ctx.lineTo(enemy.x-r-7,enemy.y);ctx.closePath();ctx.stroke();}
+      if(ENEMIES[enemy.type].rage&&enemy.hp/enemy.maxHp<.35){ctx.strokeStyle='#f05a35';ctx.lineWidth=2;ctx.setLineDash([3,2]);ctx.beginPath();ctx.arc(enemy.x,enemy.y,r+8,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
       ctx.fillStyle='#ddd';ctx.fillRect(enemy.x-10,enemy.y-r-6,20,3);ctx.fillStyle='#49a544';ctx.fillRect(enemy.x-10,enemy.y-r-6,20*Math.max(0,enemy.hp/enemy.maxHp),3);
       if(enemy.id===targetId){ctx.strokeStyle='#e33';ctx.lineWidth=1;ctx.strokeRect(enemy.x-r-4,enemy.y-r-4,2*r+8,2*r+8);}
     }
-    for(const shot of game.shots)circle(ctx,shot.x,shot.y,shot.owner.type==='cannon'?3:1.5,shot.color,shot.color);
+    for(const shot of game.shots)circle(ctx,shot.x,shot.y,['cannon','repulsor'].includes(shot.owner.type)?3:1.5,shot.color,shot.color);
     for(const effect of game.effects){ctx.globalAlpha=Math.min(1,effect.life*12);ctx.strokeStyle=effect.color;ctx.lineWidth=1.5;ctx.beginPath();if(effect.x2!==undefined){ctx.moveTo(effect.x,effect.y);ctx.lineTo(effect.x2,effect.y2);}else ctx.arc(effect.x,effect.y,(.35-effect.life)*25,0,Math.PI*2);ctx.stroke();}ctx.globalAlpha=1;
     if(game.paused || game.over) {
       ctx.fillStyle='rgba(247,247,247,.8)';ctx.fillRect(0,240,560,76);ctx.fillStyle='#333';ctx.font='24px sans-serif';ctx.textAlign='center';
@@ -983,11 +1486,11 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
     const tower=game.towers.get(selected),device=game.devices.get(selected),enemy=game.enemies.find(item=>item.id===targetId);
     const autoKey=[...ui.autoTargets].sort((a,b)=>a-b).join(','), batchKey=[...ui.batchTargets].sort((a,b)=>a-b).join(',');
     const planKey=game.plans.map(item=>item.id+':'+item.type).join(','),deviceKey=[...game.devices.values()].map(item=>item.id+':'+item.type).sort().join(',');
-    const pendingSeconds=game.gateQueue.length?Math.max(0,game.gateQueue[0].due-game.clock).toFixed(1):'';
-    const values=[prefs.lang,prefs.speed,prefs.quickSpeed,prefs.startMode,prefs.pauseOnLeave,ui.prebuildEnabled,ui.overwriteEnabled,game.money,game.score,game.life,game.wave,game.towers.size,game.enemies.length,game.paused,game.over,selected,buildingType,deviceType,planningRemoval,targetId,tower?.level,tower?.kills,enemy?Math.ceil(enemy.hp):null,ui.mode,ui.autoEnabled,autoKey,batchKey,planKey,deviceKey,game.closedGate,pendingSeconds,ui.lastAuto?.type,ui.lastAuto?.level];
+    const cooldownRemaining=Math.max(0,game.gateCooldownUntil-game.clock),cooldownSeconds=cooldownRemaining.toFixed(1);
+    const values=[prefs.lang,prefs.speed,prefs.quickSpeed,prefs.startMode,prefs.pauseOnLeave,ui.prebuildEnabled,ui.overwriteEnabled,game.money,game.score,game.life,game.wave,game.towers.size,game.enemies.length,game.paused,game.over,selected,buildingType,deviceType,planningRemoval,targetId,tower?.level,tower?.kills,enemy?Math.ceil(enemy.hp):null,ui.mode,ui.autoEnabled,autoKey,batchKey,planKey,deviceKey,game.closedGate,cooldownSeconds,ui.lastAuto?.type,ui.lastAuto?.level];
     const key=values.join('|');if(key===hudCache)return;hudCache=key;
     for(const pair of Object.entries({money:formatCompact(game.money),score:formatCompact(game.score),life:game.life,wave:game.wave,buildings:game.towers.size+game.devices.size,monsters:formatCompact(game.enemies.length)}))$(pair[0]).textContent=pair[1];
-    document.title=tr(game.wave>HARD_MODE_AFTER?'hardPageTitle':'pageTitle');
+    document.title=tr(game.dailyKey?'dailyPageTitle':game.wave>HARD_MODE_AFTER?'hardPageTitle':'pageTitle');
     $('mode-label').textContent=tr(game.wave>HARD_MODE_AFTER?'hardMode':'classicMode');
     $('mode-label').classList.toggle('hard',game.wave>HARD_MODE_AFTER);
     buildButtons.forEach(button=>{button.setAttribute('aria-pressed',String(button.dataset.type===buildingType));button.disabled=game.over;});
@@ -998,11 +1501,13 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
     speedButtons.forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.speed)===prefs.speed)));
     if(document.activeElement!==$('speed-input'))$('speed-input').value=prefs.speed;
     $('pause').textContent=game.paused?tr('resume'):tr('pause');$('pause').disabled=game.over;
-    $('restart').textContent=tr('restart');
+    $('restart').textContent=tr('restart');$('daily-challenge').textContent=tr('dailyChallenge');$('daily-challenge').setAttribute('aria-pressed',String(Boolean(game.dailyKey)));$('retry-layout').textContent=tr('retryLayout');$('retry-layout').hidden=!game.over;
+    const detailChoice=selectedWeapon();$('tower-details').hidden=!detailChoice;$('tower-details').textContent=tr('towerDetails');
     $('upgrade').hidden=!tower || tower.type==='wall';$('sell').hidden=!tower&&!device;$('cancel').hidden=!buildingType&&!deviceType&&!planningRemoval;
     $('upgrade').disabled=game.over;$('sell').disabled=game.over;$('upgrade').textContent=tower&&tower.type!=='wall'?tr('upgrade')+' \u0024'+formatCompact(upgradeCost(tower)):tr('upgrade');
     $('sell').textContent=tower||device?tr('sell')+' \u0024'+formatCompact(refundFor(tower||device)):tr('sell');$('cancel').textContent=tr('cancelBuild');
     if(document.activeElement!==$('start-mode'))$('start-mode').value=prefs.startMode;
+    const dailySummary=$('daily-summary');dailySummary.hidden=prefs.startMode!=='daily';dailySummary.textContent=prefs.startMode==='daily'?tr('dailyStatus',{date:DAILY_KEY,code:DAILY_CODE,count:UNBUILDABLE.size}):'';
     $('prebuild-enabled').checked=ui.prebuildEnabled;$('overwrite-enabled').checked=ui.overwriteEnabled;$('pause-on-leave').checked=prefs.pauseOnLeave;$('clear-plans').disabled=!game.plans.length;
     if(game.plans.length){const next=game.plans[0],data=next.kind==='remove'?null:(TYPES[next.type]||DEVICE_TYPES[next.type]);$('plan-summary').textContent=tr(next.kind==='remove'?'planCountRemove':'planCount',{count:game.plans.length,name:next.kind==='remove'?tr('planRemove'):typeName(next.type),cost:data?data.cost:0});}
     else $('plan-summary').textContent=tr('planNone');
@@ -1017,26 +1522,27 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
     $('batch-remove').textContent=tr('batchRemove',{count:ui.batchTargets.size});$('batch-remove').disabled=!ui.batchTargets.size;
     $('batch-cancel').hidden=ui.mode!=='batch'&&!ui.batchTargets.size;
     $('batch-summary').textContent=ui.batchTargets.size?tr('batchSummary',{count:ui.batchTargets.size,refund:batchRefund()}):tr('batchNote');
-    if(game.gateQueue.length)$('gate-summary').textContent=tr('gatePending',{seconds:pendingSeconds});
+    if(cooldownRemaining>0)$('gate-summary').textContent=tr('gateCooldown',{seconds:cooldownSeconds});
     else if(componentCount()<4)$('gate-summary').textContent=tr('gateIncomplete',{count:componentCount()});
     else if(game.closedGate)$('gate-summary').textContent=tr('gateClosed',{name:typeName(game.closedGate)});
     else $('gate-summary').textContent=tr('gateOpen');
     if(tower) {
       const auto=ui.autoTargets.has(tower.id)?tr('autoMark'):'';
-      $('info').textContent=tower.type==='wall'?tr('infoWall',{name:typeName(tower.type)}):tr('infoTower',{name:typeName(tower.type),level:tower.level,damage:Math.floor(tower.damage),range:tower.range.toFixed(1),speed:tower.speed.toFixed(1),kills:tower.kills,auto});
+      $('info').textContent=tower.type==='wall'?tr('infoWall',{name:typeName(tower.type)}):tr('infoTower',{name:typeName(tower.type),level:tower.level,damage:Math.floor(tower.damage),range:tower.range.toFixed(1),accuracy:Math.round(tower.accuracy*100),speed:tower.speed.toFixed(2),kills:tower.kills,role:tr(TYPES[tower.type].roleKey),special:towerSpecial(tower),auto});
     } else if(device) {
       const state=DEVICE_TYPES[device.type].kind==='gate'?tr(game.closedGate===device.type?'gateStateClosed':'gateStateOpen'):'';
       $('info').textContent=tr('infoDevice',{name:typeName(device.type),state});
     } else if(buildingType) {
-      const type=TYPES[buildingType], params={name:typeName(buildingType),cost:type.cost,damage:type.damage,range:type.range,speed:type.speed};
+      const type=TYPES[buildingType], params={name:typeName(buildingType),cost:type.cost,damage:type.damage,range:type.range,speed:type.speed,accuracy:Math.round((type.accuracy??1)*100),upgradeCost:formatCompact(type.upgradeBase||type.cost),role:type.roleKey?tr(type.roleKey):'',special:towerSpecial(type)};
       $('info').textContent=tr(buildingType==='wall'?'infoBuildWall':'infoBuildWeapon',params);
     } else if(deviceType) {
       const type=DEVICE_TYPES[deviceType];$('info').textContent=tr('infoBuildDevice',{name:typeName(deviceType),cost:type.cost});
     } else if(planningRemoval) $('info').textContent=tr('infoPlanRemove');
-    else if(enemy) $('info').textContent=tr('infoEnemy',{name:enemyName(enemy.type),hp:formatCompact(Math.ceil(enemy.hp)),maxHp:formatCompact(enemy.maxHp),armor:formatCompact(enemy.armor),damage:formatCompact(enemy.damage),shield:enemy.shield?tr('infoShield'):''});
+    else if(enemy) $('info').textContent=tr('infoEnemy',{name:enemyName(enemy.type),hp:formatCompact(Math.ceil(enemy.hp)),maxHp:formatCompact(enemy.maxHp),armor:formatCompact(enemy.armor),damage:formatCompact(enemy.damage),shield:enemy.shield?tr('infoShield'):'',trait:tr('enemyDesc'+enemy.type),resists:tr('infoControlResists',{slow:Math.round(controlResistance(enemy,'slow')*100),knock:Math.round(controlResistance(enemy,'knock')*100)})});
     else if(ui.mode==='auto') $('info').textContent=tr('infoAutoMode');
     else if(ui.mode==='batch') $('info').textContent=tr('infoBatchMode');
     else $('info').textContent=tr('infoIdle');
+    if($('tower-detail-dialog').open&&detailChoice)renderTowerDetail(detailChoice.type,detailChoice.level);
   }
 
   // ⑧ 滑鼠、觸控與快捷鍵
@@ -1065,8 +1571,12 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
   $('speed-input').addEventListener('change',event=>setSpeed(event.target.value));
   $('speed-input').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();setSpeed(event.currentTarget.value);event.currentTarget.blur();}});
   $('language').addEventListener('click',()=>{prefs.lang=prefs.lang==='zh'?'en':'zh';savePrefs();applyLanguage();});
+  $('tower-details').addEventListener('click',showTowerDetails);$('close-tower-details').addEventListener('click',()=>$('tower-detail-dialog').close());
+  $('comparison-level').addEventListener('input',renderTowerComparison);$('comparison-level').addEventListener('change',event=>{const value=Math.max(1,Math.min(999,Math.floor(Number(event.target.value)||1)));event.target.value=String(value);renderTowerComparison();});
   $('cancel').addEventListener('click',cancel);$('upgrade').addEventListener('click',upgrade);$('sell').addEventListener('click',sell);$('pause').addEventListener('click',pause);
   $('restart').addEventListener('click',()=>{if(game.over || confirm(tr('restartConfirm')))reset();});
+  $('daily-challenge').addEventListener('click',startDailyChallenge);
+  $('retry-layout').addEventListener('click',retryWithLayout);
   $('apply-start').addEventListener('click',applyStartMode);
   $('prebuild-enabled').addEventListener('change',event=>{ui.prebuildEnabled=event.target.checked;prefs.prebuild=ui.prebuildEnabled;savePrefs();message(ui.prebuildEnabled?'prebuildOn':'prebuildOff');hudCache='';updateHud();});
   $('overwrite-enabled').addEventListener('change',event=>{ui.overwriteEnabled=event.target.checked;prefs.overwrite=ui.overwriteEnabled;savePrefs();message(ui.overwriteEnabled?'overwriteOn':'overwriteOff');hudCache='';updateHud();});
@@ -1077,6 +1587,7 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
   $('auto-all').addEventListener('click',selectAllAutoTargets);
   $('auto-clear').addEventListener('click',()=>{ui.autoTargets.clear();ui.lastAuto=null;message('autoCleared');hudCache='';updateHud();});
   $('batch-mode').addEventListener('click',toggleBatchMode);$('batch-remove').addEventListener('click',removeBatch);$('batch-cancel').addEventListener('click',cancelBatch);
+  $('run-simulation').addEventListener('click',runDefenseSimulation);
   document.addEventListener('keydown',event=>{
     if(event.ctrlKey||event.metaKey||event.altKey||event.repeat||event.target.matches('input,select,textarea'))return;
     const actions={p:pause,s:upgrade,c:sell,x:cycleSpeed,Escape:cancel};
@@ -1093,11 +1604,20 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
   if(!restoreRun())reset(false);
   applyLanguage();
   setInterval(saveRun,1000);
-  let last=performance.now(),accumulator=0;
+  // 高倍率以較大的遊戲時間步長運算，並降低重繪頻率；倍率不再直接放大每秒迴圈數。
+  function simulationStep(speed){return speed<=2?1/60:speed<=8?1/30:speed<=20?1/15:speed<=50?1/8:speed<=60?1/4:1/2;}
+  function renderInterval(speed){return 1000/(speed<=2?60:speed<=10?30:speed<=30?20:speed<=60?12:8);}
+  let last=performance.now(),lastRender=0,accumulator=0;
   function frame(now){
-    accumulator+=Math.min(.1,(now-last)/1000)*prefs.speed;last=now;
-    while(accumulator>=1/60){step(1/60);accumulator-=1/60;}
-    updateHud();render();requestAnimationFrame(frame);
+    const elapsed=Math.min(.1,(now-last)/1000);last=now;
+    if(!game.paused&&!game.over) {
+      accumulator+=elapsed*prefs.speed;
+      const quantum=simulationStep(prefs.speed);let steps=0;
+      while(accumulator>=quantum&&steps<MAX_STEPS_PER_FRAME){step(quantum);accumulator-=quantum;steps++;if(forceSpeedBreak){accumulator=0;forceSpeedBreak=false;break;}}
+      if(accumulator>=quantum){step(accumulator);accumulator=0;}
+    } else accumulator=0;
+    if(!lastRender||now-lastRender>=renderInterval(prefs.speed)){updateHud();render();lastRender=now;}
+    requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
 })();

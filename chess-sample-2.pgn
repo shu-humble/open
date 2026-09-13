@@ -1,0 +1,23 @@
+[Event "rated classical game"]
+[Site "https://lichess.org/YO3ICtJi"]
+[Date "2019.04.14"]
+[Round "-"]
+[White "sanganakam"]
+[Black "Msiipola"]
+[Result "1-0"]
+[GameId "YO3ICtJi"]
+[UTCDate "2019.04.14"]
+[UTCTime "16:00:52"]
+[WhiteElo "1632"]
+[BlackElo "1620"]
+[WhiteRatingDiff "+11"]
+[BlackRatingDiff "-10"]
+[Variant "Standard"]
+[TimeControl "2700+45"]
+[ECO "D00"]
+[Opening "Queen's Pawn Game: Accelerated London System"]
+[Termination "Normal"]
+
+1. d4 { [%eval 0.25] } 1... d5 { [%eval 0.15] } 2. Bf4 { [%eval 0.0] } 2... Bf5 { [%eval 0.17] } 3. e3 { [%eval 0.11] } 3... Nc6 { [%eval 0.46] } 4. Nd2 { [%eval 0.28] } 4... Qd7 { [%eval 0.61] } 5. h3 { [%eval -0.56] } 5... O-O-O { [%eval 0.93] } 6. c3 { [%eval 0.65] } 6... f6 { [%eval 0.75] } 7. Ne2 { [%eval -0.62] } 7... g5 { [%eval -0.47] } 8. Bh2 { [%eval -0.47] } 8... h5 { [%eval 0.31] } 9. Ng3 { [%eval -0.38] } 9... Bg6 { [%eval -0.34] } 10. Be2 { [%eval 0.24] } 10... h4 { [%eval 0.26] } 11. Ngf1 { [%eval 0.14] } 11... e6 { [%eval 0.37] } 12. f3 { [%eval -1.09] } 12... Bd6 { [%eval -0.67] } 13. f4 { [%eval -1.38] } 13... Rf8 { [%eval -1.67] } 14. b4 { [%eval -1.51] } 14... Nb8 { [%eval -0.72] } 15. a4 { [%eval -1.31] } 15... gxf4 { [%eval -0.7] } 16. exf4 { [%eval -0.71] } 16... Qh7 { [%eval 0.04] } 17. Ne3 { [%eval 0.19] } 17... Qh6 { [%eval 1.0] } 18. O-O { [%eval 1.08] } 18... Nd7 { [%eval 2.95] } 19. Ng4 { [%eval 0.32] } 19... Qg7 { [%eval 0.33] } 20. a5 { [%eval 0.25] } 20... Nh6 { [%eval 0.81] } 21. b5 { [%eval -0.75] } 21... Nxg4 { [%eval -0.68] } 22. Bxg4 { [%eval -0.5] } 22... Re8 { [%eval 0.67] } 23. a6 { [%eval 0.77] } 23... b6 { [%eval 0.67] } 24. f5 { [%eval 0.57] } 24... Bxh2+ { [%eval 0.54] } 25. Kxh2 { [%eval 0.51] } 25... Bxf5 { [%eval 0.52] } 26. Bxf5 { [%eval 0.61] } 26... Qg3+ { [%eval 0.48] } 27. Kh1 { [%eval 0.69] } 27... exf5 { [%eval 0.62] } 28. Rxf5 { [%eval 0.68] } 28... Rhg8 { [%eval 0.88] } 29. Qf3 { [%eval 0.86] } 29... Qxf3 { [%eval 2.49] } 30. Nxf3 { [%eval 2.49] } 30... Re4 { [%eval 2.68] } 31. Rxd5 { [%eval 2.5] } 31... Rge8 { [%eval 3.46] } 32. Rh5 { [%eval 3.51] } 32... Nf8 { [%eval 3.49] } 33. Rxh4 { [%eval 3.63] } 33... Ng6 { [%eval 4.65] } 34. Rxe4 { [%eval 4.48] } 34... Rxe4 { [%eval 4.06] } 35. Re1 { [%eval 3.72] } 35... f5 { [%eval 5.0] } 36. Kh2 { [%eval 4.57] } 36... Kd8 { [%eval 6.35] } 37. Kg3 { [%eval 5.6] } 1-0
+
+

@@ -6,11 +6,14 @@
   "scripts": {
     "start": "node server.js",
     "dev": "vite --host",
-    "build": "vite build",
-    "icons:schedule": "node scripts/update-schedule-icons.cjs"
+    "build": "npm run build:chess && vite build",
+    "icons:schedule": "node scripts/update-schedule-icons.cjs",
+    "build:chess": "node scripts/build-chess.mjs"
   },
   "dependencies": {
-    "express": "^5.1.0"
+    "chess.js": "^1.4.0",
+    "express": "^5.1.0",
+    "stockfish": "^18.0.8"
   },
   "devDependencies": {
     "vite": "^6.0.0"

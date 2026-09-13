@@ -826,6 +826,211 @@
     display: none;
 }
 
+/* 便利貼：內容、顏色與位置由頁尾程式自動保存在瀏覽器。 */
+.sticky-note-add {
+    position: fixed;
+    top: clamp(8px, 1vw, 16px);
+    left: clamp(118px, 10vw, 150px);
+    z-index: 9997;
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 12px;
+    border: 1px solid rgba(0, 76, 134, 0.25);
+    border-radius: 12px;
+    background: rgba(206, 239, 255, 0.96);
+    color: #123b52;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
+    font: 700 14px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.sticky-note-add:hover,
+.sticky-note-add:focus-visible {
+    background: #e8f7ff;
+    outline: 3px solid rgba(26, 115, 232, 0.18);
+}
+
+.sticky-note-add__icon {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    place-items: center;
+    border-radius: 8px;
+    background: #66bce8;
+    color: #082f46;
+    font-size: 23px;
+    font-weight: 500;
+}
+
+.sticky-note-add__label {
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.sticky-notes-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.sticky-note {
+    --note-color: #b9e2f7;
+    --note-bar: #d8f1fc;
+    position: absolute;
+    box-sizing: border-box;
+    display: flex;
+    width: min(270px, calc(100vw - 24px));
+    height: 220px;
+    min-width: 180px;
+    min-height: 125px;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid rgba(32, 63, 78, 0.18);
+    border-radius: 3px;
+    background: var(--note-color);
+    box-shadow: 0 9px 24px rgba(0, 0, 0, 0.28);
+    pointer-events: auto;
+}
+
+.sticky-note[data-color="yellow"] { --note-color: #fff0a8; --note-bar: #fff7cf; }
+.sticky-note[data-color="pink"]   { --note-color: #f8c4d5; --note-bar: #fde1ea; }
+.sticky-note[data-color="green"]  { --note-color: #cce9c4; --note-bar: #e3f4de; }
+.sticky-note[data-color="red"]    { --note-color: #f5b5b0; --note-bar: #fbe0dd; }
+.sticky-note[data-color="orange"] { --note-color: #f7c58e; --note-bar: #fbe6ce; }
+.sticky-note[data-color="purple"] { --note-color: #d7c1ef; --note-bar: #eee4f8; }
+.sticky-note[data-color="white"]  { --note-color: #f7f7f4; --note-bar: #ffffff; }
+
+.sticky-note__bar {
+    display: flex;
+    min-height: 34px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 6px 5px 10px;
+    background: var(--note-bar);
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+
+.sticky-note.is-dragging .sticky-note__bar { cursor: grabbing; }
+
+.sticky-note__colors {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sticky-note__color {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    padding: 0;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.sticky-note__color[data-note-color="blue"]   { background: #87ceef; }
+.sticky-note__color[data-note-color="yellow"] { background: #f4d75e; }
+.sticky-note__color[data-note-color="pink"]   { background: #e993b0; }
+.sticky-note__color[data-note-color="green"]  { background: #95cf86; }
+
+.sticky-note__color[aria-pressed="true"],
+.sticky-note__color.is-selected {
+    box-shadow: 0 0 0 1px #fff, 0 0 0 3px #1f2937;
+}
+
+.sticky-note__custom-color {
+    overflow: hidden;
+    padding: 1px;
+    background: conic-gradient(#e55353, #f1c84b, #69bd72, #55a9df, #9a65d5, #e55353);
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.sticky-note__custom-color::-webkit-color-swatch-wrapper { padding: 0; }
+.sticky-note__custom-color::-webkit-color-swatch { border: 0; border-radius: 50%; }
+.sticky-note__custom-color::-moz-color-swatch { border: 0; border-radius: 50%; }
+
+.sticky-note__delete {
+    width: 25px;
+    height: 25px;
+    padding: 0;
+    cursor: pointer;
+}
+
+.sticky-note__delete {
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #35434a;
+    font: 700 20px/1 system-ui, sans-serif;
+}
+
+.sticky-note__delete:hover,
+.sticky-note__delete:focus-visible {
+    background: rgba(122, 20, 20, 0.12);
+    color: #8d1515;
+    outline: none;
+}
+
+.sticky-note__text {
+    width: 100%;
+    min-height: 0;
+    flex: 1;
+    padding: 13px 18px 18px 14px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #17242b;
+    font-family: inherit;
+    font-size: 18px;
+    line-height: 1.45;
+    resize: none;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.sticky-note__text::placeholder { color: rgba(23, 36, 43, 0.55); }
+
+.sticky-note__resize {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    background:
+        linear-gradient(135deg, transparent 0 46%, rgba(31, 57, 70, 0.3) 47% 54%, transparent 55% 63%, rgba(31, 57, 70, 0.5) 64% 71%, transparent 72%);
+    cursor: nwse-resize;
+    touch-action: none;
+}
+
+.sticky-note__resize:focus-visible {
+    border-radius: 5px 0 0 0;
+    outline: 3px solid rgba(26, 115, 232, 0.5);
+    outline-offset: -3px;
+}
+
+.sticky-note-status {
+    position: fixed;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
 /* Mobile layout: compact two-column sections with expandable content. */
 @media (max-width: 768px) {
     *,
@@ -860,6 +1065,13 @@
     .google-account-button__label {
         display: none;
     }
+
+    .sticky-note-add {
+        display: none !important;
+    }
+
+    .sticky-notes-layer,
+    .sticky-note-status { display: none !important; }
 
     .google-account-panel {
         top: calc(60px + env(safe-area-inset-top));
@@ -1196,9 +1408,15 @@
             aria-expanded="false"
             title="開啟設定">
         <span class="google-account-button__logo" aria-hidden="true">&#9881;</span>
-        <span class="google-account-button__label">設定</span>
         <span id="google-account-current" class="google-account-button__number">G0</span>
     </button>
+
+    <button id="sticky-note-add" class="sticky-note-add" type="button" title="新增便利貼" aria-label="新增便利貼">
+        <span class="sticky-note-add__icon" aria-hidden="true">＋</span>
+        <span class="sticky-note-add__label">新增便利貼</span>
+    </button>
+    <div id="sticky-notes-layer" class="sticky-notes-layer" aria-label="便利貼區域"></div>
+    <p id="sticky-note-status" class="sticky-note-status" role="status" aria-live="polite"></p>
 
     <div id="google-account-backdrop" class="google-account-backdrop" hidden></div>
     <section id="google-account-panel"
@@ -2469,6 +2687,346 @@
         })();
     </script>
 
+    <script>
+        (() => {
+            const STORAGE_KEY = 'scheduleStickyNotesV1';
+            const PRESET_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'white'];
+            const COLORS = new Set([...PRESET_COLORS, 'custom']);
+            const CUSTOM_COLOR_FALLBACK = '#c8b6ff';
+            const COLOR_VALUES = {
+                red: '#f5b5b0', orange: '#f7c58e', yellow: '#fff0a8', green: '#cce9c4',
+                blue: '#b9e2f7', purple: '#d7c1ef', pink: '#f8c4d5', white: '#f7f7f4'
+            };
+            const COPY = {
+                zh: {
+                    add: '新增便利貼', area: '便利貼區域', placeholder: '在這裡輸入內容…',
+                    remove: '刪除便利貼', blue: '藍色', yellow: '黃色', pink: '粉紅色', green: '綠色', custom: '自訂顏色',
+                    resize: '調整便利貼大小', saved: '便利貼已自動儲存', removed: '便利貼已刪除'
+                },
+                en: {
+                    add: 'Add sticky note', area: 'Sticky notes', placeholder: 'Type your note here…',
+                    remove: 'Delete note', blue: 'Blue', yellow: 'Yellow', pink: 'Pink', green: 'Green', custom: 'Custom color',
+                    resize: 'Resize note', saved: 'Sticky note saved automatically', removed: 'Sticky note deleted'
+                }
+            };
+            let notes = readNotes();
+            let topZ = notes.reduce((highest, note) => Math.max(highest, Number(note.z) || 0), 0);
+
+            function language() {
+                return window.ScheduleLanguage?.getLanguage?.() === 'en' ? 'en' : 'zh';
+            }
+
+            function words() { return COPY[language()]; }
+
+            function makeId() {
+                return self.crypto?.randomUUID?.() || `note-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+            }
+
+            function readNotes() {
+                try {
+                    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                    if (!Array.isArray(stored)) return [];
+                    return stored.filter(note => note && typeof note.id === 'string').map((note, index) => ({
+                        id: note.id,
+                        text: typeof note.text === 'string' ? note.text : '',
+                        color: COLORS.has(note.color) ? note.color : 'blue',
+                        customColor: /^#[0-9a-f]{6}$/i.test(note.customColor || '') ? note.customColor : CUSTOM_COLOR_FALLBACK,
+                        x: Number.isFinite(Number(note.x)) ? Number(note.x) : 120 + index * 24,
+                        y: Number.isFinite(Number(note.y)) ? Number(note.y) : 90 + index * 24,
+                        width: Number.isFinite(Number(note.width)) ? Number(note.width) : 270,
+                        height: Number.isFinite(Number(note.height)) ? Number(note.height) : 220,
+                        z: Number.isFinite(Number(note.z)) ? Number(note.z) : index + 1
+                    }));
+                } catch (error) {
+                    return [];
+                }
+            }
+
+            function saveNotes(message = '') {
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(notes)); } catch (error) {}
+                if (message) {
+                    const status = document.getElementById('sticky-note-status');
+                    if (status) status.textContent = message;
+                }
+            }
+
+            function clampedPosition(note, element) {
+                const width = element?.offsetWidth || (innerWidth <= 768 ? 240 : 270);
+                const height = element?.offsetHeight || (innerWidth <= 768 ? 190 : 220);
+                return {
+                    x: Math.max(8, Math.min(note.x, Math.max(8, innerWidth - width - 8))),
+                    y: Math.max(62, Math.min(note.y, Math.max(62, innerHeight - height - 8)))
+                };
+            }
+
+            function clampedSize(note) {
+                const maxWidth = Math.max(120, innerWidth - 16);
+                const maxHeight = Math.max(125, innerHeight - 70);
+                return {
+                    width: Math.min(Math.max(180, note.width || 270), maxWidth),
+                    height: Math.min(Math.max(125, note.height || 220), maxHeight)
+                };
+            }
+
+            function bringToFront(note, element) {
+                note.z = ++topZ;
+                element.style.zIndex = note.z;
+            }
+
+            function lighterColor(hex, ratio = 0.55) {
+                const value = /^#[0-9a-f]{6}$/i.test(hex || '') ? hex.slice(1) : CUSTOM_COLOR_FALLBACK.slice(1);
+                const channels = [0, 2, 4].map(index => parseInt(value.slice(index, index + 2), 16));
+                return `rgb(${channels.map(channel => Math.round(channel + (255 - channel) * ratio)).join(', ')})`;
+            }
+
+            function applyNoteColor(note, element) {
+                element.dataset.color = note.color;
+                if (note.color === 'custom') {
+                    element.style.setProperty('--note-color', note.customColor);
+                    element.style.setProperty('--note-bar', lighterColor(note.customColor));
+                } else {
+                    element.style.removeProperty('--note-color');
+                    element.style.removeProperty('--note-bar');
+                }
+            }
+
+            function syncColorSelection(note, colors) {
+                colors.querySelectorAll('[data-note-color]').forEach(item => {
+                    const selected = item.dataset.noteColor === note.color;
+                    item.classList.toggle('is-selected', selected);
+                    if (item.tagName === 'BUTTON') item.setAttribute('aria-pressed', String(selected));
+                });
+            }
+
+            function renderNote(note, focus = false) {
+                const layer = document.getElementById('sticky-notes-layer');
+                if (!layer) return;
+                const element = document.createElement('article');
+                element.className = 'sticky-note';
+                element.dataset.noteId = note.id;
+                applyNoteColor(note, element);
+                element.innerHTML = `
+                    <div class="sticky-note__bar">
+                        <div class="sticky-note__colors" role="group"></div>
+                        <button class="sticky-note__delete" type="button">×</button>
+                    </div>
+                    <textarea class="sticky-note__text" maxlength="5000"></textarea>
+                    <button class="sticky-note__resize" type="button"></button>`;
+
+                const bar = element.querySelector('.sticky-note__bar');
+                const colors = element.querySelector('.sticky-note__colors');
+                const textarea = element.querySelector('.sticky-note__text');
+                const deleteButton = element.querySelector('.sticky-note__delete');
+                const resizeButton = element.querySelector('.sticky-note__resize');
+
+                const customColor = document.createElement('input');
+                customColor.className = 'sticky-note__color sticky-note__custom-color';
+                customColor.type = 'color';
+                customColor.value = note.color === 'custom' ? note.customColor : (COLOR_VALUES[note.color] || CUSTOM_COLOR_FALLBACK);
+                customColor.dataset.noteColor = 'custom';
+                customColor.classList.toggle('is-selected', note.color === 'custom');
+                customColor.addEventListener('click', event => {
+                    event.stopPropagation();
+                    note.color = 'custom';
+                    applyNoteColor(note, element);
+                    syncColorSelection(note, colors);
+                    saveNotes(words().saved);
+                });
+                customColor.addEventListener('input', event => {
+                    event.stopPropagation();
+                    note.color = 'custom';
+                    note.customColor = customColor.value;
+                    applyNoteColor(note, element);
+                    syncColorSelection(note, colors);
+                    saveNotes(words().saved);
+                });
+                colors.appendChild(customColor);
+
+                textarea.value = note.text;
+                textarea.addEventListener('input', () => {
+                    note.text = textarea.value;
+                    saveNotes(words().saved);
+                });
+                textarea.addEventListener('pointerdown', () => bringToFront(note, element));
+
+                deleteButton.addEventListener('click', () => {
+                    notes = notes.filter(item => item.id !== note.id);
+                    element.remove();
+                    saveNotes(words().removed);
+                });
+
+                resizeButton.addEventListener('pointerdown', event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    bringToFront(note, element);
+                    resizeButton.setPointerCapture(event.pointerId);
+                    const startX = event.clientX;
+                    const startY = event.clientY;
+                    const startWidth = element.offsetWidth;
+                    const startHeight = element.offsetHeight;
+
+                    const resize = moveEvent => {
+                        note.width = startWidth + moveEvent.clientX - startX;
+                        note.height = startHeight + moveEvent.clientY - startY;
+                        const size = clampedSize(note);
+                        note.width = size.width;
+                        note.height = size.height;
+                        element.style.width = `${note.width}px`;
+                        element.style.height = `${note.height}px`;
+                    };
+                    const endResize = () => {
+                        resizeButton.removeEventListener('pointermove', resize);
+                        resizeButton.removeEventListener('pointerup', endResize);
+                        resizeButton.removeEventListener('pointercancel', endResize);
+                        updateNoteLanguage(element);
+                        saveNotes(words().saved);
+                    };
+                    resizeButton.addEventListener('pointermove', resize);
+                    resizeButton.addEventListener('pointerup', endResize);
+                    resizeButton.addEventListener('pointercancel', endResize);
+                });
+                resizeButton.addEventListener('keydown', event => {
+                    const changes = {
+                        ArrowLeft: [-1, 0], ArrowRight: [1, 0],
+                        ArrowUp: [0, -1], ArrowDown: [0, 1]
+                    };
+                    const change = changes[event.key];
+                    if (!change) return;
+                    event.preventDefault();
+                    const amount = event.shiftKey ? 50 : 10;
+                    note.width = element.offsetWidth + change[0] * amount;
+                    note.height = element.offsetHeight + change[1] * amount;
+                    const size = clampedSize(note);
+                    note.width = size.width;
+                    note.height = size.height;
+                    element.style.width = `${note.width}px`;
+                    element.style.height = `${note.height}px`;
+                    updateNoteLanguage(element);
+                    saveNotes(words().saved);
+                });
+
+                bar.addEventListener('pointerdown', event => {
+                    if (event.target.closest('button, input')) return;
+                    event.preventDefault();
+                    bringToFront(note, element);
+                    element.classList.add('is-dragging');
+                    bar.setPointerCapture(event.pointerId);
+                    const startX = event.clientX;
+                    const startY = event.clientY;
+                    const originX = note.x;
+                    const originY = note.y;
+
+                    const move = moveEvent => {
+                        note.x = originX + moveEvent.clientX - startX;
+                        note.y = originY + moveEvent.clientY - startY;
+                        const position = clampedPosition(note, element);
+                        note.x = position.x;
+                        note.y = position.y;
+                        element.style.left = `${note.x}px`;
+                        element.style.top = `${note.y}px`;
+                    };
+                    const end = () => {
+                        element.classList.remove('is-dragging');
+                        bar.removeEventListener('pointermove', move);
+                        bar.removeEventListener('pointerup', end);
+                        bar.removeEventListener('pointercancel', end);
+                        saveNotes(words().saved);
+                    };
+                    bar.addEventListener('pointermove', move);
+                    bar.addEventListener('pointerup', end);
+                    bar.addEventListener('pointercancel', end);
+                });
+
+                element.addEventListener('pointerdown', () => bringToFront(note, element));
+                layer.appendChild(element);
+                const size = clampedSize(note);
+                note.width = size.width;
+                note.height = size.height;
+                element.style.width = `${note.width}px`;
+                element.style.height = `${note.height}px`;
+                const position = clampedPosition(note, element);
+                note.x = position.x;
+                note.y = position.y;
+                element.style.left = `${note.x}px`;
+                element.style.top = `${note.y}px`;
+                element.style.zIndex = note.z;
+                updateNoteLanguage(element);
+                if (focus) requestAnimationFrame(() => textarea.focus());
+            }
+
+            function updateNoteLanguage(element) {
+                const copy = words();
+                const textarea = element.querySelector('.sticky-note__text');
+                const deleteButton = element.querySelector('.sticky-note__delete');
+                textarea.placeholder = copy.placeholder;
+                deleteButton.title = copy.remove;
+                deleteButton.setAttribute('aria-label', copy.remove);
+                const resizeButton = element.querySelector('.sticky-note__resize');
+                const resizeLabel = `${copy.resize} (${Math.round(element.offsetWidth)} × ${Math.round(element.offsetHeight)})`;
+                resizeButton.title = resizeLabel;
+                resizeButton.setAttribute('aria-label', resizeLabel);
+                element.querySelector('.sticky-note__colors').setAttribute('aria-label', language() === 'en' ? 'Note color' : '便利貼顏色');
+                element.querySelectorAll('[data-note-color]').forEach(button => {
+                    const colorName = copy[button.dataset.noteColor];
+                    button.title = colorName;
+                    button.setAttribute('aria-label', colorName);
+                });
+            }
+
+            function updateLanguage() {
+                const copy = words();
+                const addButton = document.getElementById('sticky-note-add');
+                const layer = document.getElementById('sticky-notes-layer');
+                if (!addButton || !layer) return;
+                addButton.title = copy.add;
+                addButton.setAttribute('aria-label', copy.add);
+                addButton.querySelector('.sticky-note-add__label').textContent = copy.add;
+                layer.setAttribute('aria-label', copy.area);
+                layer.querySelectorAll('.sticky-note').forEach(updateNoteLanguage);
+            }
+
+            function addNote() {
+                const offset = notes.length % 7;
+                const note = {
+                    id: makeId(), text: '', color: PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)], customColor: CUSTOM_COLOR_FALLBACK,
+                    x: Math.max(12, Math.min(innerWidth - 282, innerWidth * 0.22 + offset * 22)),
+                    y: Math.max(70, Math.min(innerHeight - 232, innerHeight * 0.28 + offset * 22)),
+                    width: innerWidth <= 768 ? Math.min(240, innerWidth - 20) : 270,
+                    height: innerWidth <= 768 ? 190 : 220,
+                    z: ++topZ
+                };
+                notes.push(note);
+                renderNote(note, true);
+                saveNotes(words().saved);
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                if (!matchMedia('(max-width: 768px)').matches) notes.forEach(note => renderNote(note));
+                document.getElementById('sticky-note-add')?.addEventListener('click', addNote);
+                updateLanguage();
+            });
+            document.addEventListener('schedule:language-changed', updateLanguage);
+            window.addEventListener('resize', () => {
+                document.querySelectorAll('.sticky-note').forEach(element => {
+                    const note = notes.find(item => item.id === element.dataset.noteId);
+                    if (!note) return;
+                    const size = clampedSize(note);
+                    note.width = size.width;
+                    note.height = size.height;
+                    element.style.width = `${note.width}px`;
+                    element.style.height = `${note.height}px`;
+                    const position = clampedPosition(note, element);
+                    note.x = position.x;
+                    note.y = position.y;
+                    element.style.left = `${note.x}px`;
+                    element.style.top = `${note.y}px`;
+                });
+                saveNotes();
+            });
+            window.addEventListener('pagehide', () => saveNotes());
+        })();
+    </script>
+
     <!-- 自定義 tooltip 元素 -->
     <div id="custom-tooltip" class="custom-tooltip"></div>
 
@@ -2910,6 +3468,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             const pdfLink = document.getElementById('pdfLink');
             const pdfIcon = document.getElementById('pdfIcon');
+
+            // 此頁未顯示幾何課本捷徑時，不初始化它的右鍵選單。
+            if (!pdfLink || !pdfIcon) return;
 
 
 

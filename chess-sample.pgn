@@ -1,0 +1,23 @@
+[Event "rated blitz game"]
+[Site "https://lichess.org/yyznGmXs"]
+[Date "2018.12.18"]
+[Round "-"]
+[White "ZensAlviani"]
+[Black "desso2b"]
+[Result "1-0"]
+[GameId "yyznGmXs"]
+[UTCDate "2018.12.18"]
+[UTCTime "09:06:21"]
+[WhiteElo "1582"]
+[BlackElo "1611"]
+[WhiteRatingDiff "+11"]
+[BlackRatingDiff "-11"]
+[Variant "Standard"]
+[TimeControl "180+0"]
+[ECO "C53"]
+[Opening "Italian Game: Classical Variation"]
+[Termination "Normal"]
+
+1. e4 { [%eval 0.12] } 1... e5 { [%eval 0.37] } 2. Nf3 { [%eval 0.23] } 2... Nc6 { [%eval 0.15] } 3. Bc4 { [%eval 0.1] } 3... Bc5 { [%eval 0.24] } 4. c3 { [%eval 0.15] } 4... d6 { [%eval 0.27] } 5. O-O { [%eval 0.17] } 5... Bg4 { [%eval 0.5] } 6. a4 { [%eval 0.42] } 6... a6 { [%eval 0.55] } 7. b4 { [%eval 0.61] } 7... Ba7 { [%eval 0.69] } 8. b5 { [%eval -0.19] } 8... axb5 { [%eval 1.36] } 9. axb5 { [%eval 0.97] } 9... Nce7 { [%eval 1.66] } 10. d3 { [%eval -0.8] } 10... Bxf2+ { [%eval -0.6] } 11. Kxf2 { [%eval -1.88] } 11... Rxa1 { [%eval -1.81] } 12. Kg1 { [%eval -3.1] } 12... Rxb1 { [%eval -2.82] } 13. Ba2 { [%eval -5.74] } 13... Ra1 { [%eval -3.62] } 14. Qb3 { [%eval -6.52] } 14... Qa8 { [%eval -3.29] } 15. Ba3 { [%eval -6.97] } 15... Rxf1+ { [%eval -6.83] } 16. Kxf1 { [%eval -6.8] } 16... Bxf3 { [%eval 8.88] } 17. Qxf7+ { [%eval 8.41] } 17... Kd7 { [%eval #2] } 18. Be6+ { [%eval #1] } 18... Kd8 { [%eval #1] } 19. Qf8# 1-0
+
+

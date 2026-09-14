@@ -130,7 +130,7 @@ function renderSimulation(){
   $('simulation').hidden=false;renderNavigation();
   $('promotion').hidden=!simulation.pending;
   const terminal=simulation.terminal();
-  $('simulation-instruction').textContent=simulation.pending?'請選擇升變棋子。':terminal?terminal:simulation.chess.isCheck()?'被將軍，請先解將。':simulation.future.length?'可向前重播，或改走新的路線。':'移動棋子試走，滾輪前後檢討。';
+  $('simulation-instruction').textContent=simulation.pending?'請選擇升變棋子。':terminal?terminal:simulation.chess.isCheck()?'被將軍，請先解將。':simulation.future.length?'可向前重播，或改走新的路線。':'點棋子再點目的地試走，可用箭頭回看。';
   $('original-game-link').hidden=!current.url;$('original-game-missing').hidden=!!current.url;
   if(current.url){$('original-game-link').href=gamePositionUrl(current.url,current.ply)||current.url;$('original-game-link').textContent=`原始對局 · ${current.moveLabel} ↗`;}
   $('simulation-history').replaceChildren();

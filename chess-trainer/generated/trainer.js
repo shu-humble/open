@@ -2474,7 +2474,7 @@ function Ye() {
   const n = _.chess.history({ verbose: !0 });
   c("simulation").hidden = !1, _t(), c("promotion").hidden = !_.pending;
   const t = _.terminal();
-  c("simulation-instruction").textContent = _.pending ? "請選擇升變棋子。" : t || (_.chess.isCheck() ? "被將軍，請先解將。" : _.future.length ? "可向前重播，或改走新的路線。" : "移動棋子試走，滾輪前後檢討。"), c("original-game-link").hidden = !L.url, c("original-game-missing").hidden = !!L.url, L.url && (c("original-game-link").href = Us(L.url, L.ply) || L.url, c("original-game-link").textContent = `原始對局 · ${L.moveLabel} ↗`), c("simulation-history").replaceChildren(), n.length || (c("simulation-history").textContent = "目前是原題局面。"), n.forEach((e, s) => {
+  c("simulation-instruction").textContent = _.pending ? "請選擇升變棋子。" : t || (_.chess.isCheck() ? "被將軍，請先解將。" : _.future.length ? "可向前重播，或改走新的路線。" : "點棋子再點目的地試走，可用箭頭回看。"), c("original-game-link").hidden = !L.url, c("original-game-missing").hidden = !!L.url, L.url && (c("original-game-link").href = Us(L.url, L.ply) || L.url, c("original-game-link").textContent = `原始對局 · ${L.moveLabel} ↗`), c("simulation-history").replaceChildren(), n.length || (c("simulation-history").textContent = "目前是原題局面。"), n.forEach((e, s) => {
     const i = be.get(mt(n.slice(0, s + 1))), r = i && De[i.kind], o = document.createElement("span");
     o.className = "review-move";
     const a = document.createElement("b");

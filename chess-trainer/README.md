@@ -44,6 +44,8 @@
 
 ## 開發與部署
 
+`node scripts/preview-chess.mjs` 在本機 `http://127.0.0.1:8081/棋感訓練.html` 啟動預覽，不會自動開新視窗。
+
 `npm run build:chess` 重建已簽入版本控制的 `chess-trainer/generated/trainer.js`，供直接靜態託管使用。HTML 不依賴瀏覽器解析 npm 套件。
 `npm run build` 先重建該檔案，再建置既有網站，輸出到 `dist`。
 `node scripts/test-chess.mjs` 驗證分數分類、PGN、連結與實際 Stockfish 分析。

@@ -228,6 +228,35 @@
   transform: scale(1.15);
 }
 
+.social-sidebar a {
+  display: grid;
+  place-items: center;
+  cursor: grab;
+  touch-action: manipulation;
+}
+
+.social-sidebar.is-reordering,
+.social-sidebar.is-reordering a {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.social-sidebar a.is-reordering {
+  z-index: 1;
+  border-radius: 8px;
+  outline: 3px solid rgba(26, 115, 232, 0.38);
+  transform: scale(1.08);
+}
+
+.social-sidebar a.schedule-link-hidden {
+  display: none !important;
+}
+
+.social-sidebar.is-editable-hint {
+  outline: 3px solid rgba(26, 115, 232, 0.34);
+  outline-offset: 3px;
+}
+
         .music-button {
   background: none;/*背景*/
   border: none;/*邊框*/
@@ -489,6 +518,36 @@
     border-color: #1a73e8;
     background: #1a73e8;
     color: white;
+}
+
+.sticky-opacity-control {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 12px;
+    align-items: center;
+    margin: 0 !important;
+}
+
+.sticky-opacity-control > span,
+.sticky-opacity-control output {
+    color: #3c4043;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.sticky-opacity-control output {
+    min-width: 42px;
+    text-align: right;
+}
+
+.google-account-panel .sticky-opacity-control input[type="range"] {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 28px;
+    margin: 0;
+    padding: 0;
+    accent-color: #1a73e8;
+    cursor: pointer;
 }
 
 .google-account-panel label {
@@ -771,6 +830,156 @@
 .link-editor-status.is-success { color: #137333; }
 .link-editor-status.is-error { color: #b3261e; }
 
+.social-catalog {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+    margin-top: 9px;
+}
+
+.social-catalog button {
+    display: flex;
+    min-height: 38px;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 9px;
+    border: 1px solid #c8ccd0;
+    border-radius: 9px;
+    background: #fff;
+    color: #303134;
+    font: 650 13px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    text-align: left;
+    cursor: pointer;
+}
+
+.social-catalog button:hover,
+.social-catalog button:focus-visible {
+    border-color: #1a73e8;
+    outline: 3px solid rgba(26, 115, 232, 0.13);
+}
+
+.social-catalog button[aria-pressed="true"] {
+    border-color: #8ab4f8;
+    background: #e8f0fe;
+    color: #174ea6;
+}
+
+.social-catalog img {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
+    object-fit: contain;
+}
+
+.social-editor-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 10px;
+}
+
+.social-editor-grid .full-width { grid-column: 1 / -1; }
+
+.social-editor-actions,
+.link-check-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.social-editor-actions button,
+.link-check-actions button,
+.link-check-restore {
+    min-height: 38px;
+    padding: 7px 11px;
+    border: 0;
+    border-radius: 9px;
+    font: 700 13px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    cursor: pointer;
+}
+
+.social-editor-save,
+.link-check-run { background: #1a73e8; color: #fff; }
+.social-editor-reset { background: #e8eaed; color: #3c4043; }
+
+.social-editor-status,
+.link-check-status {
+    min-height: 19px;
+    margin: 8px 0 0;
+    color: #5f6368;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.social-editor-status.is-success,
+.link-check-status.is-success { color: #137333; }
+.social-editor-status.is-error,
+.link-check-status.is-error { color: #b3261e; }
+
+.link-check-option {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 8px 0 0 !important;
+    font-weight: 600 !important;
+    line-height: 1.4;
+}
+
+.google-account-panel .link-check-option input {
+    width: 18px;
+    min-height: 18px;
+    margin: 1px 0 0;
+    padding: 0;
+    flex: 0 0 18px;
+}
+
+.link-check-results,
+.link-check-hidden-list {
+    display: grid;
+    gap: 6px;
+    margin: 9px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.link-check-results li,
+.link-check-hidden-list li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 9px;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.link-check-results li > span,
+.link-check-hidden-list li > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.link-check-result-badge {
+    padding: 4px 7px;
+    border-radius: 999px;
+    background: #e8eaed;
+    color: #3c4043;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.link-check-result-badge.is-ok { background: #e6f4ea; color: #137333; }
+.link-check-result-badge.is-failed { background: #fce8e6; color: #b3261e; }
+.link-check-result-badge.is-unknown { background: #fef7e0; color: #7a4d00; }
+.link-check-restore { min-height: 32px; background: #e8f0fe; color: #174ea6; }
+.link-check-empty { color: #80868b; font-style: italic; }
+
+a.schedule-link-hidden {
+    display: none !important;
+}
+
 .custom-user-link {
     display: block;
 }
@@ -816,6 +1025,326 @@
 .settings-done-button {
     background: #202124;
     color: white;
+}
+
+/* 專注模式：以全螢幕遮罩暫時隱藏首頁，Esc 可隨時退出。 */
+.focus-mode-button {
+    position: fixed;
+    top: clamp(8px, 1vw, 16px);
+    left: 50%;
+    z-index: 9998;
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 13px;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    border-radius: 12px;
+    background: rgba(26, 32, 44, 0.93);
+    color: white;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.26);
+    font: 700 14px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    cursor: pointer;
+    transform: translateX(-50%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.focus-mode-button:hover,
+.focus-mode-button:focus-visible {
+    background: #111827;
+    outline: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.focus-mode-button__icon,
+.focus-mode-button__label {
+    color: inherit;
+    font-size: inherit;
+    white-space: nowrap;
+    overflow: visible;
+}
+
+.focus-mode-button__icon {
+    font-size: 20px;
+}
+
+.focus-config-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 10030;
+    background: rgba(5, 8, 14, 0.62);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.focus-config-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 10031;
+    width: min(620px, calc(100vw - 28px));
+    max-height: min(760px, calc(100dvh - 28px));
+    padding: 22px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    background: #f8fafc;
+    color: #172033;
+    box-shadow: 0 24px 75px rgba(0, 0, 0, 0.48);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    transform: translate(-50%, -50%);
+}
+
+.focus-config-backdrop[hidden],
+.focus-config-dialog[hidden],
+.focus-screen[hidden] {
+    display: none;
+}
+
+.focus-config-dialog__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.focus-config-dialog h2,
+.focus-config-dialog h3 {
+    margin: 0;
+}
+
+.focus-config-dialog h2 {
+    font-size: 23px;
+}
+
+.focus-config-dialog h3 {
+    margin-top: 18px;
+    font-size: 16px;
+}
+
+.focus-config-close {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: #e7eaf0;
+    color: #273043;
+    font: 700 24px/1 system-ui, sans-serif;
+    cursor: pointer;
+}
+
+.focus-config-description,
+.focus-image-help,
+.focus-config-status {
+    margin: 8px 0 0;
+    color: #5c6474;
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: normal;
+}
+
+.focus-mode-options {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.focus-mode-option {
+    min-height: 92px;
+    padding: 13px 10px;
+    border: 1px solid #cbd1dc;
+    border-radius: 14px;
+    background: white;
+    color: #172033;
+    cursor: pointer;
+}
+
+.focus-mode-option:hover,
+.focus-mode-option:focus-visible {
+    border-color: #345ca8;
+    outline: 3px solid rgba(52, 92, 168, 0.14);
+}
+
+.focus-mode-option strong,
+.focus-mode-option small {
+    display: block;
+    color: inherit;
+    white-space: normal;
+    overflow: visible;
+}
+
+.focus-mode-option strong {
+    font-size: 15px;
+}
+
+.focus-mode-option small {
+    margin-top: 7px;
+    color: #697386;
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.focus-image-settings {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid #dfe3ea;
+}
+
+.focus-config-dialog label {
+    display: block;
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.focus-config-dialog textarea,
+.focus-config-dialog input {
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 6px;
+    border: 1px solid #b9c0cc;
+    border-radius: 10px;
+    background: white;
+    color: #172033;
+    font: 15px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.focus-config-dialog textarea {
+    min-height: 112px;
+    padding: 10px 12px;
+    resize: vertical;
+}
+
+.focus-config-dialog input {
+    min-height: 42px;
+    padding: 8px 10px;
+}
+
+.focus-interval-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 120px;
+    gap: 12px;
+    align-items: end;
+}
+
+.focus-config-status {
+    min-height: 20px;
+    color: #276749;
+}
+
+.focus-config-status.is-error {
+    color: #b42318;
+}
+
+body.focus-mode-active {
+    overflow: hidden !important;
+}
+
+.focus-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 30000;
+    overflow: hidden;
+    background: #000;
+    color: white;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    outline: none;
+    user-select: none;
+}
+
+.focus-screen__image {
+    position: absolute;
+    inset: -1%;
+    width: 102%;
+    height: 102%;
+    object-fit: cover;
+    opacity: 0;
+    transform: scale(1.015);
+    transition: opacity 1.2s ease;
+}
+
+.focus-screen__image.is-visible {
+    opacity: 1;
+}
+
+.focus-screen__clock {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    padding: 24px;
+    text-align: center;
+}
+
+.focus-screen__time {
+    font-size: clamp(70px, 17vw, 230px);
+    font-weight: 250;
+    line-height: 0.9;
+    letter-spacing: -0.065em;
+    font-variant-numeric: tabular-nums;
+}
+
+.focus-screen__date {
+    margin-top: clamp(20px, 4vw, 42px);
+    color: rgba(255, 255, 255, 0.75);
+    font-size: clamp(17px, 2.4vw, 34px);
+    letter-spacing: 0.04em;
+}
+
+.focus-screen__message {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 28px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: clamp(16px, 2vw, 24px);
+    text-align: center;
+}
+
+.focus-screen__clock[hidden],
+.focus-screen__message[hidden] {
+    display: none;
+}
+
+.focus-screen__exit {
+    position: absolute;
+    top: max(14px, env(safe-area-inset-top));
+    right: max(14px, env(safe-area-inset-right));
+    z-index: 3;
+    min-height: 42px;
+    padding: 9px 13px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 11px;
+    background: rgba(0, 0, 0, 0.52);
+    color: white;
+    font: 650 13px/1 system-ui, sans-serif;
+    cursor: pointer;
+    opacity: 0.14;
+    transition: opacity 0.2s ease;
+}
+
+.focus-screen__hint {
+    position: absolute;
+    right: 20px;
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 3;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.focus-screen.controls-visible .focus-screen__exit,
+.focus-screen.controls-visible .focus-screen__hint,
+.focus-screen__exit:focus-visible {
+    opacity: 1;
 }
 
 .mobile-dashboard-hint {
@@ -930,6 +1459,63 @@
     gap: 4px;
 }
 
+.sticky-note__format {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+    overflow: hidden;
+    scrollbar-width: none;
+}
+
+.sticky-note__format::-webkit-scrollbar { display: none; }
+.sticky-note__more[hidden] { display: none; }
+
+.sticky-note__format button {
+    display: grid;
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: #263840;
+    font: 700 13px/1 system-ui, sans-serif;
+    cursor: pointer;
+}
+
+.sticky-note__format button:hover,
+.sticky-note__format button:focus-visible {
+    background: rgba(31, 57, 70, 0.12);
+    outline: none;
+}
+
+.sticky-note__format > input[type="number"] {
+    width: 42px;
+    height: 24px;
+    flex: 0 0 42px;
+    padding: 2px 3px;
+    border: 1px solid rgba(31, 57, 70, 0.28);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.72);
+    color: #263840;
+    font: 700 11px/1 system-ui, sans-serif;
+}
+
+.sticky-note__format > input[type="color"] {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+    padding: 2px;
+    border: 1px solid rgba(31, 57, 70, 0.28);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.72);
+    cursor: pointer;
+}
+
 .sticky-note__color {
     width: 18px;
     height: 18px;
@@ -1001,9 +1587,119 @@
     resize: none;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+    overflow-y: auto;
+    cursor: text;
 }
 
-.sticky-note__text::placeholder { color: rgba(23, 36, 43, 0.55); }
+.sticky-note__text:empty::before {
+    color: rgba(23, 36, 43, 0.55);
+    content: attr(data-placeholder);
+    pointer-events: none;
+}
+
+.sticky-note__text a {
+    color: #075aa6;
+    font-size: inherit !important;
+    line-height: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.sticky-note__text ol,
+.sticky-note__text ul {
+    margin: 0.25em 0;
+    padding-left: 1.45em;
+}
+
+.sticky-note__link-popover {
+    position: absolute;
+    top: 38px;
+    right: 7px;
+    left: 7px;
+    z-index: 3;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 32px 32px;
+    gap: 5px;
+    padding: 6px;
+    border: 1px solid rgba(31, 57, 70, 0.28);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 5px 16px rgba(0, 0, 0, 0.22);
+}
+
+.sticky-note__link-popover[hidden] { display: none; }
+
+.sticky-note__link-popover input {
+    width: 100%;
+    min-width: 0;
+    height: 32px;
+    padding: 5px 8px;
+    border: 1px solid #9aa0a6;
+    border-radius: 6px;
+    background: #fff;
+    color: #202124;
+    font: 13px/1.2 system-ui, sans-serif;
+}
+
+.sticky-note__link-popover button {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: #e8f0fe;
+    color: #174ea6;
+    font: 700 15px/1 system-ui, sans-serif;
+    cursor: pointer;
+}
+
+.sticky-note__link-popover button:last-child {
+    background: #f1f3f4;
+    color: #5f6368;
+}
+
+.sticky-note__style-popover {
+    position: absolute;
+    top: 38px;
+    right: 7px;
+    left: 7px;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 6px;
+    border: 1px solid rgba(31, 57, 70, 0.28);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 5px 16px rgba(0, 0, 0, 0.22);
+}
+
+.sticky-note__style-popover[hidden] { display: none; }
+
+.sticky-note__advanced-format {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sticky-note__advanced-format button,
+.sticky-note__style-cancel {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: #e8f0fe;
+    color: #174ea6;
+    font: 700 15px/1 system-ui, sans-serif;
+    cursor: pointer;
+}
+
+.sticky-note__style-cancel {
+    margin-left: auto;
+    background: #f1f3f4;
+    color: #5f6368;
+}
 
 .sticky-note__resize {
     position: absolute;
@@ -1098,6 +1794,31 @@
 
     .google-account-button__label {
         display: none;
+    }
+
+    .focus-mode-button {
+        top: max(8px, env(safe-area-inset-top));
+        min-width: 42px;
+        min-height: 42px;
+        padding: 6px 10px;
+    }
+
+    .focus-mode-button__label {
+        display: none;
+    }
+
+    .focus-mode-options {
+        grid-template-columns: 1fr;
+    }
+
+    .focus-mode-option {
+        min-height: 68px;
+        text-align: left;
+    }
+
+    .focus-interval-row {
+        grid-template-columns: 1fr;
+        gap: 0;
     }
 
     .sticky-note-add {
@@ -1450,6 +2171,72 @@
         <span class="sticky-note-add__icon" aria-hidden="true">＋</span>
         <span class="sticky-note-add__label">新增便利貼</span>
     </button>
+
+    <button id="focus-mode-button"
+            class="focus-mode-button"
+            type="button"
+            aria-haspopup="dialog"
+            aria-controls="focus-config-dialog"
+            aria-expanded="false"
+            title="開啟專注模式">
+        <span class="focus-mode-button__icon" aria-hidden="true">◐</span>
+        <span class="focus-mode-button__label">專注模式</span>
+    </button>
+
+    <div id="focus-config-backdrop" class="focus-config-backdrop" hidden></div>
+    <section id="focus-config-dialog"
+             class="focus-config-dialog"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="focus-config-title"
+             tabindex="-1"
+             hidden>
+        <div class="focus-config-dialog__header">
+            <h2 id="focus-config-title">專注模式</h2>
+            <button id="focus-config-close" class="focus-config-close" type="button" aria-label="關閉">×</button>
+        </div>
+        <p class="focus-config-description">暫時隱藏首頁內容，只留下你需要的畫面。按 Esc 可隨時退出。</p>
+
+        <div class="focus-mode-options" role="group" aria-label="選擇專注模式">
+            <button class="focus-mode-option" type="button" data-focus-mode="black">
+                <strong>關燈模式</strong>
+                <small>畫面保持全黑</small>
+            </button>
+            <button class="focus-mode-option" type="button" data-focus-mode="clock">
+                <strong>時鐘模式</strong>
+                <small>只顯示目前時間與日期</small>
+            </button>
+            <button class="focus-mode-option" type="button" data-focus-mode="slideshow">
+                <strong>圖片輪播</strong>
+                <small>依序顯示下方的圖片連結</small>
+            </button>
+        </div>
+
+        <div class="focus-image-settings">
+            <h3>圖片輪播設定</h3>
+            <p class="focus-image-help">每行貼上一個圖片網址；修改後會自動儲存。</p>
+            <label for="focus-image-urls">圖片連結</label>
+            <textarea id="focus-image-urls" spellcheck="false" placeholder="https://example.com/image-1.jpg&#10;https://example.com/image-2.jpg"></textarea>
+            <div class="focus-interval-row">
+                <label for="focus-image-interval">每張圖片顯示秒數</label>
+                <input id="focus-image-interval" type="number" inputmode="numeric" min="3" max="3600" step="1" value="15">
+            </div>
+            <p id="focus-config-status" class="focus-config-status" role="status" aria-live="polite"></p>
+        </div>
+    </section>
+
+    <section id="focus-screen" class="focus-screen" role="dialog" aria-modal="true" aria-label="專注模式" tabindex="-1" hidden>
+        <img class="focus-screen__image" alt="">
+        <img class="focus-screen__image" alt="">
+        <div id="focus-screen-clock" class="focus-screen__clock" hidden>
+            <div id="focus-screen-time" class="focus-screen__time"></div>
+            <div id="focus-screen-date" class="focus-screen__date"></div>
+        </div>
+        <div id="focus-screen-message" class="focus-screen__message" hidden></div>
+        <button id="focus-screen-exit" class="focus-screen__exit" type="button">退出專注模式</button>
+        <p class="focus-screen__hint">按 Esc 或雙擊畫面退出</p>
+    </section>
+
     <div id="sticky-notes-layer" class="sticky-notes-layer" aria-label="便利貼區域"></div>
     <p id="sticky-note-status" class="sticky-note-status" role="status" aria-live="polite"></p>
     <div id="sticky-note-menu" class="sticky-note-menu" role="menu" hidden>
@@ -1469,11 +2256,21 @@
 
         <section class="settings-card" aria-labelledby="schedule-language-title">
             <h3 id="schedule-language-title">顯示語言</h3>
-            <p class="settings-card__description">切換 Schedule 的介面語言；Games 也會沿用這個選擇。</p>
+            <p class="settings-card__description">第一次使用時會跟隨裝置語言（非中文一律使用英文）；手動選擇後，Schedule 與 Games 都會沿用上次的選擇。</p>
             <div class="schedule-language-options" role="group" aria-label="顯示語言">
                 <button class="schedule-language-option" type="button" data-schedule-language="zh" aria-pressed="false">中文</button>
                 <button class="schedule-language-option" type="button" data-schedule-language="en" aria-pressed="false">English</button>
             </div>
+        </section>
+
+        <section class="settings-card" aria-labelledby="sticky-opacity-title">
+            <h3 id="sticky-opacity-title">便利貼</h3>
+            <p class="settings-card__description">調整所有便利貼的背景透明度；文字與工具列會保持清楚。</p>
+            <label class="sticky-opacity-control" for="sticky-background-opacity">
+                <span>背景透明度</span>
+                <output id="sticky-background-opacity-value" for="sticky-background-opacity">100%</output>
+                <input id="sticky-background-opacity" type="range" min="20" max="100" step="5" value="100">
+            </label>
         </section>
 
         <form id="google-account-form" class="settings-card">
@@ -1571,6 +2368,48 @@
             <p id="link-editor-status" class="link-editor-status" role="status" aria-live="polite"></p>
         </form>
 
+        <form id="social-sidebar-form" class="settings-card" aria-labelledby="social-sidebar-title">
+            <h3 id="social-sidebar-title">社群側欄</h3>
+            <p class="settings-card__description">
+                在左側社群欄按右鍵即可直接編輯。點一下常見服務可加入，再點一下即可移除。
+            </p>
+            <div id="social-catalog" class="social-catalog" aria-label="常見社群服務"></div>
+
+            <div class="social-editor-grid">
+                <div class="full-width">
+                    <label for="social-editor-target">要更換圖片的社群</label>
+                    <select id="social-editor-target"></select>
+                </div>
+                <div class="full-width">
+                    <label for="social-editor-icon">圖示網址（可留空自動取得）</label>
+                    <input id="social-editor-icon" type="text" inputmode="url" autocomplete="off" placeholder="https://example.com/icon.png">
+                </div>
+            </div>
+            <div class="social-editor-actions">
+                <button class="social-editor-save" type="submit">儲存圖片</button>
+                <button id="social-editor-reset" class="social-editor-reset" type="button">恢復預設社群</button>
+            </div>
+            <p id="social-editor-status" class="social-editor-status" role="status" aria-live="polite"></p>
+        </form>
+
+        <section id="schedule-link-checker" class="settings-card" aria-labelledby="link-check-title">
+            <h3 id="link-check-title">連結可用性</h3>
+            <p class="settings-card__description">
+                只在你按下「檢查一次」時測試。連續兩次明確失敗的連結可自動隱藏；逾時或網站拒絕瀏覽器檢查時會保留顯示。
+            </p>
+            <label class="link-check-option" for="link-check-auto-hide">
+                <input id="link-check-auto-hide" type="checkbox" checked>
+                <span>檢查後自動隱藏確認失敗的連結</span>
+            </label>
+            <div class="link-check-actions">
+                <button id="link-check-run" class="link-check-run" type="button">檢查一次</button>
+            </div>
+            <p id="link-check-status" class="link-check-status" role="status" aria-live="polite">尚未開始檢查。</p>
+            <ul id="link-check-results" class="link-check-results" aria-label="本次檢查結果"></ul>
+            <h3 id="link-check-hidden-title">已隱藏的連結</h3>
+            <ul id="link-check-hidden-list" class="link-check-hidden-list"></ul>
+        </section>
+
         <section class="settings-card home-screen-card" aria-labelledby="home-screen-title">
             <img class="home-screen-icon" src="apple-touch-icon.png" alt="Schedule 主畫面圖示">
             <div>
@@ -1597,7 +2436,10 @@
                 ['設定', 'Settings'],
                 ['開啟設定', 'Open settings'],
                 ['顯示語言', 'Display language'],
-                ['切換 Schedule 的介面語言；Games 也會沿用這個選擇。', 'Choose the Schedule interface language. Games uses the same setting.'],
+                ['第一次使用時會跟隨裝置語言（非中文一律使用英文）；手動選擇後，Schedule 與 Games 都會沿用上次的選擇。', 'The first visit follows your device language (all non-Chinese languages use English). After you choose manually, Schedule and Games reuse your last choice.'],
+                ['便利貼', 'Sticky notes'],
+                ['調整所有便利貼的背景透明度；文字與工具列會保持清楚。', 'Adjust the background opacity of every sticky note. Text and tools remain clear.'],
+                ['背景透明度', 'Background opacity'],
                 ['管理 Google 帳號、頁面桌布、自訂連結與 iPhone 主畫面捷徑。', 'Manage your Google account, wallpaper, custom links, and iPhone home screen shortcut.'],
                 ['Google 帳號', 'Google account'],
                 ['預設使用帳號 0，可依需要改成 1、2、3…；儲存後會套用到本頁與九宮格的 Google 連結。', 'Account 0 is the default. Change it to 1, 2, 3, and so on when needed; saving applies it to Google links here and on the nine-grid page.'],
@@ -1656,19 +2498,60 @@
                 ['自訂連結已新增。', 'Custom link added.'],
                 ['原有連結已更新。', 'Existing link updated.'],
                 ['自訂連結已更新。', 'Custom link updated.'],
-                ['自訂連結已刪除。', 'Custom link deleted.']
+                ['自訂連結已刪除。', 'Custom link deleted.'],
+                ['社群側欄', 'Social sidebar'],
+                ['在左側社群欄按右鍵即可直接編輯。點一下常見服務可加入，再點一下即可移除。', 'Right-click the social sidebar to edit it. Select a common service to add it, then select it again to remove it.'],
+                ['常見社群服務', 'Common social services'],
+                ['要更換圖片的社群', 'Social icon to change'],
+                ['圖示網址（可留空自動取得）', 'Icon URL (leave blank to find automatically)'],
+                ['儲存圖片', 'Save icon'],
+                ['恢復預設社群', 'Restore default social links'],
+                ['連結可用性', 'Link availability'],
+                ['只在你按下「檢查一次」時測試。連續兩次明確失敗的連結可自動隱藏；逾時或網站拒絕瀏覽器檢查時會保留顯示。', 'Links are tested only when you select Check once. A link that clearly fails twice can be hidden automatically; timed-out or untestable sites remain visible.'],
+                ['檢查後自動隱藏確認失敗的連結', 'Automatically hide links confirmed unavailable'],
+                ['檢查一次', 'Check once'],
+                ['尚未開始檢查。', 'No check has been run yet.'],
+                ['本次檢查結果', 'Results from this check'],
+                ['已隱藏的連結', 'Hidden links'],
+                ['開啟專注模式', 'Open focus mode'],
+                ['專注模式', 'Focus mode'],
+                ['關閉', 'Close'],
+                ['暫時隱藏首頁內容，只留下你需要的畫面。按 Esc 可隨時退出。', 'Temporarily hide the home page and keep only the view you need. Press Esc to exit at any time.'],
+                ['選擇專注模式', 'Choose a focus mode'],
+                ['關燈模式', 'Lights out'],
+                ['畫面保持全黑', 'Keep the screen completely black'],
+                ['時鐘模式', 'Clock'],
+                ['只顯示目前時間與日期', 'Show only the current time and date'],
+                ['圖片輪播', 'Image slideshow'],
+                ['依序顯示下方的圖片連結', 'Cycle through the image links below'],
+                ['圖片輪播設定', 'Slideshow settings'],
+                ['每行貼上一個圖片網址；修改後會自動儲存。', 'Paste one image URL per line. Changes are saved automatically.'],
+                ['圖片連結', 'Image links'],
+                ['每張圖片顯示秒數', 'Seconds per image'],
+                ['退出專注模式', 'Exit focus mode'],
+                ['按 Esc 或雙擊畫面退出', 'Press Esc or double-click to exit'],
+                ['請先輸入至少一個有效的圖片連結。', 'Enter at least one valid image URL first.'],
+                ['設定已自動儲存。', 'Settings saved automatically.'],
+                ['圖片暫時無法載入，稍後會再試一次。', 'Images could not be loaded. The slideshow will try again shortly.']
             ]);
             const textState = new WeakMap();
             const attributeState = new WeakMap();
             let currentLanguage = readLanguage();
             let observer;
 
+            function deviceLanguage() {
+                const preferred = navigator.language || navigator.languages?.[0] || '';
+                return /^zh(?:-|$)/i.test(preferred) ? 'zh' : 'en';
+            }
+
             function readLanguage() {
                 try {
-                    return localStorage.getItem(LANGUAGE_KEY) === 'en' ? 'en' : 'zh';
+                    const saved = localStorage.getItem(LANGUAGE_KEY);
+                    if (saved === 'zh' || saved === 'en') return saved;
                 } catch (error) {
-                    return 'zh';
+                    // 本機儲存不可用時仍依裝置語言顯示。
                 }
+                return deviceLanguage();
             }
 
             function translateText(source) {
@@ -1745,6 +2628,9 @@
                 return [
                     document.getElementById('google-account-button'),
                     document.getElementById('google-account-panel'),
+                    document.getElementById('focus-mode-button'),
+                    document.getElementById('focus-config-dialog'),
+                    document.getElementById('focus-screen'),
                     document.querySelector('.mobile-dashboard-hint')
                 ].filter(Boolean);
             }
@@ -1811,6 +2697,343 @@
                 translateText,
                 refresh: applyLanguage
             };
+        })();
+    </script>
+
+    <script>
+        (() => {
+            const STORAGE_KEY = 'scheduleFocusModeSettingsV1';
+            const DEFAULT_SETTINGS = { urls: [], interval: 15 };
+            let settings = loadSettings();
+            let activeMode = null;
+            let clockTimer = null;
+            let rotationTimer = null;
+            let controlsTimer = null;
+            let saveTimer = null;
+            let imageIndex = -1;
+            let visibleImageIndex = -1;
+            let sessionToken = 0;
+            let focusOwnsFullscreen = false;
+            let lastFocusedElement = null;
+
+            function language() {
+                return window.ScheduleLanguage?.getLanguage?.() === 'en' ? 'en' : 'zh';
+            }
+
+            function copy() {
+                return language() === 'en' ? {
+                    saved: 'Settings saved automatically.',
+                    noImages: 'Enter at least one valid image URL first.',
+                    loadFailed: 'Images could not be loaded. The slideshow will try again shortly.'
+                } : {
+                    saved: '設定已自動儲存。',
+                    noImages: '請先輸入至少一個有效的圖片連結。',
+                    loadFailed: '圖片暫時無法載入，稍後會再試一次。'
+                };
+            }
+
+            function loadSettings() {
+                try {
+                    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                    const urls = Array.isArray(stored?.urls)
+                        ? stored.urls.filter(value => typeof value === 'string').slice(0, 100)
+                        : [];
+                    const interval = Number.isFinite(Number(stored?.interval))
+                        ? Math.min(3600, Math.max(3, Math.round(Number(stored.interval))))
+                        : DEFAULT_SETTINGS.interval;
+                    return { urls, interval };
+                } catch (error) {
+                    return { ...DEFAULT_SETTINGS };
+                }
+            }
+
+            function saveSettings(nextSettings) {
+                settings = nextSettings;
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+                } catch (error) {
+                    // 無法使用本機儲存時，設定仍在本次開啟期間有效。
+                }
+            }
+
+            function normalizedUrls(values) {
+                const allowedProtocols = new Set(['http:', 'https:', 'file:', 'blob:']);
+                const urls = [];
+                values.forEach(value => {
+                    const raw = String(value || '').trim();
+                    if (!raw) return;
+                    try {
+                        const parsed = new URL(raw, document.baseURI);
+                        const isImageData = parsed.protocol === 'data:' && /^data:image\//i.test(raw);
+                        if (!allowedProtocols.has(parsed.protocol) && !isImageData) return;
+                        if (!urls.includes(parsed.href)) urls.push(parsed.href);
+                    } catch (error) {
+                        // 忽略無法解析的單行內容，其餘有效連結仍可輪播。
+                    }
+                });
+                return urls;
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const launchButton = document.getElementById('focus-mode-button');
+                const backdrop = document.getElementById('focus-config-backdrop');
+                const dialog = document.getElementById('focus-config-dialog');
+                const closeButton = document.getElementById('focus-config-close');
+                const urlsInput = document.getElementById('focus-image-urls');
+                const intervalInput = document.getElementById('focus-image-interval');
+                const status = document.getElementById('focus-config-status');
+                const screen = document.getElementById('focus-screen');
+                const clock = document.getElementById('focus-screen-clock');
+                const time = document.getElementById('focus-screen-time');
+                const date = document.getElementById('focus-screen-date');
+                const message = document.getElementById('focus-screen-message');
+                const exitButton = document.getElementById('focus-screen-exit');
+                const images = Array.from(screen.querySelectorAll('.focus-screen__image'));
+
+                if (!launchButton || !dialog || !screen) return;
+
+                urlsInput.value = settings.urls.join('\n');
+                intervalInput.value = String(settings.interval);
+
+                function setStatus(text, isError = false) {
+                    status.textContent = text;
+                    status.classList.toggle('is-error', isError);
+                }
+
+                function readAndSaveSettings(showConfirmation = true) {
+                    const rawUrls = urlsInput.value.split(/\r?\n/).map(value => value.trim()).filter(Boolean).slice(0, 100);
+                    const intervalValue = Number.parseInt(intervalInput.value, 10);
+                    const interval = Number.isFinite(intervalValue)
+                        ? Math.min(3600, Math.max(3, intervalValue))
+                        : DEFAULT_SETTINGS.interval;
+                    if (document.activeElement !== intervalInput || intervalInput.value) {
+                        intervalInput.value = String(interval);
+                    }
+                    saveSettings({ urls: rawUrls, interval });
+                    if (showConfirmation) setStatus(copy().saved);
+                }
+
+                function scheduleSave() {
+                    clearTimeout(saveTimer);
+                    saveTimer = window.setTimeout(() => readAndSaveSettings(), 280);
+                }
+
+                function openDialog() {
+                    lastFocusedElement = document.activeElement;
+                    urlsInput.value = settings.urls.join('\n');
+                    intervalInput.value = String(settings.interval);
+                    setStatus('');
+                    backdrop.hidden = false;
+                    dialog.hidden = false;
+                    launchButton.setAttribute('aria-expanded', 'true');
+                    window.requestAnimationFrame(() => dialog.focus());
+                }
+
+                function closeDialog() {
+                    clearTimeout(saveTimer);
+                    readAndSaveSettings(false);
+                    backdrop.hidden = true;
+                    dialog.hidden = true;
+                    launchButton.setAttribute('aria-expanded', 'false');
+                    if (!activeMode) (lastFocusedElement || launchButton).focus?.();
+                }
+
+                function updateClock() {
+                    const now = new Date();
+                    const locale = language() === 'en' ? 'en-US' : 'zh-TW';
+                    time.textContent = new Intl.DateTimeFormat(locale, {
+                        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+                    }).format(now);
+                    date.textContent = new Intl.DateTimeFormat(locale, {
+                        year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
+                    }).format(now);
+                }
+
+                function clearActiveTimers() {
+                    clearInterval(clockTimer);
+                    clearTimeout(rotationTimer);
+                    clearTimeout(controlsTimer);
+                    clockTimer = null;
+                    rotationTimer = null;
+                    controlsTimer = null;
+                }
+
+                function showControls() {
+                    if (!activeMode) return;
+                    screen.classList.add('controls-visible');
+                    clearTimeout(controlsTimer);
+                    controlsTimer = window.setTimeout(() => {
+                        if (document.activeElement !== exitButton) screen.classList.remove('controls-visible');
+                    }, 2200);
+                }
+
+                function showNextImage(attempt = 0, token = sessionToken) {
+                    if (activeMode !== 'slideshow' || token !== sessionToken) return;
+                    const urls = normalizedUrls(settings.urls);
+                    if (!urls.length) {
+                        exitFocusMode();
+                        openDialog();
+                        setStatus(copy().noImages, true);
+                        return;
+                    }
+
+                    if (attempt >= urls.length) {
+                        message.textContent = copy().loadFailed;
+                        message.hidden = false;
+                        rotationTimer = window.setTimeout(() => showNextImage(0, token), settings.interval * 1000);
+                        return;
+                    }
+
+                    imageIndex = (imageIndex + 1) % urls.length;
+                    const url = urls[imageIndex];
+                    const loader = new Image();
+                    loader.referrerPolicy = 'no-referrer';
+                    loader.onload = () => {
+                        if (activeMode !== 'slideshow' || token !== sessionToken) return;
+                        const nextIndex = visibleImageIndex === 0 ? 1 : 0;
+                        const nextImage = images[nextIndex];
+                        const oldImage = visibleImageIndex >= 0 ? images[visibleImageIndex] : null;
+                        nextImage.referrerPolicy = 'no-referrer';
+                        nextImage.src = url;
+                        nextImage.classList.add('is-visible');
+                        oldImage?.classList.remove('is-visible');
+                        visibleImageIndex = nextIndex;
+                        message.hidden = true;
+                        rotationTimer = window.setTimeout(() => showNextImage(0, token), settings.interval * 1000);
+                    };
+                    loader.onerror = () => {
+                        if (activeMode === 'slideshow' && token === sessionToken) showNextImage(attempt + 1, token);
+                    };
+                    loader.src = url;
+                }
+
+                function resetFocusScreen() {
+                    clock.hidden = true;
+                    message.hidden = true;
+                    message.textContent = '';
+                    images.forEach(image => {
+                        image.classList.remove('is-visible');
+                        image.removeAttribute('src');
+                    });
+                    imageIndex = -1;
+                    visibleImageIndex = -1;
+                }
+
+                function requestFocusFullscreen() {
+                    focusOwnsFullscreen = false;
+                    try {
+                        const request = screen.requestFullscreen
+                            ? screen.requestFullscreen({ navigationUI: 'hide' })
+                            : screen.webkitRequestFullscreen?.();
+                        if (request?.then) request.then(() => {
+                            focusOwnsFullscreen = (document.fullscreenElement || document.webkitFullscreenElement) === screen;
+                        }).catch(() => {
+                            focusOwnsFullscreen = false;
+                        });
+                        else if (!screen.requestFullscreen && !screen.webkitRequestFullscreen) focusOwnsFullscreen = false;
+                    } catch (error) {
+                        focusOwnsFullscreen = false;
+                    }
+                }
+
+                function startFocusMode(mode) {
+                    clearTimeout(saveTimer);
+                    readAndSaveSettings(false);
+                    if (mode === 'slideshow' && !normalizedUrls(settings.urls).length) {
+                        setStatus(copy().noImages, true);
+                        urlsInput.focus();
+                        return;
+                    }
+
+                    closeDialog();
+                    clearActiveTimers();
+                    resetFocusScreen();
+                    sessionToken += 1;
+                    activeMode = mode;
+                    screen.dataset.mode = mode;
+                    screen.hidden = false;
+                    document.body.classList.add('focus-mode-active');
+                    requestFocusFullscreen();
+                    showControls();
+
+                    if (mode === 'clock') {
+                        clock.hidden = false;
+                        updateClock();
+                        clockTimer = window.setInterval(updateClock, 1000);
+                    } else if (mode === 'slideshow') {
+                        showNextImage(0, sessionToken);
+                    }
+
+                    window.requestAnimationFrame(() => screen.focus({ preventScroll: true }));
+                }
+
+                function exitFocusMode() {
+                    if (!activeMode) return;
+                    sessionToken += 1;
+                    clearActiveTimers();
+                    resetFocusScreen();
+                    activeMode = null;
+                    const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement;
+                    const shouldExitFullscreen = focusOwnsFullscreen && fullscreenElement;
+                    focusOwnsFullscreen = false;
+                    screen.hidden = true;
+                    screen.classList.remove('controls-visible');
+                    screen.removeAttribute('data-mode');
+                    document.body.classList.remove('focus-mode-active');
+                    if (shouldExitFullscreen) {
+                        const exit = document.exitFullscreen
+                            ? document.exitFullscreen()
+                            : document.webkitExitFullscreen?.();
+                        exit?.catch?.(() => {});
+                    }
+                    launchButton.focus({ preventScroll: true });
+                }
+
+                launchButton.addEventListener('click', openDialog);
+                closeButton.addEventListener('click', closeDialog);
+                backdrop.addEventListener('click', closeDialog);
+                urlsInput.addEventListener('input', scheduleSave);
+                intervalInput.addEventListener('input', scheduleSave);
+                intervalInput.addEventListener('change', () => readAndSaveSettings());
+                dialog.querySelectorAll('[data-focus-mode]').forEach(button => {
+                    button.addEventListener('click', () => startFocusMode(button.dataset.focusMode));
+                });
+                exitButton.addEventListener('click', exitFocusMode);
+                exitButton.addEventListener('blur', () => {
+                    if (activeMode) screen.classList.remove('controls-visible');
+                });
+                screen.addEventListener('pointermove', showControls);
+                screen.addEventListener('pointerdown', showControls);
+                screen.addEventListener('dblclick', event => {
+                    if (!event.target.closest('button')) exitFocusMode();
+                });
+                document.addEventListener('keydown', event => {
+                    if (event.key !== 'Escape') return;
+                    if (activeMode) {
+                        event.preventDefault();
+                        exitFocusMode();
+                    } else if (!dialog.hidden) {
+                        event.preventDefault();
+                        closeDialog();
+                    }
+                });
+                document.addEventListener('visibilitychange', () => {
+                    if (!document.hidden && activeMode === 'clock') updateClock();
+                });
+                const handleFullscreenChange = () => {
+                    const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement;
+                    if (fullscreenElement === screen) {
+                        focusOwnsFullscreen = true;
+                    } else if (activeMode && focusOwnsFullscreen && !fullscreenElement) {
+                        exitFocusMode();
+                    }
+                };
+                document.addEventListener('fullscreenchange', handleFullscreenChange);
+                document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+                document.addEventListener('schedule:language-changed', () => {
+                    if (activeMode === 'clock') updateClock();
+                });
+            });
         })();
     </script>
 
@@ -1941,6 +3164,8 @@
 
             function rewriteGoogleLink(link, index) {
                 if (!(link instanceof HTMLAnchorElement)) return;
+                // 個別標記的連結使用指定帳號，不跟隨全站 Google 帳號切換。
+                if (link.dataset.googleAccountFixed === 'true') return;
 
                 const currentHref = link.getAttribute('href');
                 if (!currentHref) return;
@@ -2728,6 +3953,7 @@
     <script>
         (() => {
             const STORAGE_KEY = 'scheduleStickyNotesV1';
+            const BACKGROUND_OPACITY_KEY = 'scheduleStickyNoteBackgroundOpacity';
             const PRESET_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'white'];
             const COLORS = new Set([...PRESET_COLORS, 'custom']);
             const CUSTOM_COLOR_FALLBACK = '#c8b6ff';
@@ -2738,20 +3964,30 @@
             const COPY = {
                 zh: {
                     add: '新增便利貼', area: '便利貼區域', placeholder: '在這裡輸入內容…',
-                    remove: '刪除便利貼', blue: '藍色', yellow: '黃色', pink: '粉紅色', green: '綠色', custom: '自訂顏色',
-                    resize: '調整便利貼大小', saved: '便利貼已自動儲存', removed: '便利貼已刪除',
-                    deleteAll: '刪除所有便利貼', deleteAllConfirm: '確定要刪除所有便利貼嗎？', allRemoved: '所有便利貼已刪除', noneToRemove: '目前沒有便利貼'
+                    remove: '刪除便利貼', red: '紅色', orange: '橙色', yellow: '黃色', green: '綠色', blue: '藍色', purple: '紫色', pink: '粉紅色', white: '白色', custom: '自訂顏色',
+                    resize: '調整便利貼大小', saved: '便利貼已自動儲存', removed: '便利貼已刪除，可按 Ctrl+Z 復原',
+                    deleteAll: '刪除所有便利貼', deleteAllConfirm: '確定要刪除所有便利貼嗎？', allRemoved: '所有便利貼已刪除', noneToRemove: '目前沒有便利貼',
+                    restored: '已復原刪除的便利貼', bold: '粗體（Ctrl+B）', italic: '斜體（Ctrl+I）', underline: '底線（Ctrl+U）', link: '插入連結（Ctrl+K）',
+                    orderedList: '編號清單（再按一次取消）', unorderedList: '項目清單（再按一次取消）',
+                    fontSize: '文字大小（可輸入 8–96）', textColor: '文字顏色', more: '更多文字格式', cancel: '收起格式工具',
+                    linkPrompt: '輸入連結網址', invalidLink: '請輸入有效的 http、https 或 mailto 連結'
                 },
                 en: {
                     add: 'Add sticky note', area: 'Sticky notes', placeholder: 'Type your note here…',
-                    remove: 'Delete note', blue: 'Blue', yellow: 'Yellow', pink: 'Pink', green: 'Green', custom: 'Custom color',
-                    resize: 'Resize note', saved: 'Sticky note saved automatically', removed: 'Sticky note deleted',
-                    deleteAll: 'Delete all sticky notes', deleteAllConfirm: 'Delete all sticky notes?', allRemoved: 'All sticky notes deleted', noneToRemove: 'There are no sticky notes'
+                    remove: 'Delete note', red: 'Red', orange: 'Orange', yellow: 'Yellow', green: 'Green', blue: 'Blue', purple: 'Purple', pink: 'Pink', white: 'White', custom: 'Custom color',
+                    resize: 'Resize note', saved: 'Sticky note saved automatically', removed: 'Sticky note deleted. Press Ctrl+Z to restore it.',
+                    deleteAll: 'Delete all sticky notes', deleteAllConfirm: 'Delete all sticky notes?', allRemoved: 'All sticky notes deleted', noneToRemove: 'There are no sticky notes',
+                    restored: 'Deleted sticky note restored', bold: 'Bold (Ctrl+B)', italic: 'Italic (Ctrl+I)', underline: 'Underline (Ctrl+U)', link: 'Insert link (Ctrl+K)',
+                    orderedList: 'Numbered list (select again to turn off)', unorderedList: 'Bulleted list (select again to turn off)',
+                    fontSize: 'Text size (enter 8–96)', textColor: 'Text color', more: 'More text formatting', cancel: 'Close formatting tools',
+                    linkPrompt: 'Enter a link URL', invalidLink: 'Enter a valid http, https, or mailto link'
                 }
             };
             let notes = readNotes();
+            let backgroundOpacity = readBackgroundOpacity();
             let topZ = notes.reduce((highest, note) => Math.max(highest, Number(note.z) || 0), 0);
             let nextNoteColor = PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)];
+            const deletedNotes = [];
 
             function language() {
                 return window.ScheduleLanguage?.getLanguage?.() === 'en' ? 'en' : 'zh';
@@ -2759,8 +3995,68 @@
 
             function words() { return COPY[language()]; }
 
+            function readBackgroundOpacity() {
+                try {
+                    const saved = Number(localStorage.getItem(BACKGROUND_OPACITY_KEY));
+                    if (Number.isFinite(saved) && saved >= 0.2 && saved <= 1) return saved;
+                } catch (error) {}
+                return 1;
+            }
+
+            function saveBackgroundOpacity() {
+                try { localStorage.setItem(BACKGROUND_OPACITY_KEY, String(backgroundOpacity)); }
+                catch (error) { /* 無法儲存時仍套用於本次開啟。 */ }
+            }
+
             function makeId() {
                 return self.crypto?.randomUUID?.() || `note-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+            }
+
+            function plainTextToHtml(value) {
+                const holder = document.createElement('div');
+                holder.textContent = typeof value === 'string' ? value : '';
+                return holder.innerHTML.replace(/\r?\n/g, '<br>');
+            }
+
+            function safeLink(value) {
+                const raw = String(value || '').trim();
+                if (!raw) return '';
+                const candidate = /^[a-z][a-z0-9+.-]*:/i.test(raw) ? raw : `https://${raw}`;
+                try {
+                    const url = new URL(candidate, document.baseURI);
+                    return ['http:', 'https:', 'mailto:'].includes(url.protocol) ? url.href : '';
+                } catch (error) { return ''; }
+            }
+
+            function sanitizeNoteHtml(value) {
+                const template = document.createElement('template');
+                template.innerHTML = String(value || '').slice(0, 50000);
+                const allowed = new Set(['B', 'STRONG', 'I', 'EM', 'U', 'A', 'BR', 'DIV', 'P', 'UL', 'OL', 'LI', 'FONT', 'SPAN']);
+                const elements = Array.from(template.content.querySelectorAll('*'));
+                elements.forEach(element => {
+                    if (!allowed.has(element.tagName)) {
+                        element.replaceWith(...element.childNodes);
+                        return;
+                    }
+                    const href = element.tagName === 'A' ? safeLink(element.getAttribute('href')) : '';
+                    const fontSize = /^(?:[1-9]|[1-8]\d|9[0-6])px$/.test(element.style.fontSize || '') ? element.style.fontSize : '';
+                    const textColor = /^(?:#[0-9a-f]{3,8}|rgba?\([\d\s,.%]+\))$/i.test(element.style.color || element.getAttribute('color') || '')
+                        ? (element.style.color || element.getAttribute('color')) : '';
+                    Array.from(element.attributes).forEach(attribute => element.removeAttribute(attribute.name));
+                    if (element.tagName === 'A') {
+                        if (!href) {
+                            element.replaceWith(...element.childNodes);
+                            return;
+                        }
+                        element.href = href;
+                        element.target = '_blank';
+                        element.rel = 'noopener noreferrer';
+                    } else if (element.tagName === 'FONT' || element.tagName === 'SPAN') {
+                        if (fontSize) element.style.fontSize = fontSize;
+                        if (textColor) element.style.color = textColor;
+                    }
+                });
+                return template.innerHTML;
             }
 
             function readNotes() {
@@ -2769,9 +4065,9 @@
                     if (!Array.isArray(stored)) return [];
                     return stored.filter(note => note && typeof note.id === 'string').map((note, index) => ({
                         id: note.id,
-                        text: typeof note.text === 'string' ? note.text : '',
+                        html: sanitizeNoteHtml(typeof note.html === 'string' ? note.html : plainTextToHtml(note.text)),
                         color: COLORS.has(note.color) ? note.color : 'blue',
-                        customColor: /^#[0-9a-f]{6}$/i.test(note.customColor || '') ? note.customColor : CUSTOM_COLOR_FALLBACK,
+                        customColor: /^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i.test(note.customColor || '') ? String(note.customColor).slice(0, 7) : CUSTOM_COLOR_FALLBACK,
                         x: Number.isFinite(Number(note.x)) ? Number(note.x) : 120 + index * 24,
                         y: Number.isFinite(Number(note.y)) ? Number(note.y) : 90 + index * 24,
                         width: Number.isFinite(Number(note.width)) ? Number(note.width) : 270,
@@ -2784,7 +4080,10 @@
             }
 
             function saveNotes(message = '') {
-                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(notes)); } catch (error) {}
+                try {
+                    const safeNotes = notes.map(note => ({ ...note, html: sanitizeNoteHtml(note.html) }));
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(safeNotes));
+                } catch (error) {}
                 if (message) {
                     const status = document.getElementById('sticky-note-status');
                     if (status) status.textContent = message;
@@ -2814,21 +4113,28 @@
                 element.style.zIndex = note.z;
             }
 
-            function lighterColor(hex, ratio = 0.55) {
+            function colorWithOpacity(hex, opacity = backgroundOpacity) {
                 const value = /^#[0-9a-f]{6}$/i.test(hex || '') ? hex.slice(1) : CUSTOM_COLOR_FALLBACK.slice(1);
                 const channels = [0, 2, 4].map(index => parseInt(value.slice(index, index + 2), 16));
-                return `rgb(${channels.map(channel => Math.round(channel + (255 - channel) * ratio)).join(', ')})`;
+                return opacity < 1 ? `rgba(${channels.join(', ')}, ${opacity.toFixed(2)})` : `rgb(${channels.join(', ')})`;
+            }
+
+            function lighterColor(hex, ratio = 0.55, opacity = 1) {
+                const value = /^#[0-9a-f]{6}$/i.test(hex || '') ? hex.slice(1) : CUSTOM_COLOR_FALLBACK.slice(1);
+                const channels = [0, 2, 4].map(index => parseInt(value.slice(index, index + 2), 16));
+                const lightened = channels.map(channel => Math.round(channel + (255 - channel) * ratio));
+                return opacity < 1
+                    ? `rgba(${lightened.join(', ')}, ${opacity.toFixed(2)})`
+                    : `rgb(${lightened.join(', ')})`;
             }
 
             function applyNoteColor(note, element) {
                 element.dataset.color = note.color;
-                if (note.color === 'custom') {
-                    element.style.setProperty('--note-color', note.customColor);
-                    element.style.setProperty('--note-bar', lighterColor(note.customColor));
-                } else {
-                    element.style.removeProperty('--note-color');
-                    element.style.removeProperty('--note-bar');
-                }
+                const baseColor = note.color === 'custom'
+                    ? note.customColor
+                    : (COLOR_VALUES[note.color] || COLOR_VALUES.blue);
+                element.style.setProperty('--note-color', colorWithOpacity(baseColor));
+                element.style.setProperty('--note-bar', lighterColor(baseColor, 0.55, backgroundOpacity));
             }
 
             function syncColorSelection(note, colors) {
@@ -2865,6 +4171,26 @@
                 menu.querySelector('button')?.focus();
             }
 
+            function rememberDeletion(batch) {
+                if (!batch.length) return;
+                deletedNotes.push(batch.map(note => ({ ...note, html: sanitizeNoteHtml(note.html) })));
+                if (deletedNotes.length > 20) deletedNotes.shift();
+            }
+
+            function restoreDeletedNotes() {
+                const batch = deletedNotes.pop();
+                if (!batch?.length || matchMedia('(max-width: 768px)').matches) return false;
+                batch.forEach(saved => {
+                    const note = { ...saved };
+                    if (notes.some(item => item.id === note.id)) note.id = makeId();
+                    note.z = ++topZ;
+                    notes.push(note);
+                    renderNote(note);
+                });
+                saveNotes(words().restored);
+                return true;
+            }
+
             function deleteAllNotes() {
                 const copy = words();
                 hideNoteMenu();
@@ -2873,6 +4199,7 @@
                     return;
                 }
                 if (!confirm(copy.deleteAllConfirm)) return;
+                rememberDeletion(notes);
                 notes = [];
                 document.getElementById('sticky-notes-layer')?.replaceChildren();
                 saveNotes(copy.allRemoved);
@@ -2888,16 +4215,70 @@
                 element.innerHTML = `
                     <div class="sticky-note__bar">
                         <div class="sticky-note__colors" role="group"></div>
+                        <div class="sticky-note__format" role="toolbar">
+                            <button class="sticky-note__overflowable" type="button" data-note-command="insertOrderedList">1.</button>
+                            <button class="sticky-note__overflowable" type="button" data-note-command="insertUnorderedList">•</button>
+                            <input class="sticky-note__font-size" type="number" inputmode="numeric" min="8" max="96" step="1" value="18">
+                            <input class="sticky-note__text-color" type="color" value="#17242b">
+                            <button class="sticky-note__overflowable" type="button" data-note-command="bold"><strong>B</strong></button>
+                            <button class="sticky-note__overflowable" type="button" data-note-command="italic"><em>I</em></button>
+                            <button class="sticky-note__overflowable" type="button" data-note-command="underline"><u>U</u></button>
+                            <button class="sticky-note__overflowable" type="button" data-note-command="link" aria-keyshortcuts="Control+K Meta+K">↗</button>
+                            <button class="sticky-note__more" type="button" data-note-command="more" aria-expanded="false" hidden>⋯</button>
+                        </div>
                         <button class="sticky-note__delete" type="button">×</button>
                     </div>
-                    <textarea class="sticky-note__text" maxlength="5000"></textarea>
+                    <div class="sticky-note__link-popover" hidden>
+                        <input class="sticky-note__link-input" type="url" inputmode="url" autocomplete="off" value="https://">
+                        <button class="sticky-note__link-apply" type="button">✓</button>
+                        <button class="sticky-note__link-cancel" type="button">×</button>
+                    </div>
+                    <div class="sticky-note__style-popover" hidden>
+                        <div class="sticky-note__advanced-format" role="toolbar">
+                            <button class="sticky-note__style-cancel" type="button">×</button>
+                        </div>
+                    </div>
+                    <div class="sticky-note__text" contenteditable="true" role="textbox" aria-multiline="true" spellcheck="true"></div>
                     <button class="sticky-note__resize" type="button"></button>`;
 
                 const bar = element.querySelector('.sticky-note__bar');
                 const colors = element.querySelector('.sticky-note__colors');
-                const textarea = element.querySelector('.sticky-note__text');
+                const editor = element.querySelector('.sticky-note__text');
                 const deleteButton = element.querySelector('.sticky-note__delete');
                 const resizeButton = element.querySelector('.sticky-note__resize');
+                const linkPopover = element.querySelector('.sticky-note__link-popover');
+                const linkInput = element.querySelector('.sticky-note__link-input');
+                const linkApply = element.querySelector('.sticky-note__link-apply');
+                const linkCancel = element.querySelector('.sticky-note__link-cancel');
+                const stylePopover = element.querySelector('.sticky-note__style-popover');
+                const fontSizeInput = element.querySelector('.sticky-note__font-size');
+                const textColorInput = element.querySelector('.sticky-note__text-color');
+                const styleCancel = element.querySelector('.sticky-note__style-cancel');
+                const moreButton = element.querySelector('[data-note-command="more"]');
+                const formatBar = element.querySelector('.sticky-note__format');
+                const advancedFormat = element.querySelector('.sticky-note__advanced-format');
+                const overflowButtons = Array.from(element.querySelectorAll('.sticky-note__overflowable'));
+                const toolbarItems = Array.from(formatBar.children).filter(item => item !== moreButton);
+                let pendingLinkRange = null;
+                let pendingStyleRange = null;
+                let toolbarObserver;
+
+                function layoutToolbar() {
+                    toolbarItems.forEach(item => formatBar.insertBefore(item, moreButton));
+                    moreButton.hidden = true;
+                    for (let index = overflowButtons.length - 1; index >= 0 && formatBar.scrollWidth > formatBar.clientWidth + 1; index--) {
+                        moreButton.hidden = false;
+                        advancedFormat.insertBefore(overflowButtons[index], styleCancel);
+                    }
+                    overflowButtons.filter(button => button.parentElement === advancedFormat)
+                        .forEach(button => advancedFormat.insertBefore(button, styleCancel));
+                    const hasOverflow = overflowButtons.some(button => button.parentElement === advancedFormat);
+                    moreButton.hidden = !hasOverflow;
+                    if (!hasOverflow) {
+                        stylePopover.hidden = true;
+                        moreButton.setAttribute('aria-expanded', 'false');
+                    }
+                }
 
                 const customColor = document.createElement('input');
                 customColor.className = 'sticky-note__color sticky-note__custom-color';
@@ -2922,14 +4303,191 @@
                 });
                 colors.appendChild(customColor);
 
-                textarea.value = note.text;
-                textarea.addEventListener('input', () => {
-                    note.text = textarea.value;
+                editor.innerHTML = sanitizeNoteHtml(note.html);
+                note.html = editor.innerHTML;
+                const syncEditor = () => {
+                    editor.querySelectorAll('a[href]').forEach(anchor => {
+                        const href = safeLink(anchor.getAttribute('href'));
+                        if (!href) return;
+                        anchor.href = href;
+                        anchor.target = '_blank';
+                        anchor.rel = 'noopener noreferrer';
+                    });
+                    note.html = sanitizeNoteHtml(editor.innerHTML);
                     saveNotes(words().saved);
+                };
+                editor.addEventListener('input', syncEditor);
+                editor.addEventListener('pointerdown', () => bringToFront(note, element));
+                editor.addEventListener('click', event => {
+                    const anchor = event.target.closest?.('a[href]');
+                    if (!anchor || !editor.contains(anchor)) return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const opened = window.open(anchor.href, '_blank', 'noopener,noreferrer');
+                    if (opened) opened.opener = null;
                 });
-                textarea.addEventListener('pointerdown', () => bringToFront(note, element));
+                editor.addEventListener('beforeinput', event => {
+                    if (event.inputType.startsWith('insert') && editor.innerText.length >= 5000 && !getSelection()?.toString()) event.preventDefault();
+                });
+                editor.addEventListener('paste', event => {
+                    event.preventDefault();
+                    const available = Math.max(0, 5000 - editor.innerText.length + (getSelection()?.toString().length || 0));
+                    const text = event.clipboardData?.getData('text/plain').slice(0, available) || '';
+                    document.execCommand('insertText', false, text);
+                });
+
+                function applyFormat(command) {
+                    editor.focus();
+                    document.execCommand(command, false, null);
+                    syncEditor();
+                }
+
+                function openLinkEditor() {
+                    const selection = getSelection();
+                    pendingLinkRange = null;
+                    if (selection?.rangeCount) {
+                        const range = selection.getRangeAt(0);
+                        if (editor.contains(range.commonAncestorContainer)) pendingLinkRange = range.cloneRange();
+                    }
+                    stylePopover.hidden = true;
+                    moreButton.setAttribute('aria-expanded', 'false');
+                    linkPopover.hidden = false;
+                    linkInput.value = 'https://';
+                    requestAnimationFrame(() => {
+                        linkInput.focus();
+                        linkInput.select();
+                    });
+                }
+
+                function closeLinkEditor() {
+                    linkPopover.hidden = true;
+                    pendingLinkRange = null;
+                    editor.focus();
+                }
+
+                function insertLink() {
+                    const href = safeLink(linkInput.value);
+                    if (!href) { saveNotes(words().invalidLink); return; }
+                    const selection = getSelection();
+                    editor.focus();
+                    if (pendingLinkRange) {
+                        selection.removeAllRanges();
+                        selection.addRange(pendingLinkRange);
+                    }
+                    if (pendingLinkRange && !pendingLinkRange.collapsed) {
+                        document.execCommand('createLink', false, href);
+                    } else {
+                        const anchor = document.createElement('a');
+                        anchor.href = href;
+                        anchor.target = '_blank';
+                        anchor.rel = 'noopener noreferrer';
+                        anchor.textContent = href;
+                        const range = pendingLinkRange || document.createRange();
+                        if (!pendingLinkRange) {
+                            range.selectNodeContents(editor);
+                            range.collapse(false);
+                        }
+                        range.deleteContents();
+                        range.insertNode(anchor);
+                        range.setStartAfter(anchor);
+                        range.collapse(true);
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                    }
+                    linkPopover.hidden = true;
+                    pendingLinkRange = null;
+                    syncEditor();
+                }
+
+                function rememberTextSelection() {
+                    const selection = getSelection();
+                    pendingStyleRange = null;
+                    if (selection?.rangeCount) {
+                        const range = selection.getRangeAt(0);
+                        if (editor.contains(range.commonAncestorContainer)) pendingStyleRange = range.cloneRange();
+                    }
+                }
+
+                function openStyleEditor() {
+                    linkPopover.hidden = true;
+                    stylePopover.hidden = !stylePopover.hidden;
+                    moreButton.setAttribute('aria-expanded', String(!stylePopover.hidden));
+                }
+
+                function closeStyleEditor() {
+                    stylePopover.hidden = true;
+                    moreButton.setAttribute('aria-expanded', 'false');
+                    editor.focus();
+                }
+
+                function restoreTextSelection() {
+                    if (!pendingStyleRange) return false;
+                    const selection = getSelection();
+                    editor.focus();
+                    selection.removeAllRanges();
+                    selection.addRange(pendingStyleRange);
+                    return true;
+                }
+
+                function applyFontSize() {
+                    if (!restoreTextSelection()) return;
+                    const size = Math.min(96, Math.max(8, Number.parseInt(fontSizeInput.value, 10) || 18));
+                    fontSizeInput.value = String(size);
+                    document.execCommand('fontSize', false, '7');
+                    editor.querySelectorAll('font[size="7"]').forEach(font => {
+                        font.removeAttribute('size');
+                        font.style.fontSize = `${size}px`;
+                    });
+                    pendingStyleRange = null;
+                    syncEditor();
+                }
+
+                function applyTextColor() {
+                    if (!restoreTextSelection()) return;
+                    document.execCommand('foreColor', false, textColorInput.value);
+                    pendingStyleRange = null;
+                    syncEditor();
+                }
+
+                editor.addEventListener('keydown', event => {
+                    if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
+                    const key = event.key.toLowerCase();
+                    const commands = { b: 'bold', i: 'italic', u: 'underline' };
+                    if (commands[key]) {
+                        event.preventDefault();
+                        applyFormat(commands[key]);
+                    } else if (key === 'k') {
+                        event.preventDefault();
+                        openLinkEditor();
+                    }
+                });
+                element.querySelectorAll('[data-note-command]').forEach(button => {
+                    button.addEventListener('pointerdown', event => event.preventDefault());
+                    button.addEventListener('click', () => {
+                        const command = button.dataset.noteCommand;
+                        if (command === 'link') openLinkEditor();
+                        else if (command === 'more') openStyleEditor();
+                        else applyFormat(command);
+                    });
+                });
+                linkApply.addEventListener('click', insertLink);
+                linkCancel.addEventListener('click', closeLinkEditor);
+                linkInput.addEventListener('keydown', event => {
+                    if (event.key === 'Enter') { event.preventDefault(); insertLink(); }
+                    else if (event.key === 'Escape') { event.preventDefault(); closeLinkEditor(); }
+                });
+                styleCancel.addEventListener('click', closeStyleEditor);
+                fontSizeInput.addEventListener('pointerdown', rememberTextSelection);
+                fontSizeInput.addEventListener('keydown', event => {
+                    if (event.key === 'Enter') { event.preventDefault(); applyFontSize(); }
+                });
+                fontSizeInput.addEventListener('change', applyFontSize);
+                textColorInput.addEventListener('pointerdown', rememberTextSelection);
+                textColorInput.addEventListener('change', applyTextColor);
 
                 deleteButton.addEventListener('click', () => {
+                    toolbarObserver?.disconnect();
+                    rememberDeletion([note]);
                     notes = notes.filter(item => item.id !== note.id);
                     element.remove();
                     saveNotes(words().removed);
@@ -2986,7 +4544,7 @@
                 });
 
                 bar.addEventListener('pointerdown', event => {
-                    if (event.target.closest('button, input')) return;
+                    if (event.target.closest('button, input, label')) return;
                     event.preventDefault();
                     bringToFront(note, element);
                     element.classList.add('is-dragging');
@@ -3017,7 +4575,9 @@
                     bar.addEventListener('pointercancel', end);
                 });
 
-                element.addEventListener('pointerdown', () => bringToFront(note, element));
+                element.addEventListener('pointerdown', event => {
+                    bringToFront(note, element);
+                });
                 layer.appendChild(element);
                 const size = clampedSize(note);
                 note.width = size.width;
@@ -3031,14 +4591,18 @@
                 element.style.top = `${note.y}px`;
                 element.style.zIndex = note.z;
                 updateNoteLanguage(element);
-                if (focus) requestAnimationFrame(() => textarea.focus());
+                toolbarObserver = new ResizeObserver(() => layoutToolbar());
+                toolbarObserver.observe(element);
+                requestAnimationFrame(layoutToolbar);
+                if (focus) requestAnimationFrame(() => editor.focus());
             }
 
             function updateNoteLanguage(element) {
                 const copy = words();
-                const textarea = element.querySelector('.sticky-note__text');
+                const editor = element.querySelector('.sticky-note__text');
                 const deleteButton = element.querySelector('.sticky-note__delete');
-                textarea.placeholder = copy.placeholder;
+                editor.dataset.placeholder = copy.placeholder;
+                editor.setAttribute('aria-label', copy.placeholder);
                 deleteButton.title = copy.remove;
                 deleteButton.setAttribute('aria-label', copy.remove);
                 const resizeButton = element.querySelector('.sticky-note__resize');
@@ -3051,6 +4615,34 @@
                     button.title = colorName;
                     button.setAttribute('aria-label', colorName);
                 });
+                const formatLabels = {
+                    bold: copy.bold, italic: copy.italic, underline: copy.underline,
+                    insertOrderedList: copy.orderedList, insertUnorderedList: copy.unorderedList,
+                    link: copy.link, more: copy.more
+                };
+                element.querySelectorAll('[data-note-command]').forEach(button => {
+                    const label = formatLabels[button.dataset.noteCommand];
+                    button.title = label;
+                    button.setAttribute('aria-label', label);
+                });
+                const linkInput = element.querySelector('.sticky-note__link-input');
+                linkInput.placeholder = copy.linkPrompt;
+                linkInput.setAttribute('aria-label', copy.linkPrompt);
+                const applyLink = element.querySelector('.sticky-note__link-apply');
+                applyLink.title = copy.link;
+                applyLink.setAttribute('aria-label', copy.link);
+                const cancelLink = element.querySelector('.sticky-note__link-cancel');
+                cancelLink.title = language() === 'en' ? 'Cancel' : '取消';
+                cancelLink.setAttribute('aria-label', cancelLink.title);
+                const fontSizeInput = element.querySelector('.sticky-note__font-size');
+                fontSizeInput.title = copy.fontSize;
+                fontSizeInput.setAttribute('aria-label', copy.fontSize);
+                const textColorInput = element.querySelector('.sticky-note__text-color');
+                textColorInput.title = copy.textColor;
+                textColorInput.setAttribute('aria-label', copy.textColor);
+                const cancelStyle = element.querySelector('.sticky-note__style-cancel');
+                cancelStyle.title = copy.cancel;
+                cancelStyle.setAttribute('aria-label', copy.cancel);
             }
 
             function updateLanguage() {
@@ -3071,7 +4663,7 @@
                 hideNoteMenu();
                 const offset = notes.length % 7;
                 const note = {
-                    id: makeId(), text: '', color: nextNoteColor, customColor: CUSTOM_COLOR_FALLBACK,
+                    id: makeId(), html: '', color: nextNoteColor, customColor: CUSTOM_COLOR_FALLBACK,
                     x: Math.max(12, Math.min(innerWidth - 282, innerWidth * 0.22 + offset * 22)),
                     y: Math.max(70, Math.min(innerHeight - 232, innerHeight * 0.28 + offset * 22)),
                     width: innerWidth <= 768 ? Math.min(240, innerWidth - 20) : 270,
@@ -3086,6 +4678,23 @@
             }
 
             document.addEventListener('DOMContentLoaded', () => {
+                const opacityInput = document.getElementById('sticky-background-opacity');
+                const opacityValue = document.getElementById('sticky-background-opacity-value');
+                const syncOpacityControl = () => {
+                    if (!opacityInput || !opacityValue) return;
+                    opacityInput.value = String(Math.round(backgroundOpacity * 100));
+                    opacityValue.textContent = `${opacityInput.value}%`;
+                };
+                opacityInput?.addEventListener('input', () => {
+                    backgroundOpacity = Math.min(1, Math.max(0.2, Number(opacityInput.value) / 100));
+                    opacityValue.textContent = `${Math.round(backgroundOpacity * 100)}%`;
+                    document.querySelectorAll('.sticky-note').forEach(element => {
+                        const note = notes.find(item => item.id === element.dataset.noteId);
+                        if (note) applyNoteColor(note, element);
+                    });
+                    saveBackgroundOpacity();
+                });
+                syncOpacityControl();
                 if (!matchMedia('(max-width: 768px)').matches) notes.forEach(note => renderNote(note));
                 const addButton = document.getElementById('sticky-note-add');
                 addButton?.addEventListener('click', addNote);
@@ -3094,7 +4703,15 @@
                 document.addEventListener('pointerdown', event => {
                     if (!event.target.closest('#sticky-note-menu') && !event.target.closest('#sticky-note-add')) hideNoteMenu();
                 });
-                document.addEventListener('keydown', event => { if (event.key === 'Escape') hideNoteMenu(); });
+                document.addEventListener('keydown', event => {
+                    if (event.key === 'Escape') hideNoteMenu();
+                    const target = event.target instanceof Element ? event.target : null;
+                    const isEditing = target?.closest('input, textarea, select, [contenteditable="true"]');
+                    if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLowerCase() === 'z' && !isEditing && deletedNotes.length) {
+                        event.preventDefault();
+                        restoreDeletedNotes();
+                    }
+                });
                 window.addEventListener('blur', hideNoteMenu);
                 updateAddButtonColor();
                 updateLanguage();
@@ -3231,6 +4848,567 @@
         <a href="https://discord.com/app" target="_blank" title="Discord"><img src="https://cdn-icons-png.flaticon.com/128/2335/2335279.png" alt="Discord"></a>
         <a href="https://web.whatsapp.com" target="_blank" title="WhatsApp"><img src="https://cdn-icons-png.flaticon.com/512/16566/16566143.png" alt="WhatsApp"></a>
     </div>
+
+    <script>
+        (() => {
+            const STORAGE_KEY = 'scheduleSocialLinksV1';
+            const CATALOG = [
+                { key: 'gmail', name: 'Gmail', url: 'https://mail.google.com/', icon: 'https://cdn-icons-png.flaticon.com/512/12868/12868600.png' },
+                { key: 'facebook', name: 'Facebook', url: 'https://www.facebook.com/', icon: 'https://cdn-icons-png.flaticon.com/512/725/725289.png' },
+                { key: 'instagram', name: 'Instagram', url: 'https://www.instagram.com/', icon: 'https://cdn-icons-png.flaticon.com/512/2111/2111463.png' },
+                { key: 'x', name: 'X (Twitter)', url: 'https://x.com/', icon: 'https://cdn-icons-png.flaticon.com/128/5968/5968830.png' },
+                { key: 'reddit', name: 'Reddit', url: 'https://www.reddit.com/', icon: 'https://cdn-icons-png.flaticon.com/128/2335/2335326.png' },
+                { key: 'discord', name: 'Discord', url: 'https://discord.com/app', icon: 'https://cdn-icons-png.flaticon.com/128/2335/2335279.png' },
+                { key: 'whatsapp', name: 'WhatsApp', url: 'https://web.whatsapp.com/', icon: 'https://cdn-icons-png.flaticon.com/512/16566/16566143.png' },
+                { key: 'wechat', name: 'WeChat', url: 'https://web.wechat.com/', icon: '' },
+                { key: 'snapchat', name: 'Snapchat', url: 'https://web.snapchat.com/', icon: '' },
+                { key: 'google-chat', name: 'Google Chat', url: 'https://chat.google.com/', icon: '' },
+                { key: 'tiktok', name: 'TikTok', url: 'https://www.tiktok.com/', icon: '' },
+                { key: 'telegram', name: 'Telegram', url: 'https://web.telegram.org/', icon: '' },
+                { key: 'linkedin', name: 'LinkedIn', url: 'https://www.linkedin.com/', icon: '' },
+                { key: 'threads', name: 'Threads', url: 'https://www.threads.net/', icon: '' },
+                { key: 'bluesky', name: 'Bluesky', url: 'https://bsky.app/', icon: '' },
+                { key: 'messenger', name: 'Messenger', url: 'https://www.messenger.com/', icon: '' }
+            ];
+            const DEFAULT_KEYS = ['gmail', 'facebook', 'instagram', 'x', 'reddit', 'discord', 'whatsapp'];
+            const COPY = {
+                zh: {
+                    added: '已加入側欄：', removed: '已從側欄移除：', saved: '社群圖片已儲存。', invalid: '請輸入有效的圖片網址，或留空使用自動圖示。',
+                    chooseFirst: '請先從上方選擇社群', reorderSaved: '社群順序已儲存。', resetConfirm: '確定要恢復成預設社群嗎？目前的選擇會被取代。', resetDone: '已恢復預設社群。',
+                    rightClick: '在社群側欄按右鍵即可編輯'
+                },
+                en: {
+                    added: 'Added to sidebar: ', removed: 'Removed from sidebar: ', saved: 'Social icon saved.', invalid: 'Enter a valid image URL, or leave it blank for an automatic icon.',
+                    chooseFirst: 'Choose a service above first', reorderSaved: 'Social order saved.', resetConfirm: 'Restore the default social links? Your current choices will be replaced.', resetDone: 'Default social links restored.',
+                    rightClick: 'Right-click the social sidebar to edit it'
+                }
+            };
+            let links = readLinks();
+
+            function language() { return window.ScheduleLanguage?.getLanguage?.() === 'en' ? 'en' : 'zh'; }
+            function words() { return COPY[language()]; }
+            function catalogItem(key) { return CATALOG.find(item => item.key === key); }
+            function defaultLinks() {
+                return DEFAULT_KEYS.map(key => {
+                    const item = catalogItem(key);
+                    return { id: `catalog-${key}`, catalogKey: key, name: item.name, url: item.url, icon: item.icon };
+                });
+            }
+            function validHttpUrl(value) {
+                try { return ['http:', 'https:'].includes(new URL(value).protocol); }
+                catch (error) { return false; }
+            }
+            function readLinks() {
+                try {
+                    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                    if (!Array.isArray(stored)) return defaultLinks();
+                    const migrated = [];
+                    stored.forEach(record => {
+                        if (!record || typeof record !== 'object') return;
+                        let key = record.catalogKey === 'youtube' ? 'google-chat' : record.catalogKey;
+                        if (!key && sameUrl(record.url, 'https://www.youtube.com/')) key = 'google-chat';
+                        const item = catalogItem(key) || CATALOG.find(candidate => sameUrl(candidate.url, record.url));
+                        if (!item || migrated.some(saved => saved.catalogKey === item.key)) return;
+                        const savedIcon = key === 'google-chat' && record.catalogKey === 'youtube' ? item.icon : String(record.icon || '').trim();
+                        const icon = !savedIcon || validHttpUrl(savedIcon) || /^data:image\//i.test(savedIcon) ? savedIcon : item.icon;
+                        migrated.push({ id: `catalog-${item.key}`, catalogKey: item.key, name: item.name, url: item.url, icon });
+                    });
+                    return migrated;
+                } catch (error) { return defaultLinks(); }
+            }
+            function saveLinks() {
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(links)); } catch (error) {}
+            }
+            function status(message, type = '') {
+                const output = document.getElementById('social-editor-status');
+                if (!output) return;
+                output.textContent = message;
+                output.classList.toggle('is-success', type === 'success');
+                output.classList.toggle('is-error', type === 'error');
+            }
+            function sameUrl(first, second) {
+                try { return new URL(first).href === new URL(second).href; }
+                catch (error) { return first === second; }
+            }
+            function renderSidebar() {
+                const sidebar = document.querySelector('.social-sidebar');
+                if (!sidebar) return;
+                sidebar.replaceChildren();
+                sidebar.title = words().rightClick;
+                links.forEach(record => {
+                    const anchor = document.createElement('a');
+                    anchor.href = record.url;
+                    anchor.target = '_blank';
+                    anchor.rel = 'noopener noreferrer';
+                    anchor.title = record.name;
+                    anchor.dataset.socialId = record.id;
+                    const image = document.createElement('img');
+                    image.alt = record.name;
+                    window.ScheduleIcons.assign(image, record.icon, record.url);
+                    anchor.appendChild(image);
+                    sidebar.appendChild(anchor);
+                });
+                document.dispatchEvent(new CustomEvent('schedule:links-updated', { detail: { root: sidebar } }));
+            }
+            function rebuildTarget(selected = '') {
+                const select = document.getElementById('social-editor-target');
+                if (!select) return;
+                select.replaceChildren();
+                if (!links.length) {
+                    const empty = document.createElement('option');
+                    empty.value = '';
+                    empty.textContent = words().chooseFirst;
+                    select.appendChild(empty);
+                }
+                links.forEach(record => {
+                    const option = document.createElement('option');
+                    option.value = record.id;
+                    option.textContent = record.name;
+                    select.appendChild(option);
+                });
+                select.value = links.some(item => item.id === selected) ? selected : (links[0]?.id || '');
+                select.disabled = !links.length;
+            }
+            function loadSelection() {
+                const selected = document.getElementById('social-editor-target')?.value || '';
+                const record = links.find(item => item.id === selected);
+                const iconInput = document.getElementById('social-editor-icon');
+                iconInput.value = record?.icon || '';
+                iconInput.disabled = !record;
+                document.querySelector('#social-sidebar-form .social-editor-save').disabled = !record;
+            }
+            function renderCatalog() {
+                const container = document.getElementById('social-catalog');
+                if (!container) return;
+                container.replaceChildren();
+                CATALOG.forEach(item => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    const exists = links.some(record => record.catalogKey === item.key || sameUrl(record.url, item.url));
+                    button.setAttribute('aria-pressed', String(exists));
+                    button.dataset.catalogKey = item.key;
+                    const image = document.createElement('img');
+                    image.alt = '';
+                    window.ScheduleIcons.assign(image, item.icon, item.url);
+                    const label = document.createElement('span');
+                    label.textContent = `${exists ? '✓' : '＋'} ${item.name}`;
+                    button.append(image, label);
+                    button.addEventListener('click', () => toggleCatalogItem(item));
+                    container.appendChild(button);
+                });
+            }
+            function refreshEditor(selected = '') {
+                rebuildTarget(selected);
+                loadSelection();
+                renderCatalog();
+            }
+            function toggleCatalogItem(item) {
+                const existing = links.find(record => record.catalogKey === item.key || sameUrl(record.url, item.url));
+                if (existing) {
+                    links = links.filter(record => record.id !== existing.id);
+                    saveLinks();
+                    renderSidebar();
+                    refreshEditor();
+                    status(`${words().removed}${item.name}`, 'success');
+                    return;
+                }
+                const record = { id: `catalog-${item.key}`, catalogKey: item.key, name: item.name, url: item.url, icon: item.icon };
+                links.push(record);
+                saveLinks();
+                renderSidebar();
+                refreshEditor(record.id);
+                status(`${words().added}${item.name}`, 'success');
+            }
+            function openEditor(id = '') {
+                const panel = document.getElementById('google-account-panel');
+                if (panel?.hidden) document.getElementById('google-account-button')?.click();
+                refreshEditor(id);
+                requestAnimationFrame(() => {
+                    document.getElementById('social-sidebar-form')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+                    document.getElementById('social-editor-target')?.focus({ preventScroll: true });
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const sidebar = document.querySelector('.social-sidebar');
+                const form = document.getElementById('social-sidebar-form');
+                const target = document.getElementById('social-editor-target');
+                if (!sidebar || !form || !target) return;
+                renderSidebar();
+                refreshEditor();
+                sidebar.addEventListener('contextmenu', event => {
+                    event.preventDefault();
+                    if (sidebar.classList.contains('is-reordering') || Date.now() < suppressContextUntil) return;
+                    const id = event.target.closest('a[data-social-id]')?.dataset.socialId || '';
+                    sidebar.classList.add('is-editable-hint');
+                    setTimeout(() => sidebar.classList.remove('is-editable-hint'), 650);
+                    openEditor(id);
+                });
+                let holdTimer = 0;
+                let heldAnchor = null;
+                let heldPointer = null;
+                let startX = 0;
+                let startY = 0;
+                let reordering = false;
+                let suppressClick = false;
+                let suppressContextUntil = 0;
+
+                function clearHoldTimer() {
+                    if (holdTimer) clearTimeout(holdTimer);
+                    holdTimer = 0;
+                }
+
+                function finishReorder() {
+                    clearHoldTimer();
+                    if (!reordering || !heldAnchor) {
+                        heldAnchor = null;
+                        heldPointer = null;
+                        return;
+                    }
+                    const order = Array.from(sidebar.querySelectorAll('a[data-social-id]')).map(anchor => anchor.dataset.socialId);
+                    links.sort((first, second) => order.indexOf(first.id) - order.indexOf(second.id));
+                    saveLinks();
+                    heldAnchor.classList.remove('is-reordering');
+                    sidebar.classList.remove('is-reordering');
+                    reordering = false;
+                    suppressContextUntil = Date.now() + 600;
+                    status(words().reorderSaved, 'success');
+                    const selected = target.value;
+                    refreshEditor(selected);
+                    setTimeout(() => { suppressClick = false; }, 180);
+                    heldAnchor = null;
+                    heldPointer = null;
+                }
+
+                sidebar.addEventListener('pointerdown', event => {
+                    if (event.button !== 0 || !event.isPrimary) return;
+                    const anchor = event.target.closest('a[data-social-id]');
+                    if (!anchor) return;
+                    clearHoldTimer();
+                    heldAnchor = anchor;
+                    heldPointer = event.pointerId;
+                    startX = event.clientX;
+                    startY = event.clientY;
+                    holdTimer = setTimeout(() => {
+                        if (!heldAnchor) return;
+                        reordering = true;
+                        suppressClick = true;
+                        sidebar.classList.add('is-reordering');
+                        heldAnchor.classList.add('is-reordering');
+                        try { heldAnchor.setPointerCapture(heldPointer); } catch (error) {}
+                    }, 420);
+                });
+
+                sidebar.addEventListener('pointermove', event => {
+                    if (!heldAnchor || event.pointerId !== heldPointer) return;
+                    if (!reordering) {
+                        if (Math.hypot(event.clientX - startX, event.clientY - startY) > 8) {
+                            clearHoldTimer();
+                            heldAnchor = null;
+                            heldPointer = null;
+                        }
+                        return;
+                    }
+                    event.preventDefault();
+                    const candidate = document.elementFromPoint(event.clientX, event.clientY)?.closest?.('.social-sidebar a[data-social-id]');
+                    if (!candidate || candidate === heldAnchor || candidate.parentElement !== sidebar) return;
+                    const rect = candidate.getBoundingClientRect();
+                    const horizontal = matchMedia('(max-width: 768px)').matches;
+                    const before = horizontal ? event.clientX < rect.left + rect.width / 2 : event.clientY < rect.top + rect.height / 2;
+                    sidebar.insertBefore(heldAnchor, before ? candidate : candidate.nextSibling);
+                });
+                sidebar.addEventListener('pointerup', event => {
+                    if (event.pointerId === heldPointer) finishReorder();
+                });
+                sidebar.addEventListener('pointercancel', event => {
+                    if (event.pointerId === heldPointer) finishReorder();
+                });
+                sidebar.addEventListener('click', event => {
+                    if (!suppressClick) return;
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                }, true);
+                target.addEventListener('change', loadSelection);
+                form.addEventListener('submit', event => {
+                    event.preventDefault();
+                    const selected = target.value;
+                    const index = links.findIndex(item => item.id === selected);
+                    if (index < 0) { status(words().chooseFirst, 'error'); return; }
+                    const icon = document.getElementById('social-editor-icon').value.trim();
+                    if (icon && !validHttpUrl(icon) && !/^data:image\//i.test(icon)) { status(words().invalid, 'error'); return; }
+                    links[index] = { ...links[index], icon };
+                    saveLinks();
+                    renderSidebar();
+                    refreshEditor(selected);
+                    status(words().saved, 'success');
+                });
+                document.getElementById('social-editor-reset').addEventListener('click', () => {
+                    if (!confirm(words().resetConfirm)) return;
+                    links = defaultLinks();
+                    saveLinks();
+                    renderSidebar();
+                    refreshEditor();
+                    status(words().resetDone, 'success');
+                });
+            });
+            document.addEventListener('schedule:language-changed', () => {
+                renderSidebar();
+                refreshEditor(document.getElementById('social-editor-target')?.value || '');
+            });
+            window.ScheduleSocialSidebar = { openEditor, getLinks: () => links.map(item => ({ ...item })) };
+        })();
+    </script>
+
+    <script>
+        (() => {
+            const HIDDEN_KEY = 'scheduleUnavailableLinksV1';
+            const AUTO_HIDE_KEY = 'scheduleLinkCheckAutoHideV1';
+            const REQUEST_TIMEOUT_MS = 8000;
+            const SLOW_RESPONSE_MS = 3000;
+            const RETRY_DELAY_MS = 900;
+            const CONCURRENCY = 4;
+            const COPY = {
+                zh: {
+                    run: '檢查一次', cancel: '取消檢查', idle: '尚未開始檢查。', none: '目前沒有被隱藏的連結。',
+                    noLinks: '找不到可檢查的連結。', checking: (done, total) => `正在檢查 ${done} / ${total}…`,
+                    summary: (ok, failed, unknown) => `檢查完成：${ok} 個可連線、${failed} 個確認失敗、${unknown} 個無法判定。`,
+                    cancelled: '已取消檢查；已完成的結果仍會保留。', restored: '連結已恢復顯示。',
+                    restore: '恢復', reachable: '可連線', slow: '較慢但可連線', failed: '確認失敗', unknown: '無法判定',
+                    allGood: '這次沒有發現確認失敗或無法判定的連結。'
+                },
+                en: {
+                    run: 'Check once', cancel: 'Cancel check', idle: 'No check has been run yet.', none: 'No links are hidden.',
+                    noLinks: 'No testable links were found.', checking: (done, total) => `Checking ${done} / ${total}…`,
+                    summary: (ok, failed, unknown) => `Check complete: ${ok} reachable, ${failed} confirmed unavailable, ${unknown} uncertain.`,
+                    cancelled: 'Check cancelled. Completed results were kept.', restored: 'Link restored.',
+                    restore: 'Restore', reachable: 'Reachable', slow: 'Slow but reachable', failed: 'Confirmed unavailable', unknown: 'Uncertain',
+                    allGood: 'No confirmed failures or uncertain links were found.'
+                }
+            };
+            let hiddenUrls = readHidden();
+            let checking = false;
+            let cancelRequested = false;
+            const activeControllers = new Set();
+
+            function language() { return window.ScheduleLanguage?.getLanguage?.() === 'en' ? 'en' : 'zh'; }
+            function words() { return COPY[language()]; }
+            function readHidden() {
+                try {
+                    const stored = JSON.parse(localStorage.getItem(HIDDEN_KEY));
+                    return new Set(Array.isArray(stored) ? stored.filter(item => typeof item === 'string') : []);
+                } catch (error) { return new Set(); }
+            }
+            function saveHidden() {
+                try { localStorage.setItem(HIDDEN_KEY, JSON.stringify([...hiddenUrls])); } catch (error) {}
+            }
+            function normalizeUrl(value) {
+                try {
+                    const url = new URL(value, document.baseURI);
+                    if (!['http:', 'https:'].includes(url.protocol)) return '';
+                    url.hash = '';
+                    return url.href;
+                } catch (error) { return ''; }
+            }
+            function isPageLink(anchor) {
+                if (!anchor?.matches?.('a[href]')) return false;
+                if (anchor.closest('#google-account-panel, .sticky-note')) return false;
+                return Boolean(normalizeUrl(anchor.href));
+            }
+            function collectLinks() {
+                const grouped = new Map();
+                document.querySelectorAll('a[href]').forEach(anchor => {
+                    if (!isPageLink(anchor)) return;
+                    const url = normalizeUrl(anchor.href);
+                    if (!grouped.has(url)) grouped.set(url, { url, anchors: [], label: '' });
+                    const item = grouped.get(url);
+                    item.anchors.push(anchor);
+                    if (!item.label) item.label = (anchor.title || anchor.textContent || '').replace(/\s+/g, ' ').trim();
+                });
+                return [...grouped.values()];
+            }
+            function labelFor(url) {
+                const match = collectLinks().find(item => item.url === url);
+                if (match?.label) return match.label;
+                try { return new URL(url).hostname; } catch (error) { return url; }
+            }
+            function applyHiddenLinks() {
+                document.querySelectorAll('a[href]').forEach(anchor => {
+                    if (!isPageLink(anchor)) return;
+                    const hidden = hiddenUrls.has(normalizeUrl(anchor.href));
+                    anchor.classList.toggle('schedule-link-hidden', hidden);
+                    if (hidden) anchor.dataset.linkHealthHidden = 'true';
+                    else delete anchor.dataset.linkHealthHidden;
+                });
+                renderHiddenList();
+            }
+            function renderHiddenList() {
+                const list = document.getElementById('link-check-hidden-list');
+                if (!list) return;
+                list.replaceChildren();
+                if (!hiddenUrls.size) {
+                    const empty = document.createElement('li');
+                    empty.className = 'link-check-empty';
+                    empty.textContent = words().none;
+                    list.appendChild(empty);
+                    return;
+                }
+                [...hiddenUrls].sort().forEach(url => {
+                    const item = document.createElement('li');
+                    const text = document.createElement('span');
+                    text.textContent = `${labelFor(url)} — ${url}`;
+                    const restore = document.createElement('button');
+                    restore.type = 'button';
+                    restore.className = 'link-check-restore';
+                    restore.textContent = words().restore;
+                    restore.addEventListener('click', () => {
+                        hiddenUrls.delete(url);
+                        saveHidden();
+                        applyHiddenLinks();
+                        setStatus(words().restored, 'success');
+                    });
+                    item.append(text, restore);
+                    list.appendChild(item);
+                });
+            }
+            function setStatus(message, type = '') {
+                const status = document.getElementById('link-check-status');
+                if (!status) return;
+                status.textContent = message;
+                status.classList.toggle('is-success', type === 'success');
+                status.classList.toggle('is-error', type === 'error');
+            }
+            function wait(milliseconds) { return new Promise(resolve => setTimeout(resolve, milliseconds)); }
+            async function probe(url) {
+                const controller = new AbortController();
+                activeControllers.add(controller);
+                const timeout = setTimeout(() => controller.abort('timeout'), REQUEST_TIMEOUT_MS);
+                const started = performance.now();
+                try {
+                    const target = new URL(url);
+                    const sameOrigin = target.origin === location.origin;
+                    const response = await fetch(target.href, {
+                        method: 'GET',
+                        mode: sameOrigin ? 'same-origin' : 'no-cors',
+                        credentials: 'omit',
+                        cache: 'no-store',
+                        redirect: 'follow',
+                        referrerPolicy: 'no-referrer',
+                        signal: controller.signal
+                    });
+                    const elapsed = performance.now() - started;
+                    if (response.type === 'opaque' || response.ok) return { state: elapsed >= SLOW_RESPONSE_MS ? 'slow' : 'reachable', elapsed };
+                    if ([404, 410].includes(response.status) || response.status >= 500) return { state: 'failed', elapsed };
+                    return { state: 'unknown', elapsed };
+                } catch (error) {
+                    if (cancelRequested) return { state: 'cancelled', elapsed: performance.now() - started };
+                    if (controller.signal.aborted) return { state: 'unknown', elapsed: performance.now() - started };
+                    return { state: 'failed', elapsed: performance.now() - started };
+                } finally {
+                    clearTimeout(timeout);
+                    activeControllers.delete(controller);
+                }
+            }
+            async function checkUrl(url) {
+                const first = await probe(url);
+                if (first.state !== 'failed' || cancelRequested) return first;
+                await wait(RETRY_DELAY_MS);
+                if (cancelRequested) return { state: 'cancelled', elapsed: first.elapsed };
+                const second = await probe(url);
+                return second.state === 'failed' ? second : second;
+            }
+            function renderResults(results) {
+                const list = document.getElementById('link-check-results');
+                if (!list) return;
+                list.replaceChildren();
+                const noteworthy = results.filter(result => ['failed', 'unknown', 'slow'].includes(result.state));
+                if (!noteworthy.length) {
+                    const empty = document.createElement('li');
+                    empty.className = 'link-check-empty';
+                    empty.textContent = words().allGood;
+                    list.appendChild(empty);
+                    return;
+                }
+                noteworthy.slice(0, 40).forEach(result => {
+                    const item = document.createElement('li');
+                    const label = document.createElement('span');
+                    label.textContent = `${result.label || labelFor(result.url)} — ${result.url}`;
+                    const badge = document.createElement('span');
+                    badge.className = `link-check-result-badge ${result.state === 'failed' ? 'is-failed' : result.state === 'slow' ? 'is-ok' : 'is-unknown'}`;
+                    badge.textContent = words()[result.state] || words().unknown;
+                    item.append(label, badge);
+                    list.appendChild(item);
+                });
+            }
+            function setRunButton() {
+                const button = document.getElementById('link-check-run');
+                if (button) button.textContent = checking ? words().cancel : words().run;
+            }
+            async function runCheck() {
+                if (checking) {
+                    cancelRequested = true;
+                    activeControllers.forEach(controller => controller.abort('cancelled'));
+                    return;
+                }
+                const links = collectLinks();
+                if (!links.length) { setStatus(words().noLinks, 'error'); return; }
+                checking = true;
+                cancelRequested = false;
+                setRunButton();
+                const results = [];
+                let cursor = 0;
+                let completed = 0;
+                const autoHide = document.getElementById('link-check-auto-hide')?.checked !== false;
+                setStatus(words().checking(0, links.length));
+                async function worker() {
+                    while (!cancelRequested) {
+                        const index = cursor++;
+                        if (index >= links.length) return;
+                        const item = links[index];
+                        const result = await checkUrl(item.url);
+                        if (result.state === 'cancelled') return;
+                        results.push({ ...item, ...result });
+                        if (['reachable', 'slow'].includes(result.state)) hiddenUrls.delete(item.url);
+                        else if (result.state === 'failed' && autoHide) hiddenUrls.add(item.url);
+                        completed++;
+                        setStatus(words().checking(completed, links.length));
+                    }
+                }
+                await Promise.all(Array.from({ length: Math.min(CONCURRENCY, links.length) }, worker));
+                saveHidden();
+                applyHiddenLinks();
+                renderResults(results);
+                checking = false;
+                setRunButton();
+                if (cancelRequested) {
+                    setStatus(words().cancelled);
+                } else {
+                    const ok = results.filter(result => ['reachable', 'slow'].includes(result.state)).length;
+                    const failed = results.filter(result => result.state === 'failed').length;
+                    const unknown = results.filter(result => result.state === 'unknown').length;
+                    setStatus(words().summary(ok, failed, unknown), failed ? 'error' : 'success');
+                }
+            }
+            function updateLanguage() {
+                setRunButton();
+                renderHiddenList();
+                if (!checking && !document.getElementById('link-check-results')?.children.length) setStatus(words().idle);
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const autoHide = document.getElementById('link-check-auto-hide');
+                try { autoHide.checked = localStorage.getItem(AUTO_HIDE_KEY) !== 'false'; } catch (error) {}
+                autoHide?.addEventListener('change', () => {
+                    try { localStorage.setItem(AUTO_HIDE_KEY, String(autoHide.checked)); } catch (error) {}
+                });
+                document.getElementById('link-check-run')?.addEventListener('click', runCheck);
+                applyHiddenLinks();
+                updateLanguage();
+            });
+            document.addEventListener('schedule:links-updated', applyHiddenLinks);
+            document.addEventListener('schedule:language-changed', updateLanguage);
+            window.ScheduleLinkChecker = { applyHiddenLinks, runCheck };
+        })();
+    </script>
 
     <p class="mobile-dashboard-hint">點一下分類即可展開或收合連結</p>
     <div class="table-wrapper">
@@ -3405,7 +5583,7 @@
                     <a href="https://satracker.glenbrook225.org/qr/checkin/8071CB92-D2F7-41D0-83F0-002F5F92238C" title="Glenbrook Student Activities Check In">🖥️</a><br>
                     <a href="https://classroom.google.com" title="Google Classroom">Math Club</a>
                     <a href="https://satracker.glenbrook225.org/qr/checkin/728B0FE4-BE3B-47B3-B2A8-8900BBB089E7" title="Glenbrook Student Activities Check In">🔢</a><br>
-                    <a href="https://classroom.google.com/c/ODAyMDkwNDU0NTQy" title="Google Classroom">Chess Club</a>
+                    <a href="https://classroom.google.com/u/1/c/ODcyOTMxMjMxODM1" data-google-account-fixed="true" title="Google Classroom">Chess Club</a>
                     <a href="https://satracker.glenbrook225.org/qr/checkin/704DD703-872D-4CCA-9044-5A01DFAA3D3A" title="Glenbrook Student Activities Check In">♟️</a><br>
                     <a href="https://classroom.google.com/c/NjE5MTgyODkwOTM1" title="Google Classroom">WLHS Club</a>
                        <a href="https://satracker.glenbrook225.org/qr/checkin/5E6BF509-D56C-428E-A606-0B7493083381" title="Glenbrook Student Activities Check In">🌍</a><br>

@@ -945,9 +945,21 @@ body.games-settings-open { overflow: hidden; }
 (() => {
   'use strict';
 
+  const LANGUAGE_KEY = 'userLang';
+  let sessionLanguage = null;
+
+  function deviceLanguage() {
+    const preferred = navigator.language || navigator.languages?.[0] || '';
+    return /^zh(?:-|$)/i.test(preferred) ? 'zh' : 'en';
+  }
+
   function getLanguage() {
-    try { return localStorage.getItem('userLang') === 'en' ? 'en' : 'zh'; }
-    catch { return 'zh'; }
+    if (sessionLanguage === 'zh' || sessionLanguage === 'en') return sessionLanguage;
+    try {
+      const saved = localStorage.getItem(LANGUAGE_KEY);
+      if (saved === 'zh' || saved === 'en') return saved;
+    } catch { /* 本機儲存不可用時仍依裝置語言顯示。 */ }
+    return deviceLanguage();
   }
 
 
@@ -1312,7 +1324,9 @@ body.games-settings-open { overflow: hidden; }
       window.open(titleLink.href, '_blank', 'noopener,noreferrer');
     });
     document.getElementById('lang-toggle-btn').addEventListener('click', () => {
-      try { localStorage.setItem('userLang', getLanguage() === 'zh' ? 'en' : 'zh'); }
+      const nextLanguage = getLanguage() === 'zh' ? 'en' : 'zh';
+      sessionLanguage = nextLanguage;
+      try { localStorage.setItem(LANGUAGE_KEY, nextLanguage); }
       catch { /* 禁止本機儲存時仍保留目前介面。 */ }
       applyLanguage();
       document.dispatchEvent(new Event('games:language-changed'));
@@ -1648,7 +1662,7 @@ body.games-settings-open { overflow: hidden; }
     const directHref = anchor.getAttribute('href');
     if (directHref && directHref !== '#') return directHref.trim();
 
-    const currentLanguage = localStorage.getItem('userLang') || 'zh';
+    const currentLanguage = window.Games.getLanguage();
     const languageHref = currentLanguage === 'zh'
       ? anchor.getAttribute('data-zh-href')
       : anchor.getAttribute('data-en-href');

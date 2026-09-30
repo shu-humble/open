@@ -5559,12 +5559,12 @@ body.focus-mode-active {
                 <td class="gold-day">
                     <span class="section-title">GOLD DAY</span><br>
                     <a href="https://classroom.google.com/u/0/c/ODcyMjc0OTY1NDQ1" title="Google Classroom">	Physics </a>|
-                    <a href="https://docs.google.com/document/d/1POiAnChjRhMUC4HVkpWmrRLLyZXouzfFi3Gp_c0IrQc/" title="Schedule"><img src="https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png" class="icon-img"></a>
+                    <a href="https://docs.google.com/document/d/15s9xYm4i-0RfRsS7YbNnz-XU6KVpVH6cUpJRynzbmp8/edit?usp=classroom_web&amp;authuser=0" title="物理日程"><img src="https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png" class="icon-img"></a>
                     <a href="https://mylabmastering.pearson.com/courses/14340360/menu/334ee3cd-863b-48fa-93f1-c24720681f6e" title="Mastering"><img src="https://teaching.utoronto.ca/wp-content/uploads/Pearson-logo-1.png" class="icon-img"></a><br>
                     <a href="https://classroom.google.com/u/0/" title="Google Classroom">Senior SRT S1 </a><br>
 
                     <a href="https://classroom.google.com/u/0/c/ODU1ODEwNzQ4MDg4" title="Google Classroom">Precalculus </a>|
-                    <a href="https://docs.google.com/document/d/1zbiIZjpNt9yncOEb8EHxI7VXKpCFzTEnRmOw1e08VqI/edit?tab=t.0" title="微積分行程表"><img src="https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png" class="icon-img"></a>
+                    <a href="https://docs.google.com/document/d/16EI-I5CkqaMs5iq2pAtr-JT1mHUnZX10z0ewTzW2q-k/edit?usp=classroom_web&amp;authuser=0" title="初級微積分日程"><img src="https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png" class="icon-img"></a>
                     <a href="https://mylabmastering.pearson.com/courses/14332284/menu/330eaea3-21b4-4e9e-8fbe-3d75ee8f13d6" title="Mastering"><img src="https://teaching.utoronto.ca/wp-content/uploads/Pearson-logo-1.png" class="icon-img"></a>
                     <a href="https://www.geogebra.org" title="GeoGebra"><img src="https://www.geogebra.org/sp-assets/assets/images/ogImage.c3863704.png" class="icon-img"></a>
                     <a href="https://www.desmos.com/calculator" class="link-logo" title="Desmos Graphing Calculator"></a><br>
@@ -5972,6 +5972,45 @@ body.focus-mode-active {
     "height": 48
   }
 }
+</script>
+
+<script id="daily-announcements-script">
+(() => {
+    'use strict';
+
+    const ANNOUNCEMENTS_URL = 'https://gbn.glenbrook225.org/our-school/announcements/daily-announcements';
+    const OPENED_DATE_KEY = 'scheduleDailyAnnouncementsOpenedDate';
+
+    function localDateKey(date) {
+        const pad = value => String(value).padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    }
+
+    function isDesktopComputer() {
+        return window.innerWidth > 768
+            && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    }
+
+    function openMorningAnnouncements() {
+        const now = new Date();
+        if (!isDesktopComputer() || now.getHours() < 7 || now.getHours() >= 12) return;
+
+        const today = localDateKey(now);
+        if (localStorage.getItem(OPENED_DATE_KEY) === today) return;
+
+        // 只有成功建立新分頁才記錄；若瀏覽器阻擋彈出視窗，下次進入仍會再嘗試。
+        const announcementTab = window.open(ANNOUNCEMENTS_URL, '_blank');
+        if (!announcementTab) return;
+        announcementTab.opener = null;
+        localStorage.setItem(OPENED_DATE_KEY, today);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', openMorningAnnouncements, { once: true });
+    } else {
+        openMorningAnnouncements();
+    }
+})();
 </script>
 
 <script id="schedule-icons-script">

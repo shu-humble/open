@@ -599,7 +599,7 @@ body.games-settings-open { overflow: hidden; }
       <h3 id="games-visibility-title">連線檢查與隱藏</h3>
       <p class="games-settings-description">需要時按「檢查一次」，不會在開啟頁面或背景自動檢查。連續失敗的連結會保持隱藏，直到下次手動檢查。超過 3 秒標示回應較慢，8 秒仍沒有回應就停止等待並標示逾時。</p>
       <label class="settings-check"><input id="games-auto-hide" type="checkbox" checked> 檢查後隱藏連續兩次失敗的連結</label>
-      <details class="availability-note"><summary>哪些情況無法判斷？</summary><p>這裡只測第一次回應，無法測完整遊戲載入時間。網站先回傳頁面、之後卡住，或回傳登入頁、封鎖提示頁時，仍需直接開啟確認。較慢、逾時和無法判定的連結會列出來，由你決定是否隱藏；圖片載入失敗不代表網站無法訪問。</p></details>
+      <details class="availability-note"><summary>哪些情況無法判斷？</summary><p>學校的過濾系統可能用封鎖提示頁取代原網站，瀏覽器只知道「收到跨網站回應」，無法讀取內容。這類結果不再視為可用，而會列在「需要確認的連結」；請點名稱開啟，再選擇是否隱藏。較慢、逾時與圖片載入失敗也不代表網站無法訪問。</p></details>
       <div class="games-settings-actions">
         <button id="games-check-now" class="games-settings-action games-settings-action--primary" type="button">檢查一次</button>
         <button id="games-reset-visibility" class="games-settings-action games-settings-action--secondary" type="button">清除手動隱藏與顯示偏好</button>
@@ -769,6 +769,7 @@ body.games-settings-open { overflow: hidden; }
                 <a data-link-id="original-006" href="https://www.crazygames.com/" data-icon="https://imgs.crazygames.com/favicons/favicon-transparent.png">Crazy Games</a>
                 <a data-link-id="i-gamer" href="https://www.i-gamer.net/" data-zh-label="遊戲天堂" data-en-label="i-Gamer">遊戲天堂</a>
                 <a data-link-id="hueseek" href="https://hueseek.cn/" data-zh-label="找色差" data-en-label="HueSeek">找色差</a>
+                <a data-link-id="incremental-db" href="https://www.incrementaldb.com/">IncrementalDB</a>
                 <a data-link-id="original-001" href="https://www.youtube.com/playables" data-zh-label="遊戲角落" data-en-label="Playables">遊戲角落</a>
                 <a data-link-id="original-005" href="https://sites.google.com/site/populardoodlegames">Google Doodles Game</a>
                 <a data-link-id="original-009" href="https://kuioo.tw/" data-zh-href="https://kuioo.tw/" data-en-href="https://kuioo.com">Kuioo</a>
@@ -816,6 +817,7 @@ body.games-settings-open { overflow: hidden; }
               <h2 id="heading-board" data-zh-label="棋盤與紙牌" data-en-label="Board &amp; Card Games">棋盤與紙牌</h2>
               <div class="game-links">
                 <a data-link-id="original-036" href="https://www.chess.com/" data-icon="https://www.chess.com/bundles/web/favicons/favicon.5d6cb047.svg">Chess</a>
+                <a data-link-id="barricade" href="https://barricade.gg/">Barricade</a>
                 <a data-link-id="chessle" href="https://jackli.gg/chessle/">Chessle</a>
                 <a data-link-id="chess-intuition" href="棋感訓練.html" data-zh-label="棋感訓練" data-en-label="Chess Intuition" data-icon="棋感訓練-icon.svg">棋感訓練</a>
                 <div class="link-group">
@@ -981,7 +983,7 @@ body.games-settings-open { overflow: hidden; }
   "需要時按「檢查一次」，不會在開啟頁面或背景自動檢查。連續失敗的連結會保持隱藏，直到下次手動檢查。超過 3 秒標示回應較慢，8 秒仍沒有回應就停止等待並標示逾時。": "Click “Check once” when needed. Checks never start automatically or run on a schedule. Failed links stay hidden until the next manual check. Responses taking over 3 seconds are marked slow; requests time out after 8 seconds.",
   "檢查後隱藏連續兩次失敗的連結": "Hide links after two failed attempts",
   "哪些情況無法判斷？": "What cannot be checked?",
-  "這裡只測第一次回應，無法測完整遊戲載入時間。網站先回傳頁面、之後卡住，或回傳登入頁、封鎖提示頁時，仍需直接開啟確認。較慢、逾時和無法判定的連結會列出來，由你決定是否隱藏；圖片載入失敗不代表網站無法訪問。": "This checks the initial response, not the time needed to load the whole game. A site may respond with a login or blocked page, or get stuck later. Open it to confirm. Slow, timed-out, and uncertain links are listed for you to review. A missing icon does not mean the site is unavailable.",
+  "學校的過濾系統可能用封鎖提示頁取代原網站，瀏覽器只知道「收到跨網站回應」，無法讀取內容。這類結果不再視為可用，而會列在「需要確認的連結」；請點名稱開啟，再選擇是否隱藏。較慢、逾時與圖片載入失敗也不代表網站無法訪問。": "A school filter may replace a site with a blocked page. The browser only knows that a cross-site response arrived and cannot read its contents. These results are no longer marked reachable; they appear under Links to review. Open the name, then choose whether to hide it. Slow responses, timeouts, and missing icons do not necessarily mean a site is unavailable.",
   "檢查一次": "Check once",
   "停止檢查": "Stop checking",
   "再測一次": "Check again",
@@ -1078,6 +1080,7 @@ body.games-settings-open { overflow: hidden; }
   "此 HTTP 連結需直接開啟確認": "Open this HTTP link directly to check it",
   "網路狀況已改變": "The network connection changed",
   "收到回應，無法驗證內容": "Response received; content could not be verified",
+  "收到跨網站回應，可能是網站內容或學校封鎖提示；請直接開啟確認": "A cross-site response was received. It may be the site or a school block page; open it to confirm",
   "收到正常回應": "Response received",
   "需直接開啟確認登入或存取限制": "Open directly to check login or access restrictions",
   "檢查已取消或裝置離線": "Check cancelled or device offline",
@@ -2287,9 +2290,12 @@ body.games-settings-open { overflow: hidden; }
       });
       if (!online() || signal?.aborted) return { kind: 'unknown', reason: '網路狀況已改變' };
       const durationMs = Math.max(0, now() - started);
-      if (response.type === 'opaque' || response.ok) {
+      if (response.type === 'opaque') {
+        return { kind: 'unknown', durationMs, reason: '收到跨網站回應，可能是網站內容或學校封鎖提示；請直接開啟確認' };
+      }
+      if (response.ok) {
         if (durationMs >= slowMs) return { kind: 'slow', durationMs, reason: `回應較慢（${(durationMs / 1000).toFixed(1)} 秒），需直接開啟確認` };
-        return { kind: 'response', durationMs, reason: response.type === 'opaque' ? '收到回應，無法驗證內容' : '收到正常回應' };
+        return { kind: 'response', durationMs, reason: '收到正常回應' };
       }
       if ([404, 410].includes(response.status) || response.status >= 500) {
         return { kind: 'failed', reason: `HTTP ${response.status}` };

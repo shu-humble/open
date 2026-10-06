@@ -558,7 +558,8 @@
 }
 
 .google-account-panel input,
-.google-account-panel select {
+.google-account-panel select,
+.google-account-panel textarea {
     width: 100%;
     min-height: 44px;
     padding: 10px 12px;
@@ -567,6 +568,11 @@
     background: white;
     color: #202124;
     font: 16px/1.3 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.google-account-panel textarea {
+    min-height: 88px;
+    resize: vertical;
 }
 
 .google-account-panel input:focus,
@@ -607,6 +613,43 @@
 .google-account-status.is-error {
     color: #b3261e;
 }
+
+.google-link-account-picker {
+    width: min(420px, calc(100vw - 28px));
+    padding: 20px;
+    border: 0;
+    border-radius: 16px;
+    background: #fff;
+    color: #202124;
+    box-shadow: 0 18px 60px rgba(0, 0, 0, .3);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.google-link-account-picker::backdrop { background: rgba(17, 24, 39, .52); }
+.google-link-account-picker h2 { margin: 0 0 8px; font-size: 21px; }
+.google-link-account-picker label { display: block; margin: 12px 0 6px; font-weight: 700; }
+.google-link-account-picker select { box-sizing: border-box; width: 100%; min-height: 44px; padding: 9px 11px; border: 1px solid #bdc1c6; border-radius: 9px; background: #fff; font: inherit; }
+.google-link-account-picker__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.google-link-account-picker__actions button { min-height: 40px; padding: 8px 14px; border: 0; border-radius: 9px; background: #f1f3f4; color: #3c4043; font-weight: 700; cursor: pointer; }
+.google-link-account-picker__actions button:last-child { background: #1a73e8; color: #fff; }
+
+.settings-disclosure {
+    margin: 12px 0;
+    border: 1px solid #dadce0;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .72);
+    overflow: hidden;
+}
+.settings-disclosure > summary {
+    padding: 14px 16px;
+    color: #202124;
+    font-size: 16px;
+    font-weight: 750;
+    cursor: pointer;
+    list-style-position: inside;
+}
+.settings-disclosure[open] > summary { border-bottom: 1px solid #e4e7ea; }
+.settings-disclosure > .settings-card { margin: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+.settings-disclosure > .settings-card > h3:first-child { display: none; }
 
 .google-account-panel__actions {
     display: flex;
@@ -960,6 +1003,16 @@
     min-width: 0;
     overflow-wrap: anywhere;
 }
+.link-check-results li > a,
+.link-check-hidden-list li > a {
+    min-width: 0;
+    color: #174ea6;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+    text-decoration: none;
+}
+.link-check-results li > a:hover,
+.link-check-hidden-list li > a:hover { text-decoration: underline; }
 
 .link-check-result-badge {
     padding: 4px 7px;
@@ -2276,20 +2329,20 @@ body.focus-mode-active {
         <form id="google-account-form" class="settings-card">
             <h3>Google 帳號</h3>
             <p class="settings-card__description">
-                預設使用帳號 0，可依需要改成 1、2、3…；儲存後會套用到本頁與九宮格的 Google 連結。
+                從下拉選單選擇帳號；連續按兩次右鍵可替單一 Google 連結指定不同帳號。
             </p>
 
-            <label for="google-account-number">帳號序號</label>
-            <input id="google-account-number"
-                   name="accountIndex"
-                   type="number"
-                   inputmode="numeric"
-                   min="0"
-                   max="99"
-                   step="1"
-                   value="0"
-                   autocomplete="off"
-                   required>
+            <label for="google-account-profile-select">選擇帳號</label>
+            <select id="google-account-profile-select" aria-label="使用指定的 Google 帳號">
+                <option value="0">瀏覽器預設帳號</option>
+            </select>
+
+            <label for="google-account-profiles">固定 Google 帳號（選填）</label>
+            <textarea id="google-account-profiles"
+                      rows="4"
+                      spellcheck="false"
+                      placeholder="個人帳號&#10;userB@gmail.com&#10;&#10;學校帳號&#10;school@example.com"></textarea>
+            <p class="settings-card__description">每個帳號依序貼上「名稱、電子郵件」，帳號之間空一行。直接從 Google 貼上時，個人資料圖片與開啟新分頁等介面文字會自動移除；沒有名稱時使用 @ 前面的文字。</p>
 
             <div class="google-account-panel__or" aria-hidden="true">或者</div>
 
@@ -2308,6 +2361,8 @@ body.focus-mode-active {
             </div>
         </form>
 
+        <details class="settings-disclosure">
+        <summary>頁面桌布</summary>
         <section class="settings-card" aria-labelledby="wallpaper-settings-title">
             <h3 id="wallpaper-settings-title">頁面桌布</h3>
             <p class="settings-card__description">從手機相簿或裝置中選擇圖片；桌布只會儲存在目前的瀏覽器。</p>
@@ -2319,7 +2374,10 @@ body.focus-mode-active {
             </div>
             <p id="wallpaper-status" class="wallpaper-status" role="status" aria-live="polite"></p>
         </section>
+        </details>
 
+        <details class="settings-disclosure">
+        <summary>圖片與連結</summary>
         <form id="schedule-link-form" class="settings-card" aria-labelledby="link-editor-title">
             <h3 id="link-editor-title">圖片與連結</h3>
             <p class="settings-card__description">
@@ -2367,7 +2425,10 @@ body.focus-mode-active {
             </div>
             <p id="link-editor-status" class="link-editor-status" role="status" aria-live="polite"></p>
         </form>
+        </details>
 
+        <details class="settings-disclosure">
+        <summary>社群側欄</summary>
         <form id="social-sidebar-form" class="settings-card" aria-labelledby="social-sidebar-title">
             <h3 id="social-sidebar-title">社群側欄</h3>
             <p class="settings-card__description">
@@ -2391,7 +2452,10 @@ body.focus-mode-active {
             </div>
             <p id="social-editor-status" class="social-editor-status" role="status" aria-live="polite"></p>
         </form>
+        </details>
 
+        <details class="settings-disclosure">
+        <summary>連結可用性</summary>
         <section id="schedule-link-checker" class="settings-card" aria-labelledby="link-check-title">
             <h3 id="link-check-title">連結可用性</h3>
             <p class="settings-card__description">
@@ -2409,7 +2473,10 @@ body.focus-mode-active {
             <h3 id="link-check-hidden-title">已隱藏的連結</h3>
             <ul id="link-check-hidden-list" class="link-check-hidden-list"></ul>
         </section>
+        </details>
 
+        <details class="settings-disclosure">
+        <summary>加入 iPhone／iPad 主畫面</summary>
         <section class="settings-card home-screen-card" aria-labelledby="home-screen-title">
             <img class="home-screen-icon" src="apple-touch-icon.png" alt="Schedule 主畫面圖示">
             <div>
@@ -2423,11 +2490,25 @@ body.focus-mode-active {
                 <span id="home-screen-state" class="home-screen-state">可加入主畫面</span>
             </div>
         </section>
+        </details>
 
         <div class="settings-panel__footer">
             <button id="google-account-cancel" class="settings-done-button" type="button">完成</button>
         </div>
     </section>
+
+    <dialog id="google-link-account-picker" class="google-link-account-picker" aria-labelledby="google-link-account-picker-title">
+        <form method="dialog">
+            <h2 id="google-link-account-picker-title">選擇此連結使用的帳號</h2>
+            <p id="google-link-account-picker-target" class="settings-card__description"></p>
+            <label for="google-link-account-picker-select">帳號</label>
+            <select id="google-link-account-picker-select"></select>
+            <div class="google-link-account-picker__actions">
+                <button value="cancel" type="submit">取消</button>
+                <button id="google-link-account-picker-save" value="default" type="button">套用</button>
+            </div>
+        </form>
+    </dialog>
 
     <script>
         (() => {
@@ -2442,8 +2523,17 @@ body.focus-mode-active {
                 ['背景透明度', 'Background opacity'],
                 ['管理 Google 帳號、頁面桌布、自訂連結與 iPhone 主畫面捷徑。', 'Manage your Google account, wallpaper, custom links, and iPhone home screen shortcut.'],
                 ['Google 帳號', 'Google account'],
-                ['預設使用帳號 0，可依需要改成 1、2、3…；儲存後會套用到本頁與九宮格的 Google 連結。', 'Account 0 is the default. Change it to 1, 2, 3, and so on when needed; saving applies it to Google links here and on the nine-grid page.'],
-                ['帳號序號', 'Account number'],
+                ['從下拉選單選擇帳號；連續按兩次右鍵可替單一 Google 連結指定不同帳號。', 'Choose an account from the dropdown. Right-click a Google link twice to assign a different account to that link.'],
+                ['使用指定的 Google 帳號', 'Use a specific Google account'],
+                ['選擇帳號', 'Choose account'],
+                ['瀏覽器預設帳號', 'Browser default account'],
+                ['選擇此連結使用的帳號', 'Choose an account for this link'],
+                ['帳號', 'Account'],
+                ['跟隨全域設定', 'Follow global setting'],
+                ['套用', 'Apply'],
+                ['固定 Google 帳號（選填）', 'Specific Google accounts (optional)'],
+                ['個人帳號\nuserB@gmail.com\n\n學校帳號\nschool@example.com', 'Personal\nuserB@gmail.com\n\nSchool\nschool@example.com'],
+                ['每個帳號依序貼上「名稱、電子郵件」，帳號之間空一行。直接從 Google 貼上時，個人資料圖片與開啟新分頁等介面文字會自動移除；沒有名稱時使用 @ 前面的文字。', 'Paste each account as a name followed by its email, with a blank line between accounts. Interface text such as Profile picture and Opens in new tab is removed automatically; without a name, the text before @ is used.'],
                 ['或者', 'or'],
                 ['貼上任一 Google 產品連結自動判別', 'Paste a Google product link to detect the account'],
                 ['例如：https://mail.google.com/mail/u/0/#inbox', 'Example: https://mail.google.com/mail/u/0/#inbox'],
@@ -2480,8 +2570,9 @@ body.focus-mode-active {
                 ['請在 iPhone／iPad 的 Safari 操作', 'Use Safari on an iPhone or iPad'],
                 ['完成', 'Done'],
                 ['點一下分類即可展開或收合連結', 'Tap a category to expand or collapse its links'],
-                ['找不到 /u/數字 或 authuser=數字，請確認這是 Google 產品連結。', 'No /u/number or authuser=number was found. Check that this is a Google product link.'],
+                ['找不到 /u/數字、authuser=數字或電子郵件，請確認這是 Google 產品連結。', 'No /u/number or valid authuser value was found. Check that this is a Google product link.'],
                 ['請輸入 0 到 99 之間的整數。', 'Enter a whole number from 0 to 99.'],
+                ['已移除 Google 介面文字並整理帳號格式。', 'Google interface text was removed and the account list was formatted.'],
                 ['請選擇圖片檔案。', 'Choose an image file.'],
                 ['圖片不可超過 20 MB。', 'The image must be 20 MB or smaller.'],
                 ['正在保存桌布…', 'Saving wallpaper…'],
@@ -2558,12 +2649,12 @@ body.focus-mode-active {
                 if (ENGLISH_TEXT.has(source)) return ENGLISH_TEXT.get(source);
 
                 const patterns = [
-                    [/^目前套用帳號 (\d+)$/, 'Account $1 is currently active.'],
-                    [/^已從連結辨識出帳號 (\d+)$/, 'Detected account $1 from the link.'],
-                    [/^已儲存並套用帳號 (\d+)$/, 'Account $1 saved and applied.'],
-                    [/^已套用帳號 (\d+)；瀏覽器無法保存，下次開啟會恢復預設 0。$/, 'Account $1 is active, but this browser could not save it. The next visit will use account 0.'],
-                    [/^開啟設定（Google 帳號：(\d+)）$/, 'Open settings (Google account: $1)'],
-                    [/^開啟設定，目前 Google 帳號 (\d+)$/, 'Open settings, current Google account $1'],
+                    [/^目前套用帳號 (.+)$/, 'Account $1 is currently active.'],
+                    [/^已從連結辨識出帳號 (.+)$/, 'Detected account $1 from the link.'],
+                    [/^已儲存並套用帳號 (.+)$/, 'Account $1 saved and applied.'],
+                    [/^已套用帳號 (.+)；瀏覽器無法保存，下次開啟會恢復預設 0。$/, 'Account $1 is active, but this browser could not save it. The next visit will use account 0.'],
+                    [/^開啟設定（Google 帳號：(.+)）$/, 'Open settings (Google account: $1)'],
+                    [/^開啟設定，目前 Google 帳號 (.+)$/, 'Open settings, current Google account $1'],
                     [/^自訂｜(.+)$/, 'Custom | $1']
                 ];
                 for (const [pattern, replacement] of patterns) {
@@ -2628,6 +2719,7 @@ body.focus-mode-active {
                 return [
                     document.getElementById('google-account-button'),
                     document.getElementById('google-account-panel'),
+                    document.getElementById('google-link-account-picker'),
                     document.getElementById('focus-mode-button'),
                     document.getElementById('focus-config-dialog'),
                     document.getElementById('focus-screen'),
@@ -3040,6 +3132,8 @@ body.focus-mode-active {
     <script>
         (() => {
             const STORAGE_KEY = 'scheduleGoogleAccountIndex';
+            const LINK_ACCOUNT_OVERRIDES_KEY = 'scheduleGoogleLinkAccountOverrides';
+            const ACCOUNT_PROFILES_KEY = 'scheduleGoogleAccountProfiles';
             const DEFAULT_ACCOUNT_INDEX = 0;
             const PATH_ACCOUNT_HOSTS = new Set([
                 'chat.google.com',
@@ -3066,14 +3160,136 @@ body.focus-mode-active {
 
             let accountIndex = DEFAULT_ACCOUNT_INDEX;
             let lastFocusedElement = null;
+            let linkAccountOverrides = readLinkAccountOverrides();
+            let accountProfiles = readAccountProfiles();
+
+            function readLinkAccountOverrides() {
+                try {
+                    const parsed = JSON.parse(localStorage.getItem(LINK_ACCOUNT_OVERRIDES_KEY) || '{}');
+                    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+                    return Object.fromEntries(Object.entries(parsed).filter(([, value]) =>
+                        isValidAccountIdentity(value)));
+                } catch (error) {
+                    return {};
+                }
+            }
+
+            function saveLinkAccountOverrides() {
+                try {
+                    localStorage.setItem(LINK_ACCOUNT_OVERRIDES_KEY, JSON.stringify(linkAccountOverrides));
+                } catch (error) {
+                    // 儲存空間停用時，本次頁面仍可使用覆寫設定。
+                }
+            }
+
+            function readAccountProfiles() {
+                try {
+                    const parsed = JSON.parse(localStorage.getItem(ACCOUNT_PROFILES_KEY) || '[]');
+                    if (!Array.isArray(parsed)) return [];
+                    return parsed.filter(profile => profile
+                        && isEmailAddress(profile.email)
+                        && typeof profile.name === 'string'
+                        && profile.name.trim()).map(profile => ({
+                            email: profile.email.trim().toLowerCase(),
+                            name: profile.name.trim()
+                        }));
+                } catch (error) {
+                    return [];
+                }
+            }
+
+            function parseAccountProfiles(value) {
+                const profiles = [];
+                const usedEmails = new Set();
+                let pendingName = '';
+
+                function addProfile(emailValue, nameValue = '') {
+                    const email = emailValue.trim().toLowerCase();
+                    if (!isEmailAddress(email) || usedEmails.has(email)) return;
+                    const name = (nameValue || email.split('@')[0]).trim();
+                    if (!name) return;
+                    usedEmails.add(email);
+                    profiles.push({ email, name });
+                }
+
+                value.split(/\r?\n/).forEach(rawLine => {
+                    const line = rawLine.trim();
+                    if (!line || isIgnoredGoogleAccountLine(line)) return;
+
+                    // 仍相容先前的「email = 名稱」格式。
+                    const legacy = line.match(/^([^\s=：:]+@[^\s=：:]+)\s*(?:=|：)\s*(.+)$/);
+                    if (legacy) {
+                        addProfile(legacy[1], legacy[2]);
+                        pendingName = '';
+                        return;
+                    }
+
+                    if (isEmailAddress(line)) {
+                        addProfile(line, pendingName);
+                        pendingName = '';
+                        return;
+                    }
+
+                    // Google 帳號選單的正常結構是「名稱」下一行接「電子郵件」。
+                    pendingName = line;
+                });
+                return profiles;
+            }
+
+            function isIgnoredGoogleAccountLine(value) {
+                const normalized = value
+                    .replace(/[（）()]/g, '')
+                    .replace(/\s+/g, ' ')
+                    .trim()
+                    .toLocaleLowerCase();
+                return [
+                    '個人資料圖片',
+                    '個人檔案相片',
+                    '開啟新分頁',
+                    '在新分頁中開啟',
+                    'profile picture',
+                    'profile photo',
+                    'profile image',
+                    'opens in new tab',
+                    'open in new tab',
+                    'opens in a new tab',
+                    'open in a new tab',
+                    'open link in new tab',
+                    'opens link in new tab',
+                    'opens in new window',
+                    'open in new window'
+                ].includes(normalized);
+            }
+
+            function serializeAccountProfiles(profiles) {
+                return profiles.map(profile => `${profile.name}\n${profile.email}`).join('\n\n');
+            }
+
+            function saveAccountProfiles() {
+                try {
+                    localStorage.setItem(ACCOUNT_PROFILES_KEY, JSON.stringify(accountProfiles));
+                } catch (error) {
+                    // 禁止本機儲存時，名稱只保留到本頁關閉。
+                }
+            }
+
+            function isEmailAddress(value) {
+                return typeof value === 'string'
+                    && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+            }
+
+            function isValidAccountIdentity(value) {
+                return (Number.isInteger(value) && value >= 0 && value <= 99)
+                    || isEmailAddress(value);
+            }
 
             function isGoogleHost(hostname) {
                 const host = hostname.toLowerCase();
                 return host === 'google.com' || host.endsWith('.google.com')
-                    || host === 'youtube.com' || host === 'www.youtube.com';
+                    || host === 'youtube.com' || host.endsWith('.youtube.com');
             }
 
-            function extractAccountIndex(rawValue) {
+            function extractAccountIdentity(rawValue) {
                 const value = rawValue.trim();
                 if (!value) return null;
 
@@ -3094,9 +3310,12 @@ body.focus-mode-active {
                 const queryMatch = url.searchParams.get('authuser');
                 const detected = pathMatch ? pathMatch[1] : queryMatch;
 
-                if (detected === null || !/^\d+$/.test(detected)) return null;
-                const parsed = Number.parseInt(detected, 10);
-                return parsed >= 0 && parsed <= 99 ? parsed : null;
+                if (detected === null) return null;
+                if (/^\d+$/.test(detected)) {
+                    const parsed = Number.parseInt(detected, 10);
+                    return parsed >= 0 && parsed <= 99 ? parsed : null;
+                }
+                return isEmailAddress(detected) ? detected.trim().toLowerCase() : null;
             }
 
             function insertAccountAfterPrefix(pathname, prefix, index, fallbackSuffix = '/') {
@@ -3116,7 +3335,7 @@ body.focus-mode-active {
                 return `${prefix}/u/${index}${fallbackSuffix}`;
             }
 
-            function buildGoogleAccountUrl(originalHref, index) {
+            function buildGoogleAccountUrl(originalHref, identity) {
                 let url;
                 try {
                     url = new URL(originalHref, document.baseURI);
@@ -3126,6 +3345,15 @@ body.focus-mode-active {
 
                 const host = url.hostname.toLowerCase();
                 if (!isGoogleHost(host)) return null;
+
+                if (isEmailAddress(identity)) {
+                    url.pathname = url.pathname.replace(/\/u\/\d+(?=\/|$)/i, '') || '/';
+                    url.searchParams.set('authuser', identity.trim().toLowerCase());
+                    // 保留使用者熟悉的 authuser=name@example.com 顯示形式。
+                    return url.href.replace(/%40(?=[^#]*$)/i, '@');
+                }
+
+                const index = identity;
 
                 const existingPathAccount = /\/u\/\d+(?=\/|$)/i;
                 if (existingPathAccount.test(url.pathname)) {
@@ -3164,8 +3392,6 @@ body.focus-mode-active {
 
             function rewriteGoogleLink(link, index) {
                 if (!(link instanceof HTMLAnchorElement)) return;
-                // 個別標記的連結使用指定帳號，不跟隨全站 Google 帳號切換。
-                if (link.dataset.googleAccountFixed === 'true') return;
 
                 const currentHref = link.getAttribute('href');
                 if (!currentHref) return;
@@ -3181,8 +3407,24 @@ body.focus-mode-active {
                     link.dataset.googleAccountOriginalHref = currentHref;
                 }
 
-                const adjustedHref = buildGoogleAccountUrl(link.dataset.googleAccountOriginalHref, index);
+                const key = linkAccountKey(link);
+                const override = linkAccountOverrides[key];
+                if (link.dataset.googleAccountFixed === 'true' && !isValidAccountIdentity(override)) {
+                    link.href = link.dataset.googleAccountOriginalHref;
+                    return;
+                }
+
+                const adjustedHref = buildGoogleAccountUrl(
+                    link.dataset.googleAccountOriginalHref,
+                    isValidAccountIdentity(override) ? override : index
+                );
                 if (adjustedHref) link.href = adjustedHref;
+            }
+
+            function linkAccountKey(link) {
+                const id = link.dataset.linkId || link.id;
+                if (id) return `id:${id}`;
+                return `url:${link.dataset.googleAccountOriginalHref || link.getAttribute('href') || ''}`;
             }
 
             function applyAccountToLinks(index, root = document) {
@@ -3195,9 +3437,12 @@ body.focus-mode-active {
                 // 僅採用使用者明確儲存的選擇，不從頁面連結推測預設值。
                 try {
                     const saved = localStorage.getItem(STORAGE_KEY);
-                    if (saved !== null && /^\d+$/.test(saved)) {
-                        const parsed = Number.parseInt(saved, 10);
-                        if (parsed >= 0 && parsed <= 99) return parsed;
+                    if (saved !== null) {
+                        if (/^\d+$/.test(saved)) {
+                            const parsed = Number.parseInt(saved, 10);
+                            if (parsed >= 0 && parsed <= 99) return parsed;
+                        }
+                        if (isEmailAddress(saved)) return saved.trim().toLowerCase();
                     }
                 } catch (error) {
                     // 禁止本機儲存的瀏覽器仍以帳號 0 開始。
@@ -3211,17 +3456,27 @@ body.focus-mode-active {
                 const backdrop = document.getElementById('google-account-backdrop');
                 const panel = document.getElementById('google-account-panel');
                 const form = document.getElementById('google-account-form');
-                const numberInput = document.getElementById('google-account-number');
                 const linkInput = document.getElementById('google-account-link');
                 const status = document.getElementById('google-account-status');
                 const cancelButton = document.getElementById('google-account-cancel');
+                const profileSelect = document.getElementById('google-account-profile-select');
+                const profilesInput = document.getElementById('google-account-profiles');
+                const linkPicker = document.getElementById('google-link-account-picker');
+                const linkPickerTarget = document.getElementById('google-link-account-picker-target');
+                const linkPickerSelect = document.getElementById('google-link-account-picker-select');
+                const linkPickerSave = document.getElementById('google-link-account-picker-save');
+                let editingGoogleLink = null;
+                let previousContextLink = null;
+                let previousContextTime = 0;
 
                 accountIndex = detectInitialAccount();
 
                 function updateBadge() {
-                    currentBadge.textContent = `G${accountIndex}`;
-                    button.title = `開啟設定（Google 帳號：${accountIndex}）`;
-                    button.setAttribute('aria-label', `開啟設定，目前 Google 帳號 ${accountIndex}`);
+                    const profile = accountProfiles.find(item => item.email === accountIndex);
+                    const display = profile?.name || accountIndex;
+                    currentBadge.textContent = typeof accountIndex === 'number' ? `G${accountIndex}` : display;
+                    button.title = `開啟設定（Google 帳號：${display}）`;
+                    button.setAttribute('aria-label', `開啟設定，目前 Google 帳號 ${display}`);
                 }
 
                 function setStatus(message, type = '') {
@@ -3232,9 +3487,11 @@ body.focus-mode-active {
 
                 function openPanel() {
                     lastFocusedElement = document.activeElement;
-                    numberInput.value = String(accountIndex);
+                    profilesInput.value = serializeAccountProfiles(accountProfiles);
+                    renderProfileSelect(accountProfiles, accountIndex);
                     linkInput.value = '';
-                    setStatus(`目前套用帳號 ${accountIndex}`);
+                    const profile = accountProfiles.find(item => item.email === accountIndex);
+                    setStatus(`目前套用帳號 ${profile?.name || accountIndex}`);
                     panel.hidden = false;
                     backdrop.hidden = false;
                     button.setAttribute('aria-expanded', 'true');
@@ -3259,6 +3516,100 @@ body.focus-mode-active {
                 backdrop.addEventListener('click', closePanel);
                 document.addEventListener('schedule:settings-saved', closePanel);
 
+                function renderProfileSelect(profiles, selectedIdentity = null) {
+                    const english = window.ScheduleLanguage?.getLanguage() === 'en';
+                    const options = [new Option(
+                        english ? 'Browser default account' : '瀏覽器預設帳號',
+                        '0'
+                    )];
+                    profiles.forEach(profile => {
+                        options.push(new Option(`${profile.name}（${profile.email}）`, profile.email));
+                    });
+                    profileSelect.replaceChildren(...options);
+                    const hasNamedSelection = profiles.some(profile => profile.email === selectedIdentity);
+                    profileSelect.value = hasNamedSelection ? String(selectedIdentity) : '0';
+                }
+
+                function openLinkAccountPicker(link) {
+                    rewriteGoogleLink(link, accountIndex);
+                    const key = linkAccountKey(link);
+                    const selectedIdentity = isValidAccountIdentity(linkAccountOverrides[key])
+                        ? linkAccountOverrides[key]
+                        : accountIndex;
+                    const english = window.ScheduleLanguage?.getLanguage() === 'en';
+                    const label = link.textContent.trim() || link.title || new URL(link.href).hostname;
+                    const options = [new Option(
+                        english ? 'Follow global setting' : '跟隨全域設定',
+                        '__global__'
+                    )];
+                    accountProfiles.forEach(profile => {
+                        options.push(new Option(`${profile.name}（${profile.email}）`, profile.email));
+                    });
+                    linkPickerSelect.replaceChildren(...options);
+                    linkPickerSelect.value = Object.hasOwn(linkAccountOverrides, key)
+                        && accountProfiles.some(profile => profile.email === selectedIdentity)
+                        ? selectedIdentity
+                        : '__global__';
+                    linkPickerTarget.textContent = label;
+                    editingGoogleLink = link;
+                    linkPicker.showModal();
+                    requestAnimationFrame(() => linkPickerSelect.focus());
+                }
+
+                function closeLinkAccountPicker() {
+                    if (linkPicker.open) linkPicker.close();
+                    editingGoogleLink = null;
+                }
+
+                linkPickerSave.addEventListener('click', () => {
+                    if (!editingGoogleLink) return closeLinkAccountPicker();
+                    const key = linkAccountKey(editingGoogleLink);
+                    if (linkPickerSelect.value === '__global__') delete linkAccountOverrides[key];
+                    else linkAccountOverrides[key] = linkPickerSelect.value;
+                    saveLinkAccountOverrides();
+                    rewriteGoogleLink(editingGoogleLink, accountIndex);
+                    closeLinkAccountPicker();
+                });
+                linkPicker.addEventListener('close', () => { editingGoogleLink = null; });
+
+                profileSelect.addEventListener('change', () => {
+                    if (profileSelect.value !== '') setStatus(`將使用固定帳號 ${profileSelect.options[profileSelect.selectedIndex].textContent}`);
+                });
+                profilesInput.addEventListener('input', () => {
+                    renderProfileSelect(parseAccountProfiles(profilesInput.value), profileSelect.value || accountIndex);
+                });
+                profilesInput.addEventListener('paste', () => {
+                    window.setTimeout(() => {
+                        const pastedProfiles = parseAccountProfiles(profilesInput.value);
+                        profilesInput.value = serializeAccountProfiles(pastedProfiles);
+                        renderProfileSelect(pastedProfiles, profileSelect.value || accountIndex);
+                        setStatus('已移除 Google 介面文字並整理帳號格式。', 'success');
+                    }, 0);
+                });
+
+                document.addEventListener('contextmenu', event => {
+                    const link = event.target.closest?.('a[href]');
+                    if (!link) return;
+                    let candidate;
+                    try {
+                        candidate = new URL(link.dataset.googleAccountOriginalHref || link.href, document.baseURI);
+                    } catch (error) {
+                        return;
+                    }
+                    if (!isGoogleHost(candidate.hostname)) return;
+
+                    event.preventDefault();
+                    const now = performance.now();
+                    if (link === previousContextLink && now - previousContextTime <= 800) {
+                        previousContextLink = null;
+                        previousContextTime = 0;
+                        openLinkAccountPicker(link);
+                    } else {
+                        previousContextLink = link;
+                        previousContextTime = now;
+                    }
+                });
+
                 linkInput.addEventListener('input', () => {
                     const value = linkInput.value.trim();
                     if (!value) {
@@ -3266,27 +3617,36 @@ body.focus-mode-active {
                         return;
                     }
 
-                    const detected = extractAccountIndex(value);
+                    const detected = extractAccountIdentity(value);
                     if (detected === null) {
-                        setStatus('找不到 /u/數字 或 authuser=數字，請確認這是 Google 產品連結。', 'error');
+                        setStatus('找不到 /u/數字、authuser=數字或電子郵件，請確認這是 Google 產品連結。', 'error');
                         return;
                     }
 
-                    numberInput.value = String(detected);
+                    if (typeof detected === 'string') {
+                        if (!accountProfiles.some(profile => profile.email === detected)) {
+                            accountProfiles.push({ email: detected, name: detected.split('@')[0] });
+                            profilesInput.value = serializeAccountProfiles(accountProfiles);
+                            saveAccountProfiles();
+                            renderProfileSelect(accountProfiles, detected);
+                        } else {
+                            profileSelect.value = detected;
+                        }
+                    } else {
+                        profileSelect.value = '0';
+                    }
                     setStatus(`已從連結辨識出帳號 ${detected}`, 'success');
                 });
 
                 form.addEventListener('submit', event => {
                     event.preventDefault();
-                    const nextIndex = Number(numberInput.value);
+                    const selectedEmail = profileSelect.value;
 
-                    if (!Number.isInteger(nextIndex) || nextIndex < 0 || nextIndex > 99) {
-                        setStatus('請輸入 0 到 99 之間的整數。', 'error');
-                        numberInput.focus();
-                        return;
-                    }
-
-                    accountIndex = nextIndex;
+                    accountProfiles = parseAccountProfiles(profilesInput.value);
+                    saveAccountProfiles();
+                    accountIndex = selectedEmail && accountProfiles.some(profile => profile.email === selectedEmail)
+                        ? selectedEmail
+                        : DEFAULT_ACCOUNT_INDEX;
                     applyAccountToLinks(accountIndex);
                     updateBadge();
                     try {
@@ -5161,7 +5521,8 @@ body.focus-mode-active {
 
     <script>
         (() => {
-            const HIDDEN_KEY = 'scheduleUnavailableLinksV1';
+            // V2 不沿用舊版可能由跨網站安全限制造成的誤判清單。
+            const HIDDEN_KEY = 'scheduleUnavailableLinksV2';
             const AUTO_HIDE_KEY = 'scheduleLinkCheckAutoHideV1';
             const REQUEST_TIMEOUT_MS = 8000;
             const SLOW_RESPONSE_MS = 3000;
@@ -5254,7 +5615,10 @@ body.focus-mode-active {
                 }
                 [...hiddenUrls].sort().forEach(url => {
                     const item = document.createElement('li');
-                    const text = document.createElement('span');
+                    const text = document.createElement('a');
+                    text.href = url;
+                    text.target = '_blank';
+                    text.rel = 'noopener noreferrer';
                     text.textContent = `${labelFor(url)} — ${url}`;
                     const restore = document.createElement('button');
                     restore.type = 'button';
@@ -5283,9 +5647,10 @@ body.focus-mode-active {
                 activeControllers.add(controller);
                 const timeout = setTimeout(() => controller.abort('timeout'), REQUEST_TIMEOUT_MS);
                 const started = performance.now();
+                let sameOrigin = false;
                 try {
                     const target = new URL(url);
-                    const sameOrigin = target.origin === location.origin;
+                    sameOrigin = target.origin === location.origin;
                     const response = await fetch(target.href, {
                         method: 'GET',
                         mode: sameOrigin ? 'same-origin' : 'no-cors',
@@ -5302,7 +5667,8 @@ body.focus-mode-active {
                 } catch (error) {
                     if (cancelRequested) return { state: 'cancelled', elapsed: performance.now() - started };
                     if (controller.signal.aborted) return { state: 'unknown', elapsed: performance.now() - started };
-                    return { state: 'failed', elapsed: performance.now() - started };
+                    // 跨網站請求可能被 CORS、CSP、登入或防機器人政策擋下；不能因此判定網站失效。
+                    return { state: sameOrigin ? 'failed' : 'unknown', elapsed: performance.now() - started };
                 } finally {
                     clearTimeout(timeout);
                     activeControllers.delete(controller);
@@ -5330,7 +5696,10 @@ body.focus-mode-active {
                 }
                 noteworthy.slice(0, 40).forEach(result => {
                     const item = document.createElement('li');
-                    const label = document.createElement('span');
+                    const label = document.createElement('a');
+                    label.href = result.url;
+                    label.target = '_blank';
+                    label.rel = 'noopener noreferrer';
                     label.textContent = `${result.label || labelFor(result.url)} — ${result.url}`;
                     const badge = document.createElement('span');
                     badge.className = `link-check-result-badge ${result.state === 'failed' ? 'is-failed' : result.state === 'slow' ? 'is-ok' : 'is-unknown'}`;
@@ -5367,8 +5736,8 @@ body.focus-mode-active {
                         const result = await checkUrl(item.url);
                         if (result.state === 'cancelled') return;
                         results.push({ ...item, ...result });
-                        if (['reachable', 'slow'].includes(result.state)) hiddenUrls.delete(item.url);
-                        else if (result.state === 'failed' && autoHide) hiddenUrls.add(item.url);
+                        if (result.state === 'failed' && autoHide) hiddenUrls.add(item.url);
+                        else hiddenUrls.delete(item.url);
                         completed++;
                         setStatus(words().checking(completed, links.length));
                     }

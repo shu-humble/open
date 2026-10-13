@@ -1671,7 +1671,7 @@ body.focus-mode-active {
     left: 7px;
     z-index: 3;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 32px 32px;
+    grid-template-columns: minmax(0, 1fr) 32px 32px 32px;
     gap: 5px;
     padding: 6px;
     border: 1px solid rgba(31, 57, 70, 0.28);
@@ -1681,6 +1681,9 @@ body.focus-mode-active {
 }
 
 .sticky-note__link-popover[hidden] { display: none; }
+.sticky-note__link-popover:has(.sticky-note__link-remove[hidden]) {
+    grid-template-columns: minmax(0, 1fr) 32px 32px;
+}
 
 .sticky-note__link-popover input {
     width: 100%;
@@ -4330,7 +4333,7 @@ body.focus-mode-active {
                     restored: '已復原刪除的便利貼', bold: '粗體（Ctrl+B）', italic: '斜體（Ctrl+I）', underline: '底線（Ctrl+U）', link: '插入連結（Ctrl+K）',
                     orderedList: '編號清單（再按一次取消）', unorderedList: '項目清單（再按一次取消）',
                     fontSize: '文字大小（可輸入 8–96）', textColor: '文字顏色', more: '更多文字格式', cancel: '收起格式工具',
-                    linkPrompt: '輸入連結網址', invalidLink: '請輸入有效的 http、https 或 mailto 連結'
+                    linkPrompt: '輸入連結網址', editLink: '編輯連結', removeLink: '移除連結', invalidLink: '請輸入有效的 http、https 或 mailto 連結'
                 },
                 en: {
                     add: 'Add sticky note', area: 'Sticky notes', placeholder: 'Type your note here…',
@@ -4340,7 +4343,7 @@ body.focus-mode-active {
                     restored: 'Deleted sticky note restored', bold: 'Bold (Ctrl+B)', italic: 'Italic (Ctrl+I)', underline: 'Underline (Ctrl+U)', link: 'Insert link (Ctrl+K)',
                     orderedList: 'Numbered list (select again to turn off)', unorderedList: 'Bulleted list (select again to turn off)',
                     fontSize: 'Text size (enter 8–96)', textColor: 'Text color', more: 'More text formatting', cancel: 'Close formatting tools',
-                    linkPrompt: 'Enter a link URL', invalidLink: 'Enter a valid http, https, or mailto link'
+                    linkPrompt: 'Enter a link URL', editLink: 'Edit link', removeLink: 'Remove link', invalidLink: 'Enter a valid http, https, or mailto link'
                 }
             };
             let notes = readNotes();
@@ -4591,6 +4594,7 @@ body.focus-mode-active {
                     <div class="sticky-note__link-popover" hidden>
                         <input class="sticky-note__link-input" type="url" inputmode="url" autocomplete="off" value="https://">
                         <button class="sticky-note__link-apply" type="button">✓</button>
+                        <button class="sticky-note__link-remove" type="button" hidden>⊘</button>
                         <button class="sticky-note__link-cancel" type="button">×</button>
                     </div>
                     <div class="sticky-note__style-popover" hidden>
@@ -4609,6 +4613,7 @@ body.focus-mode-active {
                 const linkPopover = element.querySelector('.sticky-note__link-popover');
                 const linkInput = element.querySelector('.sticky-note__link-input');
                 const linkApply = element.querySelector('.sticky-note__link-apply');
+                const linkRemove = element.querySelector('.sticky-note__link-remove');
                 const linkCancel = element.querySelector('.sticky-note__link-cancel');
                 const stylePopover = element.querySelector('.sticky-note__style-popover');
                 const fontSizeInput = element.querySelector('.sticky-note__font-size');
@@ -4620,6 +4625,7 @@ body.focus-mode-active {
                 const overflowButtons = Array.from(element.querySelectorAll('.sticky-note__overflowable'));
                 const toolbarItems = Array.from(formatBar.children).filter(item => item !== moreButton);
                 let pendingLinkRange = null;
+                let pendingLinkAnchor = null;
                 let pendingStyleRange = null;
                 let toolbarObserver;
 
@@ -4686,6 +4692,13 @@ body.focus-mode-active {
                     const opened = window.open(anchor.href, '_blank', 'noopener,noreferrer');
                     if (opened) opened.opener = null;
                 });
+                editor.addEventListener('contextmenu', event => {
+                    const anchor = event.target.closest?.('a[href]');
+                    if (!anchor || !editor.contains(anchor)) return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    openLinkEditor(anchor);
+                });
                 editor.addEventListener('beforeinput', event => {
                     if (event.inputType.startsWith('insert') && editor.innerText.length >= 5000 && !getSelection()?.toString()) event.preventDefault();
                 });
@@ -4702,17 +4715,32 @@ body.focus-mode-active {
                     syncEditor();
                 }
 
-                function openLinkEditor() {
+                function linkAtNode(node) {
+                    const elementNode = node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentElement;
+                    const anchor = elementNode?.closest?.('a[href]');
+                    return anchor && editor.contains(anchor) ? anchor : null;
+                }
+
+                function openLinkEditor(anchorToEdit = null) {
                     const selection = getSelection();
                     pendingLinkRange = null;
+                    pendingLinkAnchor = anchorToEdit;
                     if (selection?.rangeCount) {
                         const range = selection.getRangeAt(0);
-                        if (editor.contains(range.commonAncestorContainer)) pendingLinkRange = range.cloneRange();
+                        if (editor.contains(range.commonAncestorContainer)) {
+                            pendingLinkRange = range.cloneRange();
+                            pendingLinkAnchor ||= linkAtNode(selection.anchorNode) || linkAtNode(range.commonAncestorContainer);
+                        }
+                    }
+                    if (pendingLinkAnchor) {
+                        pendingLinkRange = document.createRange();
+                        pendingLinkRange.selectNodeContents(pendingLinkAnchor);
                     }
                     stylePopover.hidden = true;
                     moreButton.setAttribute('aria-expanded', 'false');
                     linkPopover.hidden = false;
-                    linkInput.value = 'https://';
+                    linkRemove.hidden = !pendingLinkAnchor;
+                    linkInput.value = pendingLinkAnchor?.getAttribute('href') || 'https://';
                     requestAnimationFrame(() => {
                         linkInput.focus();
                         linkInput.select();
@@ -4722,6 +4750,8 @@ body.focus-mode-active {
                 function closeLinkEditor() {
                     linkPopover.hidden = true;
                     pendingLinkRange = null;
+                    pendingLinkAnchor = null;
+                    linkRemove.hidden = true;
                     editor.focus();
                 }
 
@@ -4734,7 +4764,11 @@ body.focus-mode-active {
                         selection.removeAllRanges();
                         selection.addRange(pendingLinkRange);
                     }
-                    if (pendingLinkRange && !pendingLinkRange.collapsed) {
+                    if (pendingLinkAnchor) {
+                        pendingLinkAnchor.href = href;
+                        pendingLinkAnchor.target = '_blank';
+                        pendingLinkAnchor.rel = 'noopener noreferrer';
+                    } else if (pendingLinkRange && !pendingLinkRange.collapsed) {
                         document.execCommand('createLink', false, href);
                     } else {
                         const anchor = document.createElement('a');
@@ -4756,7 +4790,23 @@ body.focus-mode-active {
                     }
                     linkPopover.hidden = true;
                     pendingLinkRange = null;
+                    pendingLinkAnchor = null;
+                    linkRemove.hidden = true;
                     syncEditor();
+                }
+
+                function removeLink() {
+                    if (!pendingLinkAnchor) return closeLinkEditor();
+                    const anchor = pendingLinkAnchor;
+                    const fragment = document.createDocumentFragment();
+                    while (anchor.firstChild) fragment.appendChild(anchor.firstChild);
+                    anchor.replaceWith(fragment);
+                    linkPopover.hidden = true;
+                    pendingLinkRange = null;
+                    pendingLinkAnchor = null;
+                    linkRemove.hidden = true;
+                    syncEditor();
+                    editor.focus();
                 }
 
                 function rememberTextSelection() {
@@ -4831,6 +4881,7 @@ body.focus-mode-active {
                     });
                 });
                 linkApply.addEventListener('click', insertLink);
+                linkRemove.addEventListener('click', removeLink);
                 linkCancel.addEventListener('click', closeLinkEditor);
                 linkInput.addEventListener('keydown', event => {
                     if (event.key === 'Enter') { event.preventDefault(); insertLink(); }
@@ -4989,8 +5040,11 @@ body.focus-mode-active {
                 linkInput.placeholder = copy.linkPrompt;
                 linkInput.setAttribute('aria-label', copy.linkPrompt);
                 const applyLink = element.querySelector('.sticky-note__link-apply');
-                applyLink.title = copy.link;
-                applyLink.setAttribute('aria-label', copy.link);
+                applyLink.title = copy.editLink;
+                applyLink.setAttribute('aria-label', copy.editLink);
+                const removeLink = element.querySelector('.sticky-note__link-remove');
+                removeLink.title = copy.removeLink;
+                removeLink.setAttribute('aria-label', copy.removeLink);
                 const cancelLink = element.querySelector('.sticky-note__link-cancel');
                 cancelLink.title = language() === 'en' ? 'Cancel' : '取消';
                 cancelLink.setAttribute('aria-label', cancelLink.title);
@@ -5929,7 +5983,8 @@ body.focus-mode-active {
                     <span class="section-title">GOLD DAY</span><br>
                     <a href="https://classroom.google.com/u/0/c/ODcyMjc0OTY1NDQ1" title="Google Classroom">	Physics </a>|
                     <a href="https://docs.google.com/document/d/15s9xYm4i-0RfRsS7YbNnz-XU6KVpVH6cUpJRynzbmp8/edit?usp=classroom_web&amp;authuser=0" title="物理日程"><img src="https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png" class="icon-img"></a>
-                    <a href="https://mylabmastering.pearson.com/courses/14340360/menu/334ee3cd-863b-48fa-93f1-c24720681f6e" title="Mastering"><img src="https://teaching.utoronto.ca/wp-content/uploads/Pearson-logo-1.png" class="icon-img"></a><br>
+                    <a href="https://mylabmastering.pearson.com/courses/14340360/menu/334ee3cd-863b-48fa-93f1-c24720681f6e" title="Mastering"><img src="https://teaching.utoronto.ca/wp-content/uploads/Pearson-logo-1.png" class="icon-img"></a>
+                    <a href="https://www.webassign.net/v4cgi/login.pl?pid=549198&eISBN=9781337827614&courseKey=WA-production-1691091&copyActivityDates=N&titleIsbn=9781337827614&_gl=1*nqquan*_gcl_au*Nzc3MTM4Mjc2LjE3ODc3NDIxMzc.*_ga*MTgxNTA5MzU5NS4xNzg3NzQxOTQ3*_ga_1Z1VMVSHXM*czE3OTE4NjE2MTEkbzQkZzEkdDE3OTE4NjI1NzgkajU3JGwwJGgw" title="Mastering"><img src="https://student.cengage.com/dashboard/favicon.ico" class="icon-img"></a> <br>
                     <a href="https://classroom.google.com/u/0/" title="Google Classroom">Senior SRT S1 </a><br>
 
                     <a href="https://classroom.google.com/u/0/c/ODU1ODEwNzQ4MDg4" title="Google Classroom">Precalculus </a>|

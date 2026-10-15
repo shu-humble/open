@@ -6094,8 +6094,8 @@ body.focus-mode-active {
                     <a href="https://classroom.google.com/u/0/c/ODU1ODEwNzQ4MDg4" title="Google Classroom">Precalculus </a>|
                     <a href="https://docs.google.com/document/d/16EI-I5CkqaMs5iq2pAtr-JT1mHUnZX10z0ewTzW2q-k/edit?usp=classroom_web&amp;authuser=0" title="初級微積分日程"><img src="https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png" class="icon-img"></a>
                     <a href="https://mylabmastering.pearson.com/courses/14332284/menu/330eaea3-21b4-4e9e-8fbe-3d75ee8f13d6" title="Mastering"><img src="https://teaching.utoronto.ca/wp-content/uploads/Pearson-logo-1.png" class="icon-img"></a>
-                    <a href="https://www.geogebra.org" title="GeoGebra"><img src="https://www.geogebra.org/sp-assets/assets/images/ogImage.c3863704.png" class="icon-img"></a>
-                    <a href="https://www.desmos.com/calculator" class="link-logo" title="Desmos Graphing Calculator"></a><br>
+                    <a id="graphing-calculator-link" href="https://www.geogebra.org/" class="link-logo" title="GeoGebra"></a>
+                    <a href="https://www.mathway.com/Trigonometry" class="link-logo" title="Mathway Trigonometry"></a><br>
                    
                     <a href="https://classroom.google.com/u/0/" title="Google Classroom">Adventure Education 1 </a>
                        
@@ -6123,6 +6123,70 @@ body.focus-mode-active {
                 </td>
             </tr>
         </table>
+        <script>
+            (() => {
+                const STORAGE_KEY = 'scheduleGraphingCalculatorV1';
+                const tools = {
+                    geogebra: {
+                        url: 'https://www.geogebra.org/',
+                        title: 'GeoGebra'
+                    },
+                    desmos: {
+                        url: 'https://www.desmos.com/calculator',
+                        title: 'Desmos Graphing Calculator'
+                    }
+                };
+                const link = document.getElementById('graphing-calculator-link');
+                if (!link) return;
+
+                function readSelection() {
+                    try {
+                        const saved = localStorage.getItem(STORAGE_KEY);
+                        return Object.hasOwn(tools, saved) ? saved : 'geogebra';
+                    } catch (error) {
+                        return 'geogebra';
+                    }
+                }
+
+                function applySelection(selection, save = false) {
+                    const selected = tools[selection] || tools.geogebra;
+                    link.href = selected.url;
+                    link.title = selected.title;
+                    link.setAttribute('aria-label', selected.title);
+                    link.dataset.graphingCalculator = selection;
+
+                    const image = link.querySelector(':scope > img.icon-img');
+                    if (image && window.ScheduleIcons) {
+                        window.ScheduleIcons.assign(image, '', selected.url);
+                    }
+
+                    if (save) {
+                        try {
+                            localStorage.setItem(STORAGE_KEY, selection);
+                        } catch (error) {
+                            // 本機儲存停用時仍保留本次切換結果。
+                        }
+                    }
+                }
+
+                applySelection(readSelection());
+
+                let previousRightClick = 0;
+                link.addEventListener('contextmenu', event => {
+                    event.preventDefault();
+                    const now = performance.now();
+                    if (now - previousRightClick <= 800) {
+                        previousRightClick = 0;
+                        const next = link.dataset.graphingCalculator === 'desmos'
+                            ? 'geogebra'
+                            : 'desmos';
+                        applySelection(next, true);
+                    } else {
+                        previousRightClick = now;
+                    }
+                });
+            })();
+        </script>
         <p align="right">
             <a href="Games.html"
                style="position: fixed; bottom: 20px; right: 20px;"

@@ -2332,7 +2332,7 @@ body.focus-mode-active {
         <form id="google-account-form" class="settings-card">
             <h3>Google 帳號</h3>
             <p class="settings-card__description">
-                從下拉選單選擇帳號；連續按兩次右鍵可替單一 Google 連結指定不同帳號。
+                從下拉選單選擇帳號；右鍵九宮格可一次指定其中全部 Google 連結，連續按兩次右鍵則可微調單一連結。
             </p>
 
             <label for="google-account-profile-select">選擇帳號</label>
@@ -2358,10 +2358,7 @@ body.focus-mode-active {
                    placeholder="例如：https://mail.google.com/mail/u/0/#inbox">
 
             <p id="google-account-status" class="google-account-status" role="status" aria-live="polite"></p>
-
-            <div class="google-account-panel__actions">
-                <button class="google-account-save" type="submit">儲存帳號設定</button>
-            </div>
+            <p class="settings-card__description">變更會自動儲存。</p>
         </form>
 
         <details class="settings-disclosure">
@@ -2526,13 +2523,16 @@ body.focus-mode-active {
                 ['背景透明度', 'Background opacity'],
                 ['管理 Google 帳號、頁面桌布、自訂連結與 iPhone 主畫面捷徑。', 'Manage your Google account, wallpaper, custom links, and iPhone home screen shortcut.'],
                 ['Google 帳號', 'Google account'],
-                ['從下拉選單選擇帳號；連續按兩次右鍵可替單一 Google 連結指定不同帳號。', 'Choose an account from the dropdown. Right-click a Google link twice to assign a different account to that link.'],
+                ['從下拉選單選擇帳號；右鍵九宮格可一次指定其中全部 Google 連結，連續按兩次右鍵則可微調單一連結。', 'Choose an account from the dropdown. Right-click the nine-grid to assign all Google links inside it, or right-click one Google link twice to fine-tune it.'],
                 ['使用指定的 Google 帳號', 'Use a specific Google account'],
                 ['選擇帳號', 'Choose account'],
                 ['瀏覽器預設帳號', 'Browser default account'],
                 ['選擇此連結使用的帳號', 'Choose an account for this link'],
                 ['帳號', 'Account'],
                 ['跟隨全域設定', 'Follow global setting'],
+                ['跟隨九宮格設定', 'Follow nine-grid setting'],
+                ['選擇九宮格使用的帳號', 'Choose an account for the nine-grid'],
+                ['九宮格內全部 Google 連結', 'All Google links in the nine-grid'],
                 ['套用', 'Apply'],
                 ['固定 Google 帳號（選填）', 'Specific Google accounts (optional)'],
                 ['個人帳號\nuserB@gmail.com\n\n學校帳號\nschool@example.com', 'Personal\nuserB@gmail.com\n\nSchool\nschool@example.com'],
@@ -2540,7 +2540,9 @@ body.focus-mode-active {
                 ['或者', 'or'],
                 ['貼上任一 Google 產品連結自動判別', 'Paste a Google product link to detect the account'],
                 ['例如：https://mail.google.com/mail/u/0/#inbox', 'Example: https://mail.google.com/mail/u/0/#inbox'],
-                ['儲存帳號設定', 'Save account settings'],
+                ['變更會自動儲存。', 'Changes are saved automatically.'],
+                ['帳號設定已自動儲存。', 'Account settings saved automatically.'],
+                ['已整理帳號格式並自動儲存。', 'Account list formatted and saved automatically.'],
                 ['頁面桌布', 'Page wallpaper'],
                 ['從手機相簿或裝置中選擇圖片；桌布只會儲存在目前的瀏覽器。', 'Choose an image from your phone or device. The wallpaper is stored only in this browser.'],
                 ['目前桌布預覽', 'Current wallpaper preview'],
@@ -2653,6 +2655,7 @@ body.focus-mode-active {
 
                 const patterns = [
                     [/^目前套用帳號 (.+)$/, 'Account $1 is currently active.'],
+                    [/^已從連結辨識出帳號 (.+) 並自動儲存。$/, 'Detected account $1 from the link and saved it automatically.'],
                     [/^已從連結辨識出帳號 (.+)$/, 'Detected account $1 from the link.'],
                     [/^已儲存並套用帳號 (.+)$/, 'Account $1 saved and applied.'],
                     [/^已套用帳號 (.+)；瀏覽器無法保存，下次開啟會恢復預設 0。$/, 'Account $1 is active, but this browser could not save it. The next visit will use account 0.'],
@@ -3137,6 +3140,7 @@ body.focus-mode-active {
             const STORAGE_KEY = 'scheduleGoogleAccountIndex';
             const LINK_ACCOUNT_OVERRIDES_KEY = 'scheduleGoogleLinkAccountOverrides';
             const ACCOUNT_PROFILES_KEY = 'scheduleGoogleAccountProfiles';
+            const LAUNCHER_ACCOUNT_KEY = 'scheduleLauncherGoogleAccount';
             const DEFAULT_ACCOUNT_INDEX = 0;
             const PATH_ACCOUNT_HOSTS = new Set([
                 'chat.google.com',
@@ -3165,6 +3169,7 @@ body.focus-mode-active {
             let lastFocusedElement = null;
             let linkAccountOverrides = readLinkAccountOverrides();
             let accountProfiles = readAccountProfiles();
+            let launcherAccount = readLauncherAccount();
 
             function readLinkAccountOverrides() {
                 try {
@@ -3182,6 +3187,32 @@ body.focus-mode-active {
                     localStorage.setItem(LINK_ACCOUNT_OVERRIDES_KEY, JSON.stringify(linkAccountOverrides));
                 } catch (error) {
                     // 儲存空間停用時，本次頁面仍可使用覆寫設定。
+                }
+            }
+
+            function readLauncherAccount() {
+                try {
+                    const saved = localStorage.getItem(LAUNCHER_ACCOUNT_KEY);
+                    if (saved === null || saved === '') return null;
+                    if (/^\d+$/.test(saved)) {
+                        const parsed = Number.parseInt(saved, 10);
+                        return isValidAccountIdentity(parsed) ? parsed : null;
+                    }
+                    return isEmailAddress(saved) ? saved.trim().toLowerCase() : null;
+                } catch (error) {
+                    return null;
+                }
+            }
+
+            function saveLauncherAccount() {
+                try {
+                    if (isValidAccountIdentity(launcherAccount)) {
+                        localStorage.setItem(LAUNCHER_ACCOUNT_KEY, String(launcherAccount));
+                    } else {
+                        localStorage.removeItem(LAUNCHER_ACCOUNT_KEY);
+                    }
+                } catch (error) {
+                    // 儲存空間停用時，本次頁面仍可使用九宮格帳號。
                 }
             }
 
@@ -3412,6 +3443,9 @@ body.focus-mode-active {
 
                 const key = linkAccountKey(link);
                 const override = linkAccountOverrides[key];
+                const launcherOverride = link.closest('#launcher-menu') && isValidAccountIdentity(launcherAccount)
+                    ? launcherAccount
+                    : null;
                 if (link.dataset.googleAccountFixed === 'true' && !isValidAccountIdentity(override)) {
                     link.href = link.dataset.googleAccountOriginalHref;
                     return;
@@ -3419,7 +3453,9 @@ body.focus-mode-active {
 
                 const adjustedHref = buildGoogleAccountUrl(
                     link.dataset.googleAccountOriginalHref,
-                    isValidAccountIdentity(override) ? override : index
+                    isValidAccountIdentity(override)
+                        ? override
+                        : (isValidAccountIdentity(launcherOverride) ? launcherOverride : index)
                 );
                 if (adjustedHref) link.href = adjustedHref;
             }
@@ -3465,12 +3501,15 @@ body.focus-mode-active {
                 const profileSelect = document.getElementById('google-account-profile-select');
                 const profilesInput = document.getElementById('google-account-profiles');
                 const linkPicker = document.getElementById('google-link-account-picker');
+                const linkPickerTitle = document.getElementById('google-link-account-picker-title');
                 const linkPickerTarget = document.getElementById('google-link-account-picker-target');
                 const linkPickerSelect = document.getElementById('google-link-account-picker-select');
                 const linkPickerSave = document.getElementById('google-link-account-picker-save');
                 let editingGoogleLink = null;
+                let editingLauncherGrid = false;
                 let previousContextLink = null;
                 let previousContextTime = 0;
+                let accountSaveTimer = 0;
 
                 accountIndex = detectInitialAccount();
 
@@ -3533,6 +3572,19 @@ body.focus-mode-active {
                     profileSelect.value = hasNamedSelection ? String(selectedIdentity) : '0';
                 }
 
+                function createAccountPickerOptions(english, followLauncher = false) {
+                    const options = [new Option(
+                        followLauncher
+                            ? (english ? 'Follow nine-grid setting' : '跟隨九宮格設定')
+                            : (english ? 'Follow global setting' : '跟隨全域設定'),
+                        '__global__'
+                    )];
+                    accountProfiles.forEach(profile => {
+                        options.push(new Option(`${profile.name}（${profile.email}）`, profile.email));
+                    });
+                    return options;
+                }
+
                 function openLinkAccountPicker(link) {
                     rewriteGoogleLink(link, accountIndex);
                     const key = linkAccountKey(link);
@@ -3541,20 +3593,39 @@ body.focus-mode-active {
                         : accountIndex;
                     const english = window.ScheduleLanguage?.getLanguage() === 'en';
                     const label = link.textContent.trim() || link.title || new URL(link.href).hostname;
-                    const options = [new Option(
-                        english ? 'Follow global setting' : '跟隨全域設定',
-                        '__global__'
-                    )];
-                    accountProfiles.forEach(profile => {
-                        options.push(new Option(`${profile.name}（${profile.email}）`, profile.email));
-                    });
-                    linkPickerSelect.replaceChildren(...options);
+                    linkPickerSelect.replaceChildren(...createAccountPickerOptions(
+                        english,
+                        Boolean(link.closest('#launcher-menu'))
+                    ));
                     linkPickerSelect.value = Object.hasOwn(linkAccountOverrides, key)
                         && accountProfiles.some(profile => profile.email === selectedIdentity)
                         ? selectedIdentity
                         : '__global__';
+                    linkPickerTitle.textContent = english
+                        ? 'Choose an account for this link'
+                        : '選擇此連結使用的帳號';
                     linkPickerTarget.textContent = label;
                     editingGoogleLink = link;
+                    editingLauncherGrid = false;
+                    linkPicker.showModal();
+                    requestAnimationFrame(() => linkPickerSelect.focus());
+                }
+
+                function openLauncherAccountPicker() {
+                    const english = window.ScheduleLanguage?.getLanguage() === 'en';
+                    linkPickerSelect.replaceChildren(...createAccountPickerOptions(english));
+                    linkPickerSelect.value = isValidAccountIdentity(launcherAccount)
+                        && accountProfiles.some(profile => profile.email === launcherAccount)
+                        ? String(launcherAccount)
+                        : '__global__';
+                    linkPickerTitle.textContent = english
+                        ? 'Choose an account for the nine-grid'
+                        : '選擇九宮格使用的帳號';
+                    linkPickerTarget.textContent = english
+                        ? 'All Google links in the nine-grid'
+                        : '九宮格內全部 Google 連結';
+                    editingGoogleLink = null;
+                    editingLauncherGrid = true;
                     linkPicker.showModal();
                     requestAnimationFrame(() => linkPickerSelect.focus());
                 }
@@ -3562,9 +3633,19 @@ body.focus-mode-active {
                 function closeLinkAccountPicker() {
                     if (linkPicker.open) linkPicker.close();
                     editingGoogleLink = null;
+                    editingLauncherGrid = false;
                 }
 
                 linkPickerSave.addEventListener('click', () => {
+                    if (editingLauncherGrid) {
+                        launcherAccount = linkPickerSelect.value === '__global__'
+                            ? null
+                            : linkPickerSelect.value;
+                        saveLauncherAccount();
+                        const launcherMenu = document.getElementById('launcher-menu');
+                        if (launcherMenu) applyAccountToLinks(accountIndex, launcherMenu);
+                        return closeLinkAccountPicker();
+                    }
                     if (!editingGoogleLink) return closeLinkAccountPicker();
                     const key = linkAccountKey(editingGoogleLink);
                     if (linkPickerSelect.value === '__global__') delete linkAccountOverrides[key];
@@ -3573,25 +3654,61 @@ body.focus-mode-active {
                     rewriteGoogleLink(editingGoogleLink, accountIndex);
                     closeLinkAccountPicker();
                 });
-                linkPicker.addEventListener('close', () => { editingGoogleLink = null; });
+                linkPicker.addEventListener('close', () => {
+                    editingGoogleLink = null;
+                    editingLauncherGrid = false;
+                });
+
+                function saveAccountSettings(showStatus = true) {
+                    const selectedEmail = profileSelect.value;
+                    accountProfiles = parseAccountProfiles(profilesInput.value);
+                    saveAccountProfiles();
+                    accountIndex = selectedEmail && accountProfiles.some(profile => profile.email === selectedEmail)
+                        ? selectedEmail
+                        : DEFAULT_ACCOUNT_INDEX;
+                    applyAccountToLinks(accountIndex);
+                    updateBadge();
+                    renderProfileSelect(accountProfiles, accountIndex);
+                    try {
+                        localStorage.setItem(STORAGE_KEY, String(accountIndex));
+                        if (showStatus) setStatus('帳號設定已自動儲存。', 'success');
+                    } catch (error) {
+                        if (showStatus) setStatus(`已套用帳號 ${accountIndex}；瀏覽器無法保存，下次開啟會恢復預設 0。`, 'error');
+                    }
+                }
+
+                function scheduleAccountSave() {
+                    window.clearTimeout(accountSaveTimer);
+                    accountSaveTimer = window.setTimeout(() => saveAccountSettings(), 500);
+                }
 
                 profileSelect.addEventListener('change', () => {
-                    if (profileSelect.value !== '') setStatus(`將使用固定帳號 ${profileSelect.options[profileSelect.selectedIndex].textContent}`);
+                    window.clearTimeout(accountSaveTimer);
+                    saveAccountSettings();
                 });
                 profilesInput.addEventListener('input', () => {
                     renderProfileSelect(parseAccountProfiles(profilesInput.value), profileSelect.value || accountIndex);
+                    scheduleAccountSave();
                 });
                 profilesInput.addEventListener('paste', () => {
                     window.setTimeout(() => {
+                        window.clearTimeout(accountSaveTimer);
                         const pastedProfiles = parseAccountProfiles(profilesInput.value);
                         profilesInput.value = serializeAccountProfiles(pastedProfiles);
                         renderProfileSelect(pastedProfiles, profileSelect.value || accountIndex);
-                        setStatus('已移除 Google 介面文字並整理帳號格式。', 'success');
+                        saveAccountSettings(false);
+                        setStatus('已整理帳號格式並自動儲存。', 'success');
                     }, 0);
                 });
 
                 document.addEventListener('contextmenu', event => {
                     const link = event.target.closest?.('a[href]');
+                    const launcherSurface = event.target.closest?.('#launcher-button, #launcher-menu');
+                    if (!link && launcherSurface) {
+                        event.preventDefault();
+                        openLauncherAccountPicker();
+                        return;
+                    }
                     if (!link) return;
                     let candidate;
                     try {
@@ -3638,27 +3755,14 @@ body.focus-mode-active {
                     } else {
                         profileSelect.value = '0';
                     }
-                    setStatus(`已從連結辨識出帳號 ${detected}`, 'success');
+                    saveAccountSettings(false);
+                    setStatus(`已從連結辨識出帳號 ${detected} 並自動儲存。`, 'success');
                 });
 
                 form.addEventListener('submit', event => {
                     event.preventDefault();
-                    const selectedEmail = profileSelect.value;
-
-                    accountProfiles = parseAccountProfiles(profilesInput.value);
-                    saveAccountProfiles();
-                    accountIndex = selectedEmail && accountProfiles.some(profile => profile.email === selectedEmail)
-                        ? selectedEmail
-                        : DEFAULT_ACCOUNT_INDEX;
-                    applyAccountToLinks(accountIndex);
-                    updateBadge();
-                    try {
-                        localStorage.setItem(STORAGE_KEY, String(accountIndex));
-                        setStatus(`已儲存並套用帳號 ${accountIndex}`, 'success');
-                        document.dispatchEvent(new CustomEvent('schedule:settings-saved'));
-                    } catch (error) {
-                        setStatus(`已套用帳號 ${accountIndex}；瀏覽器無法保存，下次開啟會恢復預設 0。`, 'error');
-                    }
+                    window.clearTimeout(accountSaveTimer);
+                    saveAccountSettings();
                 });
 
                 document.addEventListener('keydown', event => {

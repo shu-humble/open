@@ -6129,11 +6129,13 @@ body.focus-mode-active {
                 const tools = {
                     geogebra: {
                         url: 'https://www.geogebra.org/',
-                        title: 'GeoGebra'
+                        title: 'GeoGebra',
+                        icon: 'https://www.geogebra.org/sp-assets/assets/images/ogImage.c3863704.png'
                     },
                     desmos: {
                         url: 'https://www.desmos.com/calculator',
-                        title: 'Desmos Graphing Calculator'
+                        title: 'Desmos Graphing Calculator',
+                        icon: ''
                     }
                 };
                 const link = document.getElementById('graphing-calculator-link');
@@ -6157,7 +6159,7 @@ body.focus-mode-active {
 
                     const image = link.querySelector(':scope > img.icon-img');
                     if (image && window.ScheduleIcons) {
-                        window.ScheduleIcons.assign(image, '', selected.url);
+                        window.ScheduleIcons.assign(image, selected.icon, selected.url);
                     }
 
                     if (save) {
@@ -6170,6 +6172,9 @@ body.focus-mode-active {
                 }
 
                 applySelection(readSelection());
+                document.addEventListener('DOMContentLoaded', () => {
+                    applySelection(link.dataset.graphingCalculator || readSelection());
+                });
 
                 let previousRightClick = 0;
                 link.addEventListener('contextmenu', event => {

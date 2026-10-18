@@ -2332,7 +2332,7 @@ body.focus-mode-active {
         <form id="google-account-form" class="settings-card">
             <h3>Google 帳號</h3>
             <p class="settings-card__description">
-                從下拉選單選擇帳號；右鍵九宮格可一次指定其中全部 Google 連結，連續按兩次右鍵則可微調單一連結。
+                從下拉選單選擇帳號；右鍵九宮格可一次指定其中全部 Google 連結，Ctrl＋右鍵則可微調單一連結。普通右鍵仍會顯示瀏覽器選單。
             </p>
 
             <label for="google-account-profile-select">選擇帳號</label>
@@ -2523,7 +2523,7 @@ body.focus-mode-active {
                 ['背景透明度', 'Background opacity'],
                 ['管理 Google 帳號、頁面桌布、自訂連結與 iPhone 主畫面捷徑。', 'Manage your Google account, wallpaper, custom links, and iPhone home screen shortcut.'],
                 ['Google 帳號', 'Google account'],
-                ['從下拉選單選擇帳號；右鍵九宮格可一次指定其中全部 Google 連結，連續按兩次右鍵則可微調單一連結。', 'Choose an account from the dropdown. Right-click the nine-grid to assign all Google links inside it, or right-click one Google link twice to fine-tune it.'],
+                ['從下拉選單選擇帳號；右鍵九宮格可一次指定其中全部 Google 連結，Ctrl＋右鍵則可微調單一連結。普通右鍵仍會顯示瀏覽器選單。', 'Choose an account from the dropdown. Right-click the nine-grid to assign all Google links inside it, or Ctrl-right-click one Google link to fine-tune it. A regular right-click still opens the browser menu.'],
                 ['使用指定的 Google 帳號', 'Use a specific Google account'],
                 ['選擇帳號', 'Choose account'],
                 ['瀏覽器預設帳號', 'Browser default account'],
@@ -3507,8 +3507,6 @@ body.focus-mode-active {
                 const linkPickerSave = document.getElementById('google-link-account-picker-save');
                 let editingGoogleLink = null;
                 let editingLauncherGrid = false;
-                let previousContextLink = null;
-                let previousContextTime = 0;
                 let accountSaveTimer = 0;
 
                 accountIndex = detectInitialAccount();
@@ -3710,6 +3708,7 @@ body.focus-mode-active {
                         return;
                     }
                     if (!link) return;
+                    if (!event.ctrlKey && !event.metaKey) return;
                     let candidate;
                     try {
                         candidate = new URL(link.dataset.googleAccountOriginalHref || link.href, document.baseURI);
@@ -3719,15 +3718,7 @@ body.focus-mode-active {
                     if (!isGoogleHost(candidate.hostname)) return;
 
                     event.preventDefault();
-                    const now = performance.now();
-                    if (link === previousContextLink && now - previousContextTime <= 800) {
-                        previousContextLink = null;
-                        previousContextTime = 0;
-                        openLinkAccountPicker(link);
-                    } else {
-                        previousContextLink = link;
-                        previousContextTime = now;
-                    }
+                    openLinkAccountPicker(link);
                 });
 
                 linkInput.addEventListener('input', () => {
@@ -6176,19 +6167,13 @@ body.focus-mode-active {
                     applySelection(link.dataset.graphingCalculator || readSelection());
                 });
 
-                let previousRightClick = 0;
                 link.addEventListener('contextmenu', event => {
+                    if (!event.ctrlKey && !event.metaKey) return;
                     event.preventDefault();
-                    const now = performance.now();
-                    if (now - previousRightClick <= 800) {
-                        previousRightClick = 0;
-                        const next = link.dataset.graphingCalculator === 'desmos'
-                            ? 'geogebra'
-                            : 'desmos';
-                        applySelection(next, true);
-                    } else {
-                        previousRightClick = now;
-                    }
+                    const next = link.dataset.graphingCalculator === 'desmos'
+                        ? 'geogebra'
+                        : 'desmos';
+                    applySelection(next, true);
                 });
             })();
         </script>

@@ -121,11 +121,6 @@ a { color: inherit; text-decoration: none; }
 #games-catalog a[data-suppressed="true"] { display: none !important; }
 .custom-games-section { margin-top: 0; }
 .catalog-empty { background: var(--panel); border-radius: 12px; padding: 22px; }
-#lang-toggle-btn {
-  position: fixed; top: max(14px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right));
-  z-index: 10010; min-width: 60px; height: 46px; border: 1px solid var(--line); border-radius: 14px;
-  background: #153c2d; color: #fff; font-size: 13px; font-weight: 700;
-}
 body.games-settings-open { overflow: hidden; }
 .games-settings-panel { color-scheme: light; }
 
@@ -286,6 +281,44 @@ body.games-settings-open { overflow: hidden; }
   border-radius: 15px;
   background: #f4f8f5;
 }
+
+.games-settings-disclosure {
+  margin: 12px 0;
+  overflow: hidden;
+  border: 1px solid #dce5df;
+  border-radius: 15px;
+  background: #f4f8f5;
+}
+.games-settings-disclosure > summary {
+  padding: 14px;
+  color: #173d2f;
+  font-size: 16px;
+  font-weight: 750;
+  cursor: pointer;
+  list-style-position: inside;
+}
+.games-settings-disclosure[open] > summary { border-bottom: 1px solid #dce5df; }
+.games-settings-disclosure > .games-settings-card {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.games-settings-disclosure > .games-settings-card > h3:first-child { display: none; }
+.games-language-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.games-language-option {
+  min-height: 42px;
+  border: 1px solid #aebdb4;
+  border-radius: 10px;
+  background: #fff;
+  color: #263b31;
+  font: 750 14px/1 var(--ui-font);
+  cursor: pointer;
+}
+.games-language-option[aria-pressed="true"] { border-color: #1d704d; background: #1d704d; color: #fff; }
+.games-work-log { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.games-work-log li { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 10px; font-size: 13px; line-height: 1.5; }
+.games-work-log time { color: #1d704d; font-weight: 750; }
 
 .games-settings-description {
   margin: 0 0 10px;
@@ -544,7 +577,7 @@ body.games-settings-open { overflow: hidden; }
   .game-category h2 { font-size: 20px; }
   .game-links > a { margin: 4px 0; line-height: 1.3; }
   .link-text { white-space: normal; overflow-wrap: anywhere; line-height: 1.3; }
-  #games-settings-button, #lang-toggle-btn { top: max(12px, env(safe-area-inset-top)); }
+  #games-settings-button { top: max(12px, env(safe-area-inset-top)); }
   .games-settings-panel { top: 0; left: 0; width: 100%; height: 100dvh; max-height: none; border: 0; border-radius: 0; padding: 0 14px calc(24px + env(safe-area-inset-bottom)); }
   .games-settings-panel__header { margin: 0 -14px; padding: calc(12px + env(safe-area-inset-top)) 14px 12px; }
   .games-settings-card { padding: 12px; }
@@ -568,8 +601,22 @@ body.games-settings-open { overflow: hidden; }
     </header>
     <p class="games-settings-panel__intro">桌布、遊戲連結與主畫面捷徑都可在這裡管理；個人設定只保存在目前裝置的瀏覽器。</p>
 
+    <details class="games-settings-disclosure">
+      <summary>顯示語言</summary>
+      <section class="games-settings-card" aria-labelledby="games-language-title">
+        <h3 id="games-language-title">顯示語言</h3>
+        <p class="games-settings-description">第一次使用時跟隨裝置語言；手動選擇後，Games 與 Schedule 會沿用上次的選擇。</p>
+        <div class="games-language-options" role="group" aria-label="顯示語言">
+          <button class="games-language-option" type="button" data-games-language="zh" aria-pressed="false">中文</button>
+          <button class="games-language-option" type="button" data-games-language="en" aria-pressed="false">English</button>
+        </div>
+      </section>
+    </details>
+
     <!-- 一次選擇整個頁面使用的字型，選項集中在同一個選單。 -->
-    <section class="games-settings-card" aria-labelledby="games-font-title">
+    <details class="games-settings-disclosure">
+      <summary>顯示字型</summary>
+      <section class="games-settings-card" aria-labelledby="games-font-title">
       <h3 id="games-font-title">顯示字型</h3>
       <p class="games-settings-description">從下列六種常用字型選擇一種，會套用到整個頁面。</p>
       <div class="font-picker-grid">
@@ -592,10 +639,13 @@ body.games-settings-open { overflow: hidden; }
         <button id="games-font-save" class="games-settings-action games-settings-action--primary" type="button">套用字型</button>
       </div>
       <p id="games-font-status" class="settings-status" role="status" aria-live="polite"></p>
-    </section>
+      </section>
+    </details>
 
     <!-- 隱藏只影響本裝置的顯示，原始連結仍留在下方 HTML。 -->
-    <section class="games-settings-card" aria-labelledby="games-visibility-title">
+    <details class="games-settings-disclosure">
+      <summary>連線檢查與隱藏</summary>
+      <section class="games-settings-card" aria-labelledby="games-visibility-title">
       <h3 id="games-visibility-title">連線檢查與隱藏</h3>
       <p class="games-settings-description">需要時按「檢查一次」，不會在開啟頁面或背景自動檢查。連續失敗的連結會保持隱藏，直到下次手動檢查。超過 3 秒標示回應較慢，8 秒仍沒有回應就停止等待並標示逾時。</p>
       <label class="settings-check"><input id="games-auto-hide" type="checkbox" checked> 檢查後隱藏連續兩次失敗的連結</label>
@@ -610,13 +660,16 @@ body.games-settings-open { overflow: hidden; }
         <h4>需要確認的連結</h4>
         <ul id="games-check-results" class="hidden-links-list"></ul>
       </div>
-      <p class="games-settings-description">隱藏的連結會從主頁移除，只在下方清單保留入口；按「恢復顯示」才會回到主頁。</p>
+      <p class="games-settings-description">手動隱藏與檢查失敗會分開計算。無法判定的連結不會隱藏；按「恢復顯示」才會把手動隱藏的連結放回主頁。</p>
       <h4>已隱藏的連結（<span id="games-hidden-count">0</span>）</h4>
       <ul id="games-hidden-list" class="hidden-links-list"></ul>
       <p id="games-hidden-empty" class="games-settings-description">目前沒有隱藏的連結。</p>
-    </section>
+      </section>
+    </details>
 
-    <section class="games-settings-card" aria-labelledby="games-wallpaper-title">
+    <details class="games-settings-disclosure">
+      <summary>頁面桌布</summary>
+      <section class="games-settings-card" aria-labelledby="games-wallpaper-title">
       <h3 id="games-wallpaper-title">頁面桌布</h3>
       <p class="games-settings-description">從相簿或裝置選擇圖片。圖片不會上傳，最大 20 MB。</p>
       <div id="games-wallpaper-preview" class="wallpaper-preview" aria-label="目前桌布預覽"></div>
@@ -626,9 +679,12 @@ body.games-settings-open { overflow: hidden; }
         <button id="games-wallpaper-reset" class="games-settings-action games-settings-action--secondary" type="button">恢復預設桌布</button>
       </div>
       <p id="games-wallpaper-status" class="settings-status" role="status" aria-live="polite"></p>
-    </section>
+      </section>
+    </details>
 
-    <section class="games-settings-card" aria-labelledby="games-links-title">
+    <details class="games-settings-disclosure">
+      <summary>連結與圖片</summary>
+      <section class="games-settings-card" aria-labelledby="games-links-title">
       <h3 id="games-links-title">連結與圖片</h3>
       <p class="games-settings-description">選擇原有或自訂連結後，可替換名稱、網址與圖示。圖片網址留白時會嘗試顯示該網站的圖示。</p>
 
@@ -701,9 +757,12 @@ body.games-settings-open { overflow: hidden; }
         </div>
         <p id="games-new-link-status" class="settings-status" role="status" aria-live="polite"></p>
       </form>
-    </section>
+      </section>
+    </details>
 
-    <section class="games-settings-card home-screen-layout" aria-labelledby="games-home-screen-title">
+    <details class="games-settings-disclosure">
+      <summary>加入 iPhone／iPad 主畫面</summary>
+      <section class="games-settings-card home-screen-layout" aria-labelledby="games-home-screen-title">
       <img class="home-screen-icon" src="games-apple-touch-icon.png" alt="Games 主畫面圖示">
       <div>
         <h3 id="games-home-screen-title">加入 iPhone／iPad 主畫面</h3>
@@ -718,11 +777,21 @@ body.games-settings-open { overflow: hidden; }
           <button id="games-install-button" class="games-settings-action games-settings-action--primary" type="button" hidden>安裝 Games</button>
         </div>
       </div>
-    </section>
+      </section>
+    </details>
+
+    <details class="games-settings-disclosure">
+      <summary>工作日誌</summary>
+      <section class="games-settings-card" aria-labelledby="games-work-log-title">
+        <h3 id="games-work-log-title">工作日誌</h3>
+        <ol class="games-work-log">
+          <li><time datetime="2026-10-25">2026/10/25</time><span>修正連結檢查的舊紀錄誤導，將設定分類收納，並把語言選擇移入設定。</span></li>
+          <li><time datetime="2026-10-18">2026/10/18</time><span>改善連結編輯、圖示與隱藏清單。</span></li>
+          <li><time datetime="2026-10-15">2026/10/15</time><span>加入自訂連結、桌布與主畫面捷徑設定。</span></li>
+        </ol>
+      </section>
+    </details>
   </aside>
-
-
-  <button id="lang-toggle-btn" type="button" aria-label="切換中英文 / Switch language">中 / EN</button>
 
   <header class="games-header">
     <h1>Games</h1>
@@ -971,6 +1040,8 @@ body.games-settings-open { overflow: hidden; }
   "開啟設定": "Open settings",
   "關閉設定": "Close settings",
   "桌布、遊戲連結與主畫面捷徑都可在這裡管理；個人設定只保存在目前裝置的瀏覽器。": "Manage your wallpaper, links, and home screen shortcut here. Your preferences are saved only in this browser.",
+  "顯示語言": "Display language",
+  "第一次使用時跟隨裝置語言；手動選擇後，Games 與 Schedule 會沿用上次的選擇。": "The first visit follows your device language. After you choose manually, Games and Schedule remember that choice.",
   "顯示字型": "Display fonts",
   "從下列六種常用字型選擇一種，會套用到整個頁面。": "Choose one of these six common fonts to use across the whole page.",
   "字型": "Font",
@@ -990,6 +1061,7 @@ body.games-settings-open { overflow: hidden; }
   "清除所有隱藏與檢查紀錄": "Clear all hidden links and check history",
   "需要確認的連結": "Links to review",
   "隱藏的連結會從主頁移除，只在下方清單保留入口；按「恢復顯示」才會回到主頁。": "Hidden links disappear from the main page. You can access them below or click “Restore” to show them again.",
+  "手動隱藏與檢查失敗會分開計算。無法判定的連結不會隱藏；按「恢復顯示」才會把手動隱藏的連結放回主頁。": "Manual hides and failed checks are counted separately. Unknown results are never hidden; use Restore to return manually hidden links to the page.",
   "已隱藏的連結（": "Hidden links (",
   "）": ")",
   "目前沒有隱藏的連結。": "There are no hidden links.",
@@ -1031,6 +1103,10 @@ body.games-settings-open { overflow: hidden; }
   "確認名稱後點「加入」": "Confirm the name and tap Add",
   "正在檢查…": "Checking…",
   "安裝 Games": "Install Games",
+  "工作日誌": "Work log",
+  "修正連結檢查的舊紀錄誤導，將設定分類收納，並把語言選擇移入設定。": "Fixed misleading saved check results, grouped settings, and moved language selection into settings.",
+  "改善連結編輯、圖示與隱藏清單。": "Improved link editing, icons, and the hidden-links list.",
+  "加入自訂連結、桌布與主畫面捷徑設定。": "Added personal links, wallpaper, and home-screen shortcut settings.",
   "瀏覽分類": "Browse categories",
   "此分類的連結目前都已隱藏。可到設定查看並重新檢查。": "All links in this category are hidden. View or check them in settings.",
   "已從主畫面開啟": "Opened from the home screen",
@@ -1104,11 +1180,17 @@ body.games-settings-open { overflow: hidden; }
     if (getLanguage() !== 'en') return value;
     if (Object.hasOwn(interfaceTranslations, value)) return interfaceTranslations[value];
     const patterns = [
+      [/^手動隱藏 (\d+) 個、檢查確認失敗 (\d+) 個。$/, (_, manual, failed) => manual + ' manually hidden, ' + failed + ' hidden after confirmed failures.'],
+      [/^正在檢查目前網路… 手動隱藏 (\d+) 個、檢查確認失敗 (\d+) 個。$/, (_, manual, failed) => 'Checking the network… ' + manual + ' manually hidden, ' + failed + ' hidden after confirmed failures.'],
+      [/^正在檢查目前網路… 目前沒有隱藏的連結。$/, 'Checking the network… No links are hidden.'],
       [/^正在檢查目前網路… 已隱藏 (\d+) 個連結，可在設定查看。$/, (_, n) => 'Checking the network… ' + n + ' hidden links. Review them in settings.'],
       [/^已隱藏 (\d+) 個連結 · 可在設定查看、重試或恢復顯示。$/, (_, n) => n + ' hidden links · View, recheck, or restore them in settings.'],
       [/^正在檢查 (\d+) \/ (\d+) 個網址…$/, (_, n, total) => 'Checking ' + n + ' / ' + total + ' URLs…'],
+      [/^檢查完成：(\d+) 個連續失敗、(\d+) 個回應較慢、(\d+) 個逾時、(\d+) 個無法判定。無法判定不會隱藏。(?:另有 (\d+) 個由你手動隱藏的連結，與本次檢查無關。)?$/, (_, failed, slow, timeout, unknown, manual) => 'Check complete: ' + failed + ' failed, ' + slow + ' slow, ' + timeout + ' timed out, ' + unknown + ' uncertain. Uncertain links were not hidden.' + (manual ? ' ' + manual + ' link(s) were hidden manually and are unrelated to this check.' : '')],
       [/^檢查完成：(\d+) 個連續失敗、(\d+) 個回應較慢、(\d+) 個逾時、(\d+) 個無法判定。失敗項目會保留到下次手動檢查。$/, (_, failed, slow, timeout, unknown) => 'Check complete: ' + failed + ' failed, ' + slow + ' slow, ' + timeout + ' timed out, ' + unknown + ' uncertain. Failed links remain hidden until the next manual check.'],
+      [/^沿用上次檢查：(\d+) 個確認失敗的連結仍隱藏；需要時再按「檢查一次」。$/, (_, n) => 'Using the previous check: ' + n + ' confirmed failed link(s) remain hidden. Click “Check once” when needed.'],
       [/^沿用上次檢查：(\d+) 個連結仍隱藏；需要時再按「檢查一次」。$/, (_, n) => 'Using the previous check: ' + n + ' links remain hidden. Click “Check once” when needed.'],
+      [/^尚未檢查；目前有 (\d+) 個由你手動隱藏的連結。$/, (_, n) => 'Not checked yet. ' + n + ' link(s) are currently hidden manually.'],
       [/^回應較慢（([\d.]+) 秒），需直接開啟確認$/, (_, n) => 'Slow response (' + n + ' seconds). Open directly to check.'],
       [/^逾時（([\d.]+) 秒內沒有回應），保留連結$/, (_, n) => 'Timed out (no response within ' + n + ' seconds). Link kept.'],
       [/^連續兩次失敗（(.+)）$/, (_, reason) => 'Two failed attempts (' + translateText(reason) + ')'],
@@ -1201,6 +1283,9 @@ body.games-settings-open { overflow: hidden; }
   function applyLanguage() {
     const lang = getLanguage();
     document.documentElement.lang = lang === 'en' ? 'en' : 'zh-TW';
+    document.querySelectorAll('[data-games-language]').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.gamesLanguage === lang));
+    });
     document.querySelectorAll('#games-catalog [data-en-label], #games-catalog [data-en-href]').forEach(element => {
       if (element.dataset.userEdited === 'true') return;
       const label = lang === 'en' ? element.dataset.enLabel : element.dataset.zhLabel;
@@ -1328,8 +1413,8 @@ body.games-settings-open { overflow: hidden; }
       event.preventDefault();
       window.open(titleLink.href, '_blank', 'noopener,noreferrer');
     });
-    document.getElementById('lang-toggle-btn').addEventListener('click', () => {
-      const nextLanguage = getLanguage() === 'zh' ? 'en' : 'zh';
+    document.querySelectorAll('[data-games-language]').forEach(button => button.addEventListener('click', () => {
+      const nextLanguage = button.dataset.gamesLanguage;
       sessionLanguage = nextLanguage;
       try { localStorage.setItem(LANGUAGE_KEY, nextLanguage); }
       catch { /* 禁止本機儲存時仍保留目前介面。 */ }
@@ -1337,7 +1422,12 @@ body.games-settings-open { overflow: hidden; }
       document.dispatchEvent(new Event('games:language-changed'));
       refreshCatalog();
       translateInterface();
-    });
+    }));
+    const settingGroups = Array.from(document.querySelectorAll('#games-settings-panel > .games-settings-disclosure'));
+    settingGroups.forEach(group => group.addEventListener('toggle', () => {
+      if (!group.open) return;
+      settingGroups.forEach(other => { if (other !== group) other.open = false; });
+    }));
     document.addEventListener('games:links-updated', refreshCatalog);
     refreshCatalog();
   });
@@ -2263,7 +2353,7 @@ body.games-settings-open { overflow: hidden; }
   const RETRY_DELAY_MS = 1200;
   const CONCURRENCY = 4;
   const STORAGE_KEY = 'gamesVisibilityPreferencesV1';
-  const CHECK_RULES_VERSION = 2;
+  const CHECK_RULES_VERSION = 3;
 
   // 獨立於畫面的檢查函式，測試時可注入網路回應、離線狀態與時間限制。
   async function probeUrl(rawUrl, options = {}) {
@@ -2458,6 +2548,17 @@ body.games-settings-open { overflow: hidden; }
       return row;
     }
 
+    function hiddenCounts() {
+      let manual = 0;
+      let automatic = 0;
+      anchors().forEach(link => {
+        if (!suppressed(link)) return;
+        if (preferences.linkDecisions[link.dataset.linkId] === 'hide') manual++;
+        else automatic++;
+      });
+      return { manual, automatic, total: manual + automatic };
+    }
+
     function renderVisibility() {
       hiddenList.replaceChildren();
       reviewList.replaceChildren();
@@ -2481,9 +2582,13 @@ body.games-settings-open { overflow: hidden; }
       document.getElementById('games-hidden-count').textContent = String(count);
       document.getElementById('games-hidden-empty').hidden = count > 0;
       document.getElementById('games-review-results').hidden = reviewed.size === 0;
+      const hidden = hiddenCounts();
+      const hiddenBreakdown = hidden.total
+        ? `手動隱藏 ${hidden.manual} 個、檢查確認失敗 ${hidden.automatic} 個。`
+        : '目前沒有隱藏的連結。';
       summary.textContent = activeScan
-        ? `正在檢查目前網路… 已隱藏 ${count} 個連結，可在設定查看。`
-        : `已隱藏 ${count} 個連結 · 可在設定查看、重試或恢復顯示。`;
+        ? `正在檢查目前網路… ${hiddenBreakdown}`
+        : hiddenBreakdown;
       updateHideButton();
       window.Games.refreshCatalog();
     }
@@ -2543,7 +2648,9 @@ body.games-settings-open { overflow: hidden; }
         const slow = [...next.values()].filter(result => result.kind === 'slow').length;
         const timeouts = [...next.values()].filter(result => result.kind === 'timeout').length;
         const unknown = [...next.values()].filter(result => result.kind === 'unknown').length;
-        checkStatus.textContent = `檢查完成：${failures} 個連續失敗、${slow} 個回應較慢、${timeouts} 個逾時、${unknown} 個無法判定。失敗項目會保留到下次手動檢查。`;
+        const hidden = hiddenCounts();
+        const manualNote = hidden.manual ? `另有 ${hidden.manual} 個由你手動隱藏的連結，與本次檢查無關。` : '';
+        checkStatus.textContent = `檢查完成：${failures} 個連續失敗、${slow} 個回應較慢、${timeouts} 個逾時、${unknown} 個無法判定。無法判定不會隱藏。${manualNote}`;
       } finally {
         if (activeScan === controller) {
           activeScan = null;
@@ -2596,9 +2703,12 @@ body.games-settings-open { overflow: hidden; }
     });
     renderVisibility();
     const savedFailureCount = Object.keys(preferences.failedChecks).length;
+    const initialHidden = hiddenCounts();
     checkStatus.textContent = savedFailureCount
-      ? `沿用上次檢查：${savedFailureCount} 個連結仍隱藏；需要時再按「檢查一次」。`
-      : '尚未檢查；按「檢查一次」才會開始，可隨時停止。';
+      ? `沿用上次檢查：${savedFailureCount} 個確認失敗的連結仍隱藏；需要時再按「檢查一次」。`
+      : initialHidden.manual
+        ? `尚未檢查；目前有 ${initialHidden.manual} 個由你手動隱藏的連結。`
+        : '尚未檢查；按「檢查一次」才會開始，可隨時停止。';
   });
 })();
 </script>

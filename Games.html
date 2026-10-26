@@ -169,6 +169,17 @@ body.games-settings-open { overflow: hidden; }
   outline: 3px solid rgba(255, 255, 255, 0.42);
   outline-offset: 2px;
 }
+#games-settings-button.has-hidden-notice::after {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #d93025;
+  content: "";
+}
 
 .games-settings-backdrop {
   position: fixed;
@@ -344,7 +355,8 @@ body.games-settings-open { overflow: hidden; }
 }
 
 .games-settings-panel input,
-.games-settings-panel select {
+.games-settings-panel select,
+.games-settings-panel textarea {
   width: 100%;
   min-height: 44px;
   padding: 9px 11px;
@@ -354,6 +366,7 @@ body.games-settings-open { overflow: hidden; }
   color: #17221d;
   font: 16px/1.3 var(--ui-font);
 }
+.games-settings-panel textarea { min-height: 112px; resize: vertical; }
 
 .games-settings-panel input:focus,
 .games-settings-panel select:focus {
@@ -555,6 +568,10 @@ body.games-settings-open { overflow: hidden; }
 .hidden-links-list a { display: block; color: #1d6345; font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
 .hidden-links-list small { display: block; color: #65736b; font-size: 12px; margin-top: 4px; overflow-wrap: anywhere; }
 .hidden-links-list button { font-size: 12px; min-height: 40px; }
+.games-check-copy { min-width: 0; }
+.games-check-copy > a { display: block; color: #1d6345; font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
+.games-check-copy > small { display: block; color: #65736b; font-size: 12px; margin-top: 4px; overflow-wrap: anywhere; }
+.hidden-links-list .games-settings-actions { align-self: center; margin-top: 0; }
 .games-settings-action:disabled { opacity: .5; cursor: wait; }
 @media (max-width: 1100px) {
   body { padding: 14px 24px 36px; }
@@ -638,13 +655,32 @@ body.games-settings-open { overflow: hidden; }
       </section>
     </details>
 
+    <details class="games-settings-disclosure">
+      <summary>Google 帳號</summary>
+      <section class="games-settings-card" aria-labelledby="games-google-account-title">
+        <h3 id="games-google-account-title">Google 帳號</h3>
+        <p class="games-settings-description">與 Schedule 共用同一份帳號清單與選擇，並套用到 Games 內的 YouTube 與 Google 連結。</p>
+        <label for="games-google-account-select">選擇帳號
+          <select id="games-google-account-select">
+            <option value="0">瀏覽器預設帳號</option>
+          </select>
+        </label>
+        <label for="games-google-account-profiles">固定 Google 帳號（選填）
+          <textarea id="games-google-account-profiles" rows="5" spellcheck="false" placeholder="個人帳號&#10;user@gmail.com&#10;&#10;學校帳號&#10;school@example.com"></textarea>
+        </label>
+        <p class="games-settings-description">每個帳號使用兩行：「名稱」與「電子郵件」，帳號之間空一行。貼入 Google 選單文字時會忽略 Default、個人資料圖片與開啟新分頁等介面文字；變更會自動儲存。</p>
+        <p id="games-google-account-status" class="settings-status" role="status" aria-live="polite"></p>
+      </section>
+    </details>
+
     <!-- 隱藏只影響本裝置的顯示，原始連結仍留在下方 HTML。 -->
     <details class="games-settings-disclosure">
       <summary>連線檢查與隱藏</summary>
       <section class="games-settings-card" aria-labelledby="games-visibility-title">
       <h3 id="games-visibility-title">連線檢查與隱藏</h3>
-      <p class="games-settings-description">需要時按「檢查一次」，不會在開啟頁面或背景自動檢查。連續失敗的連結會保持隱藏，直到下次手動檢查。超過 3 秒標示回應較慢，8 秒仍沒有回應就停止等待並標示逾時。</p>
+      <p class="games-settings-description">你可以手動按「檢查一次」，或開啟每日背景檢查。只有連續兩次明確失敗才會自動隱藏；已自動隱藏的連結每天會復查，恢復後自動重新顯示。</p>
       <label class="settings-check"><input id="games-auto-hide" type="checkbox" checked> 檢查後隱藏連續兩次失敗的連結</label>
+      <label class="settings-check"><input id="games-auto-daily-check" type="checkbox"> 每日首次開啟時在背景檢查並復查自動隱藏的連結</label>
       <details class="availability-note"><summary>哪些情況無法判斷？</summary><p>收到跨網站回應代表瀏覽器已連上該網址，因此會列為可連線。瀏覽器不能讀取跨網站頁面內容，所以若學校用封鎖提示頁取代原網站，仍須直接開啟確認；請用手動隱藏處理這類網站。請求被瀏覽器拒絕、離線或逾時也不會自動隱藏。</p></details>
       <div class="games-settings-actions">
         <button id="games-check-now" class="games-settings-action games-settings-action--primary" type="button">檢查一次</button>
@@ -656,7 +692,7 @@ body.games-settings-open { overflow: hidden; }
         <h4>需要確認的連結</h4>
         <ul id="games-check-results" class="hidden-links-list"></ul>
       </div>
-      <p class="games-settings-description">手動隱藏與檢查失敗會分開計算。無法判定的連結不會隱藏；按「恢復顯示」才會把手動隱藏的連結放回主頁。</p>
+      <p class="games-settings-description">手動隱藏與檢查失敗會分開計算。需要確認的連結不會自動隱藏；按「恢復顯示」才會把手動隱藏的連結放回主頁。</p>
       <h4>已隱藏的連結（<span id="games-hidden-count">0</span>）</h4>
       <ul id="games-hidden-list" class="hidden-links-list"></ul>
       <p id="games-hidden-empty" class="games-settings-description">目前沒有隱藏的連結。</p>
@@ -781,7 +817,7 @@ body.games-settings-open { overflow: hidden; }
       <section class="games-settings-card" aria-labelledby="games-work-log-title">
         <h3 id="games-work-log-title">工作日誌</h3>
         <ol class="games-work-log">
-          <li><time datetime="2026-10-25">2026/10/25</time><span>修正跨網站回應被列為無法判定的問題，並將語言與字型合併為顯示偏好。</span></li>
+          <li><time datetime="2026-10-25">2026/10/25</time><span>同步 Google 帳號設定，加入每日背景檢查與恢復機制，並修正跨網站回應判定。</span></li>
           <li><time datetime="2026-10-18">2026/10/18</time><span>改善連結編輯、圖示與隱藏清單。</span></li>
           <li><time datetime="2026-10-15">2026/10/15</time><span>加入自訂連結、桌布與主畫面捷徑設定。</span></li>
         </ol>
@@ -890,7 +926,7 @@ body.games-settings-open { overflow: hidden; }
                   <a class="link-branch" data-link-context="Lichess" data-link-id="original-038" href="https://lichess.org/training" data-zh-label="謎題" data-en-label="Puzzles">謎題</a>
                 </div>
                 <a data-link-id="original-035" href="黑白棋 .html" data-zh-label="黑白棋" data-en-label="Reversi" data-icon="黑白棋 icon.png">黑白棋</a>
-                <a data-link-id="original-034" href="http://www.solitaired.com" data-icon="https://solitaired.com/images/logo.png">Solitaired</a>
+                <a data-link-id="original-034" href="https://solitaired.com/" data-icon="https://solitaired.com/images/logo.png">Solitaired</a>
                 <a data-link-id="original-039" href="https://wintrchess.com/analysis">Wintrchess</a>
                 <a data-link-id="original-040" href="https://www.chessigma.com/">Chessigma</a>
               </div>
@@ -1038,6 +1074,15 @@ body.games-settings-open { overflow: hidden; }
   "桌布、遊戲連結與主畫面捷徑都可在這裡管理；個人設定只保存在目前裝置的瀏覽器。": "Manage your wallpaper, links, and home screen shortcut here. Your preferences are saved only in this browser.",
   "顯示語言": "Display language",
   "語言與字型": "Language and fonts",
+  "Google 帳號": "Google account",
+  "與 Schedule 共用同一份帳號清單與選擇，並套用到 Games 內的 YouTube 與 Google 連結。": "Share the same account list and selection with Schedule and apply it to YouTube and Google links in Games.",
+  "選擇帳號": "Choose account",
+  "瀏覽器預設帳號": "Browser default account",
+  "固定 Google 帳號（選填）": "Specific Google accounts (optional)",
+  "個人帳號\nuser@gmail.com\n\n學校帳號\nschool@example.com": "Personal\nuser@gmail.com\n\nSchool\nschool@example.com",
+  "每個帳號使用兩行：「名稱」與「電子郵件」，帳號之間空一行。貼入 Google 選單文字時會忽略 Default、個人資料圖片與開啟新分頁等介面文字；變更會自動儲存。": "Use two lines for each account: name and email, with a blank line between accounts. Pasted Google menu text such as Default, Profile picture, and Opens in new tab is ignored. Changes save automatically.",
+  "Google 帳號設定已自動儲存。": "Google account settings saved automatically.",
+  "設定已套用，但瀏覽器無法保存。": "Settings applied, but this browser could not save them.",
   "第一次使用時跟隨裝置語言；手動選擇後，Games 與 Schedule 會沿用上次的選擇。": "The first visit follows your device language. After you choose manually, Games and Schedule remember that choice.",
   "顯示字型": "Display fonts",
   "從下列六種常用字型選擇一種，會套用到整個頁面。": "Choose one of these six common fonts to use across the whole page.",
@@ -1048,17 +1093,20 @@ body.games-settings-open { overflow: hidden; }
   "字型已套用。": "Fonts applied.",
   "字型已套用，但瀏覽器無法保存選擇。": "Fonts applied, but this browser could not save your choices.",
   "連線檢查與隱藏": "Connection checks and hidden links",
-  "需要時按「檢查一次」，不會在開啟頁面或背景自動檢查。連續失敗的連結會保持隱藏，直到下次手動檢查。超過 3 秒標示回應較慢，8 秒仍沒有回應就停止等待並標示逾時。": "Click “Check once” when needed. Checks never start automatically or run on a schedule. Failed links stay hidden until the next manual check. Responses taking over 3 seconds are marked slow; requests time out after 8 seconds.",
+  "你可以手動按「檢查一次」，或開啟每日背景檢查。只有連續兩次明確失敗才會自動隱藏；已自動隱藏的連結每天會復查，恢復後自動重新顯示。": "Run Check once manually or enable the daily background check. Only two clear failures hide a link automatically. Automatically hidden links are checked daily and restored when reachable again.",
   "檢查後隱藏連續兩次失敗的連結": "Hide links after two failed attempts",
+  "每日首次開啟時在背景檢查並復查自動隱藏的連結": "On the first visit each day, check in the background and recheck automatically hidden links",
   "哪些情況無法判斷？": "What cannot be checked?",
   "收到跨網站回應代表瀏覽器已連上該網址，因此會列為可連線。瀏覽器不能讀取跨網站頁面內容，所以若學校用封鎖提示頁取代原網站，仍須直接開啟確認；請用手動隱藏處理這類網站。請求被瀏覽器拒絕、離線或逾時也不會自動隱藏。": "A cross-site response means the browser reached the URL, so it is counted as reachable. Browsers cannot read cross-site page content, so a school block page still requires a direct check; use manual hide for those sites. Rejected requests, offline results, and timeouts are not hidden automatically.",
   "檢查一次": "Check once",
   "停止檢查": "Stop checking",
   "再測一次": "Check again",
+  "一鍵隱藏": "Hide now",
   "清除所有隱藏與檢查紀錄": "Clear all hidden links and check history",
   "需要確認的連結": "Links to review",
   "隱藏的連結會從主頁移除，只在下方清單保留入口；按「恢復顯示」才會回到主頁。": "Hidden links disappear from the main page. You can access them below or click “Restore” to show them again.",
   "手動隱藏與檢查失敗會分開計算。無法判定的連結不會隱藏；按「恢復顯示」才會把手動隱藏的連結放回主頁。": "Manual hides and failed checks are counted separately. Unknown results are never hidden; use Restore to return manually hidden links to the page.",
+  "手動隱藏與檢查失敗會分開計算。需要確認的連結不會自動隱藏；按「恢復顯示」才會把手動隱藏的連結放回主頁。": "Manual hides and failed checks are counted separately. Links needing review are not hidden automatically; use Restore to return manually hidden links to the page.",
   "已隱藏的連結（": "Hidden links (",
   "）": ")",
   "目前沒有隱藏的連結。": "There are no hidden links.",
@@ -1101,7 +1149,7 @@ body.games-settings-open { overflow: hidden; }
   "正在檢查…": "Checking…",
   "安裝 Games": "Install Games",
   "工作日誌": "Work log",
-  "修正跨網站回應被列為無法判定的問題，並將語言與字型合併為顯示偏好。": "Fixed cross-site responses being marked uncertain and grouped language with fonts as display preferences.",
+  "同步 Google 帳號設定，加入每日背景檢查與恢復機制，並修正跨網站回應判定。": "Synced Google account settings, added daily background checks and restoration, and fixed cross-site response classification.",
   "改善連結編輯、圖示與隱藏清單。": "Improved link editing, icons, and the hidden-links list.",
   "加入自訂連結、桌布與主畫面捷徑設定。": "Added personal links, wallpaper, and home-screen shortcut settings.",
   "瀏覽分類": "Browse categories",
@@ -1189,6 +1237,8 @@ body.games-settings-open { overflow: hidden; }
       [/^沿用上次檢查：(\d+) 個確認失敗的連結仍隱藏；需要時再按「檢查一次」。$/, (_, n) => 'Using the previous check: ' + n + ' confirmed failed link(s) remain hidden. Click “Check once” when needed.'],
       [/^沿用上次檢查：(\d+) 個連結仍隱藏；需要時再按「檢查一次」。$/, (_, n) => 'Using the previous check: ' + n + ' links remain hidden. Click “Check once” when needed.'],
       [/^尚未檢查；目前有 (\d+) 個由你手動隱藏的連結。$/, (_, n) => 'Not checked yet. ' + n + ' link(s) are currently hidden manually.'],
+      [/^每日背景檢查完成：新隱藏 (\d+) 個、恢復顯示 (\d+) 個；需要確認的連結維持顯示。$/, (_, hidden, restored) => 'Daily background check complete: ' + hidden + ' newly hidden, ' + restored + ' restored. Links needing review remain visible.'],
+      [/^開啟設定，(\d+) 個連結剛被自動隱藏$/, (_, n) => 'Open settings; ' + n + ' link(s) were just hidden automatically'],
       [/^回應較慢（([\d.]+) 秒），需直接開啟確認$/, (_, n) => 'Slow response (' + n + ' seconds). Open directly to check.'],
       [/^收到跨網站回應，但速度較慢（([\d.]+) 秒）$/, (_, n) => 'Cross-site response received, but it was slow (' + n + ' seconds).'],
       [/^逾時（([\d.]+) 秒內沒有回應），保留連結$/, (_, n) => 'Timed out (no response within ' + n + ' seconds). Link kept.'],
@@ -2336,6 +2386,154 @@ body.games-settings-open { overflow: hidden; }
 })();
 </script>
 
+<script id="games-google-account-script">
+/* Google 帳號選擇與 Schedule 共用 localStorage，兩頁不會各自保存不同設定。 */
+(() => {
+  'use strict';
+  const SELECTED_KEY = 'scheduleGoogleAccountIndex';
+  const PROFILES_KEY = 'scheduleGoogleAccountProfiles';
+  const ignoredLines = new Set([
+    'default', 'default account', 'browser default', 'browser default account', '瀏覽器預設帳號',
+    '個人資料圖片', '個人檔案相片', '開啟新分頁', '在新分頁中開啟',
+    'profile picture', 'profile photo', 'profile image', 'opens in new tab', 'open in new tab',
+    'opens in a new tab', 'open in a new tab', 'open link in new tab', 'opens link in new tab'
+  ]);
+
+  function isEmail(value) {
+    return typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+  }
+  function ignored(value) {
+    return ignoredLines.has(value.replace(/[（）()]/g, '').replace(/\s+/g, ' ').trim().toLocaleLowerCase());
+  }
+  function parseProfiles(value) {
+    const profiles = [];
+    const used = new Set();
+    let pendingName = '';
+    const add = (emailValue, nameValue = '') => {
+      const email = emailValue.trim().toLowerCase();
+      if (!isEmail(email) || used.has(email)) return;
+      const name = (nameValue || email.split('@')[0]).trim();
+      if (!name || ignored(name)) return;
+      used.add(email);
+      profiles.push({ name, email });
+    };
+    String(value || '').split(/\r?\n/).forEach(raw => {
+      const line = raw.trim();
+      if (!line || ignored(line)) return;
+      const legacy = line.match(/^([^\s=：:]+@[^\s=：:]+)\s*(?:=|：)\s*(.+)$/);
+      if (legacy) { add(legacy[1], legacy[2]); pendingName = ''; return; }
+      if (isEmail(line)) { add(line, pendingName); pendingName = ''; return; }
+      pendingName = line;
+    });
+    return profiles;
+  }
+  function serializeProfiles(profiles) {
+    return profiles.map(profile => `${profile.name}\n${profile.email}`).join('\n\n');
+  }
+  function readProfiles() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(PROFILES_KEY) || '[]');
+      return Array.isArray(saved) ? saved.filter(item => item && isEmail(item.email) && item.name && !ignored(item.name))
+        .map(item => ({ name: String(item.name).trim(), email: item.email.trim().toLowerCase() })) : [];
+    } catch { return []; }
+  }
+  function readIdentity(profiles) {
+    try {
+      const saved = localStorage.getItem(SELECTED_KEY);
+      return profiles.some(profile => profile.email === saved) ? saved : '0';
+    } catch { return '0'; }
+  }
+  function isGoogleHost(hostname) {
+    const host = hostname.toLowerCase();
+    return host === 'google.com' || host.endsWith('.google.com') || host === 'youtube.com' || host.endsWith('.youtube.com');
+  }
+  function accountUrl(rawUrl, identity) {
+    let url;
+    try { url = new URL(rawUrl, typeof document !== 'undefined' ? document.baseURI : 'https://example.invalid/'); } catch { return rawUrl; }
+    if (!isGoogleHost(url.hostname)) return rawUrl;
+    url.pathname = url.pathname.replace(/\/u\/\d+(?=\/|$)/i, '') || '/';
+    url.searchParams.set('authuser', identity === '0' ? '0' : identity);
+    return url.href.replace(/%40(?=[^#]*$)/i, '@');
+  }
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { parseProfiles, serializeProfiles, accountUrl };
+    return;
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const select = document.getElementById('games-google-account-select');
+    const input = document.getElementById('games-google-account-profiles');
+    const status = document.getElementById('games-google-account-status');
+    let profiles = readProfiles();
+    let identity = readIdentity(profiles);
+    let saveTimer = 0;
+
+    function english() { return window.Games?.getLanguage?.() === 'en'; }
+    function render() {
+      const options = [new Option(english() ? 'Browser default account' : '瀏覽器預設帳號', '0')];
+      profiles.forEach(profile => options.push(new Option(`${profile.name}（${profile.email}）`, profile.email)));
+      select.replaceChildren(...options);
+      select.value = profiles.some(profile => profile.email === identity) ? identity : '0';
+      input.value = serializeProfiles(profiles);
+    }
+    function applyAccount() {
+      document.querySelectorAll('#games-catalog a[href]').forEach(link => {
+        const current = link.getAttribute('href');
+        if (!current) return;
+        let candidate;
+        try { candidate = new URL(current, document.baseURI); } catch { return; }
+        if (!isGoogleHost(candidate.hostname)) return;
+        if (!link.dataset.gamesGoogleOriginalHref || (link.dataset.gamesGoogleAppliedHref && current !== link.dataset.gamesGoogleAppliedHref)) {
+          link.dataset.gamesGoogleOriginalHref = current;
+        }
+        const adjusted = accountUrl(link.dataset.gamesGoogleOriginalHref, identity);
+        link.setAttribute('href', adjusted);
+        link.dataset.gamesGoogleAppliedHref = adjusted;
+      });
+    }
+    function save(showStatus = true) {
+      const selected = select.value;
+      profiles = parseProfiles(input.value);
+      identity = profiles.some(profile => profile.email === selected) ? selected : '0';
+      try {
+        localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
+        localStorage.setItem(SELECTED_KEY, identity);
+        if (showStatus) status.textContent = 'Google 帳號設定已自動儲存。';
+      } catch {
+        if (showStatus) status.textContent = '設定已套用，但瀏覽器無法保存。';
+      }
+      render();
+      applyAccount();
+    }
+    function scheduleSave() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => save(), 500);
+    }
+
+    render();
+    applyAccount();
+    select.addEventListener('change', () => { identity = select.value; save(); });
+    input.addEventListener('input', scheduleSave);
+    input.addEventListener('paste', () => setTimeout(() => {
+      clearTimeout(saveTimer);
+      profiles = parseProfiles(input.value);
+      input.value = serializeProfiles(profiles);
+      save();
+    }, 0));
+    document.addEventListener('games:language-changed', () => { render(); applyAccount(); });
+    document.addEventListener('games:links-updated', applyAccount);
+    window.addEventListener('storage', event => {
+      if (![SELECTED_KEY, PROFILES_KEY].includes(event.key)) return;
+      profiles = readProfiles();
+      identity = readIdentity(profiles);
+      render();
+      applyAccount();
+    });
+  });
+})();
+</script>
+
 <script id="games-check-script">
 /*
  * 手動連線檢查：只有按「檢查一次」或「再測一次」才會發出檢查請求。
@@ -2449,6 +2647,8 @@ body.games-settings-open { overflow: hidden; }
 
   document.addEventListener('DOMContentLoaded', () => {
     const autoToggle = document.getElementById('games-auto-hide');
+    const dailyToggle = document.getElementById('games-auto-daily-check');
+    const settingsButton = document.getElementById('games-settings-button');
     const checkButton = document.getElementById('games-check-now');
     const hiddenList = document.getElementById('games-hidden-list');
     const reviewList = document.getElementById('games-check-results');
@@ -2456,12 +2656,18 @@ body.games-settings-open { overflow: hidden; }
     const summary = document.getElementById('games-availability-summary');
     const hideButton = document.getElementById('games-link-hide');
     const linkSelect = document.getElementById('games-link-select');
-    let preferences = { autoHide: true, decisions: {}, linkDecisions: {}, failedChecks: {}, checkRulesVersion: CHECK_RULES_VERSION };
+    let preferences = {
+      autoHide: true, autoDaily: false, lastDailyCheck: '', newAutoHidden: 0,
+      decisions: {}, linkDecisions: {}, failedChecks: {}, checkRulesVersion: CHECK_RULES_VERSION
+    };
     let migrated = false;
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
       if (saved && typeof saved === 'object') {
         preferences.autoHide = saved.autoHide !== false;
+        preferences.autoDaily = saved.autoDaily === true;
+        preferences.lastDailyCheck = typeof saved.lastDailyCheck === 'string' ? saved.lastDailyCheck : '';
+        preferences.newAutoHidden = Number.isInteger(saved.newAutoHidden) && saved.newAutoHidden > 0 ? saved.newAutoHidden : 0;
         if (saved.decisions && typeof saved.decisions === 'object' && !Array.isArray(saved.decisions)) {
           preferences.decisions = Object.fromEntries(Object.entries(saved.decisions).filter(([, value]) => ['hide', 'show'].includes(value)));
         }
@@ -2477,6 +2683,7 @@ body.games-settings-open { overflow: hidden; }
       }
     } catch { /* 空白或不可用的儲存區，使用預設設定。 */ }
     autoToggle.checked = preferences.autoHide;
+    dailyToggle.checked = preferences.autoDaily;
 
     // 舊版以網址保存的手動選擇轉到固定 ID，中英文網址都納入比對。
     anchors().forEach(link => {
@@ -2499,6 +2706,7 @@ body.games-settings-open { overflow: hidden; }
     // 網址當 key：切換語言、修改網址不會沿用另一個目的地的連線結果。
     let results = new Map();
     let activeScan = null;
+    let dailyScanActive = null;
 
     function anchors() { return Array.from(document.querySelectorAll('#games-catalog a[data-link-id]')); }
     function selectedAnchor() { return anchors().find(link => link.dataset.linkId === linkSelect.value); }
@@ -2511,15 +2719,21 @@ body.games-settings-open { overflow: hidden; }
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences)); }
       catch { checkStatus.textContent = '目前的偏好僅在本次開啟有效，瀏覽器無法保存設定。'; }
     }
+    function syncHiddenNotice() {
+      settingsButton.classList.toggle('has-hidden-notice', preferences.newAutoHidden > 0);
+      settingsButton.setAttribute('aria-label', preferences.newAutoHidden > 0
+        ? `開啟設定，${preferences.newAutoHidden} 個連結剛被自動隱藏`
+        : '開啟設定');
+    }
     function updateHideButton() {
       const link = selectedAnchor();
       hideButton.disabled = !link;
       hideButton.textContent = link && suppressed(link) ? '恢復顯示此連結' : '隱藏此連結';
     }
-    function addAction(container, label, handler) {
+    function addAction(container, label, handler, variant = 'secondary') {
       const button = document.createElement('button');
       button.type = 'button';
-      button.className = 'games-settings-action games-settings-action--secondary';
+      button.className = `games-settings-action games-settings-action--${variant}`;
       button.textContent = label;
       button.addEventListener('click', handler);
       container.appendChild(button);
@@ -2532,6 +2746,8 @@ body.games-settings-open { overflow: hidden; }
 
     function resultRow(link, reasonText, isHidden) {
       const row = document.createElement('li');
+      const copy = document.createElement('div');
+      copy.className = 'games-check-copy';
       const open = document.createElement('a');
       const label = link.querySelector('.link-text')?.textContent || link.textContent;
       open.href = link.href;
@@ -2543,9 +2759,10 @@ body.games-settings-open { overflow: hidden; }
       reason.textContent = reasonText;
       const actions = document.createElement('div');
       actions.className = 'games-settings-actions';
-      addAction(actions, isHidden ? '恢復顯示' : '隱藏此連結', () => setDecision(link, isHidden ? 'show' : 'hide'));
+      addAction(actions, isHidden ? '恢復顯示' : '一鍵隱藏', () => setDecision(link, isHidden ? 'show' : 'hide'), isHidden ? 'secondary' : 'danger');
       addAction(actions, '再測一次', () => scan([link.href]));
-      row.append(open, reason, actions);
+      copy.append(open, reason);
+      row.append(copy, actions);
       return row;
     }
 
@@ -2578,7 +2795,7 @@ body.games-settings-open { overflow: hidden; }
         count++;
         const manual = preferences.linkDecisions[link.dataset.linkId] === 'hide';
         const savedReason = preferences.failedChecks[link.dataset.linkId];
-        hiddenList.appendChild(resultRow(link, manual ? '手動隱藏，恢復顯示後才會回到主頁。' : (result?.reason || savedReason || '上次檢查時連續失敗。'), true));
+        hiddenList.appendChild(resultRow(link, manual ? '手動隱藏，恢復顯示後才會回到主頁。' : (result?.kind === 'failed' ? result.reason : (savedReason || '上次檢查時連續失敗。')), true));
       });
       document.getElementById('games-hidden-count').textContent = String(count);
       document.getElementById('games-hidden-empty').hidden = count > 0;
@@ -2595,6 +2812,8 @@ body.games-settings-open { overflow: hidden; }
     }
 
     async function scan(onlyUrls) {
+      dailyScanActive?.abort();
+      dailyScanActive = null;
       activeScan?.abort();
       const controller = new AbortController();
       activeScan = controller;
@@ -2662,6 +2881,68 @@ body.games-settings-open { overflow: hidden; }
       }
     }
 
+    function localDateKey() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    }
+
+    async function runDailyBackgroundCheck(force = false) {
+      const today = localDateKey();
+      if (!preferences.autoDaily || activeScan || dailyScanActive || (!force && preferences.lastDailyCheck === today)) return;
+      const controller = new AbortController();
+      dailyScanActive = controller;
+      const options = { baseUrl: document.baseURI, signal: controller.signal };
+      const links = anchors();
+      const urls = [...new Set(links.map(link => link.href))];
+      const next = new Map();
+      try {
+        const baselineUrl = new URL('games-icon-192.png', document.baseURI).href;
+        const baseline = await probeUrl(baselineUrl, options);
+        if (controller.signal.aborted || !['response', 'slow'].includes(baseline.kind)) return;
+        let cursor = 0;
+        async function worker() {
+          while (cursor < urls.length && !controller.signal.aborted) {
+            const url = urls[cursor++];
+            next.set(url, await checkUrl(url, options));
+          }
+        }
+        await Promise.all(Array.from({ length: Math.min(CONCURRENCY, urls.length) }, worker));
+        if (controller.signal.aborted) return;
+        const finalBaseline = await probeUrl(baselineUrl, options);
+        if (controller.signal.aborted || !['response', 'slow'].includes(finalBaseline.kind)) return;
+
+        let newlyHidden = 0;
+        let restored = 0;
+        links.forEach(link => {
+          const id = link.dataset.linkId;
+          const result = next.get(link.href);
+          const wasAutoHidden = Object.hasOwn(preferences.failedChecks, id);
+          if (wasAutoHidden) {
+            if (result && ['response', 'slow'].includes(result.kind)) {
+              delete preferences.failedChecks[id];
+              restored++;
+            } else if (result?.kind === 'failed') {
+              preferences.failedChecks[id] = result.reason;
+            }
+            return;
+          }
+          if (preferences.autoHide && result?.kind === 'failed') {
+            preferences.failedChecks[id] = result.reason;
+            newlyHidden++;
+          }
+        });
+        results = next;
+        preferences.lastDailyCheck = today;
+        if (newlyHidden) preferences.newAutoHidden += newlyHidden;
+        savePreferences();
+        syncHiddenNotice();
+        renderVisibility();
+        checkStatus.textContent = `每日背景檢查完成：新隱藏 ${newlyHidden} 個、恢復顯示 ${restored} 個；需要確認的連結維持顯示。`;
+      } finally {
+        if (dailyScanActive === controller) dailyScanActive = null;
+      }
+    }
+
     function clearResults(message) {
       // 網址或網路改變只清除過時結果，不會啟動下一次檢查。
       activeScan?.abort();
@@ -2675,6 +2956,17 @@ body.games-settings-open { overflow: hidden; }
       preferences.autoHide = autoToggle.checked;
       renderVisibility();
       savePreferences();
+    });
+    dailyToggle.addEventListener('change', () => {
+      preferences.autoDaily = dailyToggle.checked;
+      if (preferences.autoDaily) {
+        preferences.autoHide = true;
+        autoToggle.checked = true;
+        preferences.lastDailyCheck = '';
+      }
+      else dailyScanActive?.abort();
+      savePreferences();
+      if (preferences.autoDaily) runDailyBackgroundCheck(true);
     });
     checkButton.addEventListener('click', () => {
       if (activeScan) {
@@ -2691,7 +2983,9 @@ body.games-settings-open { overflow: hidden; }
       preferences.decisions = {};
       preferences.linkDecisions = {};
       preferences.failedChecks = {};
+      preferences.newAutoHidden = 0;
       results.clear();
+      syncHiddenNotice();
       renderVisibility();
       savePreferences();
     });
@@ -2704,6 +2998,13 @@ body.games-settings-open { overflow: hidden; }
       if (reason) results.set(link.href, { kind: 'failed', reason });
     });
     renderVisibility();
+    syncHiddenNotice();
+    settingsButton.addEventListener('click', () => {
+      if (!preferences.newAutoHidden) return;
+      preferences.newAutoHidden = 0;
+      syncHiddenNotice();
+      savePreferences();
+    });
     const savedFailureCount = Object.keys(preferences.failedChecks).length;
     const initialHidden = hiddenCounts();
     checkStatus.textContent = savedFailureCount
@@ -2711,6 +3012,11 @@ body.games-settings-open { overflow: hidden; }
       : initialHidden.manual
         ? `尚未檢查；目前有 ${initialHidden.manual} 個由你手動隱藏的連結。`
         : '尚未檢查；按「檢查一次」才會開始，可隨時停止。';
+    if (preferences.autoDaily && preferences.lastDailyCheck !== localDateKey()) {
+      const startDailyCheck = () => runDailyBackgroundCheck();
+      if ('requestIdleCallback' in window) window.requestIdleCallback(startDailyCheck, { timeout: 2500 });
+      else window.setTimeout(startDailyCheck, 1200);
+    }
   });
 })();
 </script>

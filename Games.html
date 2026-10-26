@@ -602,7 +602,7 @@ body.games-settings-open { overflow: hidden; }
       <details class="availability-note"><summary>哪些情況無法判斷？</summary><p>學校的過濾系統可能用封鎖提示頁取代原網站，瀏覽器只知道「收到跨網站回應」，無法讀取內容。這類結果不再視為可用，而會列在「需要確認的連結」；請點名稱開啟，再選擇是否隱藏。較慢、逾時與圖片載入失敗也不代表網站無法訪問。</p></details>
       <div class="games-settings-actions">
         <button id="games-check-now" class="games-settings-action games-settings-action--primary" type="button">檢查一次</button>
-        <button id="games-reset-visibility" class="games-settings-action games-settings-action--secondary" type="button">清除手動隱藏與顯示偏好</button>
+        <button id="games-reset-visibility" class="games-settings-action games-settings-action--secondary" type="button">清除所有隱藏與檢查紀錄</button>
       </div>
       <p id="games-check-status" class="settings-status" role="status" aria-live="polite"></p>
       <p id="games-availability-summary" class="games-settings-description" aria-live="polite"></p>
@@ -987,7 +987,7 @@ body.games-settings-open { overflow: hidden; }
   "檢查一次": "Check once",
   "停止檢查": "Stop checking",
   "再測一次": "Check again",
-  "清除手動隱藏與顯示偏好": "Clear visibility preferences",
+  "清除所有隱藏與檢查紀錄": "Clear all hidden links and check history",
   "需要確認的連結": "Links to review",
   "隱藏的連結會從主頁移除，只在下方清單保留入口；按「恢復顯示」才會回到主頁。": "Hidden links disappear from the main page. You can access them below or click “Restore” to show them again.",
   "已隱藏的連結（": "Hidden links (",
@@ -1085,6 +1085,8 @@ body.games-settings-open { overflow: hidden; }
   "需直接開啟確認登入或存取限制": "Open directly to check login or access restrictions",
   "檢查已取消或裝置離線": "Check cancelled or device offline",
   "連線請求失敗": "Connection request failed",
+  "同站連線請求失敗": "Same-site connection request failed",
+  "瀏覽器無法直接檢查，請點開連結確認": "The browser cannot check this site directly. Open the link to confirm.",
   "目前的偏好僅在本次開啟有效，瀏覽器無法保存設定。": "Preferences apply only to this session; this browser could not save them.",
   "手動隱藏，恢復顯示後才會回到主頁。": "Hidden manually. Restore to show it on the main page.",
   "上次檢查時連續失敗。": "Failed twice during the previous check.",
@@ -2261,6 +2263,7 @@ body.games-settings-open { overflow: hidden; }
   const RETRY_DELAY_MS = 1200;
   const CONCURRENCY = 4;
   const STORAGE_KEY = 'gamesVisibilityPreferencesV1';
+  const CHECK_RULES_VERSION = 2;
 
   // 獨立於畫面的檢查函式，測試時可注入網路回應、離線狀態與時間限制。
   async function probeUrl(rawUrl, options = {}) {
@@ -2269,6 +2272,9 @@ body.games-settings-open { overflow: hidden; }
     let url;
     try { url = new URL(rawUrl, baseUrl); }
     catch { return { kind: 'unknown', reason: '網址格式無法檢查' }; }
+    let sameOrigin = false;
+    try { sameOrigin = url.origin === new URL(baseUrl).origin; }
+    catch { /* 沒有可比較的來源時採用保守判定。 */ }
     if (!online() || signal?.aborted) return { kind: 'unknown', reason: '離線或檢查已取消' };
     if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {
       return { kind: 'unknown', reason: '此類網址無法自動檢查' };
@@ -2305,7 +2311,10 @@ body.games-settings-open { overflow: hidden; }
     } catch {
       if (signal?.aborted || !online()) return { kind: 'unknown', reason: '檢查已取消或裝置離線' };
       if (timedOut) return { kind: 'timeout', durationMs: Math.max(0, now() - started), reason: `逾時（${timeoutMs / 1000} 秒內沒有回應），保留連結` };
-      return { kind: 'failed', reason: '連線請求失敗' };
+      // 跨網站請求可能被 CORS、CSP、登入或學校過濾器擋住，不能據此隱藏實際可開啟的網站。
+      return sameOrigin
+        ? { kind: 'failed', reason: '同站連線請求失敗' }
+        : { kind: 'unknown', reason: '瀏覽器無法直接檢查，請點開連結確認' };
     } finally {
       clearTimeout(timer);
       signal?.removeEventListener('abort', abort);
@@ -2356,7 +2365,8 @@ body.games-settings-open { overflow: hidden; }
     const summary = document.getElementById('games-availability-summary');
     const hideButton = document.getElementById('games-link-hide');
     const linkSelect = document.getElementById('games-link-select');
-    let preferences = { autoHide: true, decisions: {}, linkDecisions: {}, failedChecks: {} };
+    let preferences = { autoHide: true, decisions: {}, linkDecisions: {}, failedChecks: {}, checkRulesVersion: CHECK_RULES_VERSION };
+    let migrated = false;
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
       if (saved && typeof saved === 'object') {
@@ -2367,15 +2377,17 @@ body.games-settings-open { overflow: hidden; }
         if (saved.linkDecisions && typeof saved.linkDecisions === 'object' && !Array.isArray(saved.linkDecisions)) {
           preferences.linkDecisions = Object.fromEntries(Object.entries(saved.linkDecisions).filter(([, value]) => ['hide', 'show'].includes(value)));
         }
-        if (saved.failedChecks && typeof saved.failedChecks === 'object' && !Array.isArray(saved.failedChecks)) {
+        if (saved.checkRulesVersion === CHECK_RULES_VERSION && saved.failedChecks && typeof saved.failedChecks === 'object' && !Array.isArray(saved.failedChecks)) {
           preferences.failedChecks = Object.fromEntries(Object.entries(saved.failedChecks).filter(([id, reason]) => typeof id === 'string' && typeof reason === 'string'));
+        } else {
+          // 舊版會把跨網站安全限制誤判為網站失效，升級後不沿用那批自動隱藏紀錄。
+          migrated = true;
         }
       }
     } catch { /* 空白或不可用的儲存區，使用預設設定。 */ }
     autoToggle.checked = preferences.autoHide;
 
     // 舊版以網址保存的手動選擇轉到固定 ID，中英文網址都納入比對。
-    let migrated = false;
     anchors().forEach(link => {
       if (preferences.linkDecisions[link.dataset.linkId]) return;
       const urls = [link.href, link.dataset.zhHref, link.dataset.enHref].filter(Boolean).map(value => new URL(value, document.baseURI).href);
@@ -2569,6 +2581,8 @@ body.games-settings-open { overflow: hidden; }
     document.getElementById('games-reset-visibility').addEventListener('click', () => {
       preferences.decisions = {};
       preferences.linkDecisions = {};
+      preferences.failedChecks = {};
+      results.clear();
       renderVisibility();
       savePreferences();
     });

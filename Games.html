@@ -602,21 +602,17 @@ body.games-settings-open { overflow: hidden; }
     <p class="games-settings-panel__intro">桌布、遊戲連結與主畫面捷徑都可在這裡管理；個人設定只保存在目前裝置的瀏覽器。</p>
 
     <details class="games-settings-disclosure">
-      <summary>顯示語言</summary>
-      <section class="games-settings-card" aria-labelledby="games-language-title">
+      <summary>語言與字型</summary>
+      <section class="games-settings-card" aria-label="語言與字型">
         <h3 id="games-language-title">顯示語言</h3>
         <p class="games-settings-description">第一次使用時跟隨裝置語言；手動選擇後，Games 與 Schedule 會沿用上次的選擇。</p>
         <div class="games-language-options" role="group" aria-label="顯示語言">
           <button class="games-language-option" type="button" data-games-language="zh" aria-pressed="false">中文</button>
           <button class="games-language-option" type="button" data-games-language="en" aria-pressed="false">English</button>
         </div>
-      </section>
-    </details>
 
-    <!-- 一次選擇整個頁面使用的字型，選項集中在同一個選單。 -->
-    <details class="games-settings-disclosure">
-      <summary>顯示字型</summary>
-      <section class="games-settings-card" aria-labelledby="games-font-title">
+      <hr class="settings-divider">
+      <!-- 一次選擇整個頁面使用的字型，選項集中在同一個選單。 -->
       <h3 id="games-font-title">顯示字型</h3>
       <p class="games-settings-description">從下列六種常用字型選擇一種，會套用到整個頁面。</p>
       <div class="font-picker-grid">
@@ -649,7 +645,7 @@ body.games-settings-open { overflow: hidden; }
       <h3 id="games-visibility-title">連線檢查與隱藏</h3>
       <p class="games-settings-description">需要時按「檢查一次」，不會在開啟頁面或背景自動檢查。連續失敗的連結會保持隱藏，直到下次手動檢查。超過 3 秒標示回應較慢，8 秒仍沒有回應就停止等待並標示逾時。</p>
       <label class="settings-check"><input id="games-auto-hide" type="checkbox" checked> 檢查後隱藏連續兩次失敗的連結</label>
-      <details class="availability-note"><summary>哪些情況無法判斷？</summary><p>學校的過濾系統可能用封鎖提示頁取代原網站，瀏覽器只知道「收到跨網站回應」，無法讀取內容。這類結果不再視為可用，而會列在「需要確認的連結」；請點名稱開啟，再選擇是否隱藏。較慢、逾時與圖片載入失敗也不代表網站無法訪問。</p></details>
+      <details class="availability-note"><summary>哪些情況無法判斷？</summary><p>收到跨網站回應代表瀏覽器已連上該網址，因此會列為可連線。瀏覽器不能讀取跨網站頁面內容，所以若學校用封鎖提示頁取代原網站，仍須直接開啟確認；請用手動隱藏處理這類網站。請求被瀏覽器拒絕、離線或逾時也不會自動隱藏。</p></details>
       <div class="games-settings-actions">
         <button id="games-check-now" class="games-settings-action games-settings-action--primary" type="button">檢查一次</button>
         <button id="games-reset-visibility" class="games-settings-action games-settings-action--secondary" type="button">清除所有隱藏與檢查紀錄</button>
@@ -785,7 +781,7 @@ body.games-settings-open { overflow: hidden; }
       <section class="games-settings-card" aria-labelledby="games-work-log-title">
         <h3 id="games-work-log-title">工作日誌</h3>
         <ol class="games-work-log">
-          <li><time datetime="2026-10-25">2026/10/25</time><span>修正連結檢查的舊紀錄誤導，將設定分類收納，並把語言選擇移入設定。</span></li>
+          <li><time datetime="2026-10-25">2026/10/25</time><span>修正跨網站回應被列為無法判定的問題，並將語言與字型合併為顯示偏好。</span></li>
           <li><time datetime="2026-10-18">2026/10/18</time><span>改善連結編輯、圖示與隱藏清單。</span></li>
           <li><time datetime="2026-10-15">2026/10/15</time><span>加入自訂連結、桌布與主畫面捷徑設定。</span></li>
         </ol>
@@ -1041,6 +1037,7 @@ body.games-settings-open { overflow: hidden; }
   "關閉設定": "Close settings",
   "桌布、遊戲連結與主畫面捷徑都可在這裡管理；個人設定只保存在目前裝置的瀏覽器。": "Manage your wallpaper, links, and home screen shortcut here. Your preferences are saved only in this browser.",
   "顯示語言": "Display language",
+  "語言與字型": "Language and fonts",
   "第一次使用時跟隨裝置語言；手動選擇後，Games 與 Schedule 會沿用上次的選擇。": "The first visit follows your device language. After you choose manually, Games and Schedule remember that choice.",
   "顯示字型": "Display fonts",
   "從下列六種常用字型選擇一種，會套用到整個頁面。": "Choose one of these six common fonts to use across the whole page.",
@@ -1054,7 +1051,7 @@ body.games-settings-open { overflow: hidden; }
   "需要時按「檢查一次」，不會在開啟頁面或背景自動檢查。連續失敗的連結會保持隱藏，直到下次手動檢查。超過 3 秒標示回應較慢，8 秒仍沒有回應就停止等待並標示逾時。": "Click “Check once” when needed. Checks never start automatically or run on a schedule. Failed links stay hidden until the next manual check. Responses taking over 3 seconds are marked slow; requests time out after 8 seconds.",
   "檢查後隱藏連續兩次失敗的連結": "Hide links after two failed attempts",
   "哪些情況無法判斷？": "What cannot be checked?",
-  "學校的過濾系統可能用封鎖提示頁取代原網站，瀏覽器只知道「收到跨網站回應」，無法讀取內容。這類結果不再視為可用，而會列在「需要確認的連結」；請點名稱開啟，再選擇是否隱藏。較慢、逾時與圖片載入失敗也不代表網站無法訪問。": "A school filter may replace a site with a blocked page. The browser only knows that a cross-site response arrived and cannot read its contents. These results are no longer marked reachable; they appear under Links to review. Open the name, then choose whether to hide it. Slow responses, timeouts, and missing icons do not necessarily mean a site is unavailable.",
+  "收到跨網站回應代表瀏覽器已連上該網址，因此會列為可連線。瀏覽器不能讀取跨網站頁面內容，所以若學校用封鎖提示頁取代原網站，仍須直接開啟確認；請用手動隱藏處理這類網站。請求被瀏覽器拒絕、離線或逾時也不會自動隱藏。": "A cross-site response means the browser reached the URL, so it is counted as reachable. Browsers cannot read cross-site page content, so a school block page still requires a direct check; use manual hide for those sites. Rejected requests, offline results, and timeouts are not hidden automatically.",
   "檢查一次": "Check once",
   "停止檢查": "Stop checking",
   "再測一次": "Check again",
@@ -1104,7 +1101,7 @@ body.games-settings-open { overflow: hidden; }
   "正在檢查…": "Checking…",
   "安裝 Games": "Install Games",
   "工作日誌": "Work log",
-  "修正連結檢查的舊紀錄誤導，將設定分類收納，並把語言選擇移入設定。": "Fixed misleading saved check results, grouped settings, and moved language selection into settings.",
+  "修正跨網站回應被列為無法判定的問題，並將語言與字型合併為顯示偏好。": "Fixed cross-site responses being marked uncertain and grouped language with fonts as display preferences.",
   "改善連結編輯、圖示與隱藏清單。": "Improved link editing, icons, and the hidden-links list.",
   "加入自訂連結、桌布與主畫面捷徑設定。": "Added personal links, wallpaper, and home-screen shortcut settings.",
   "瀏覽分類": "Browse categories",
@@ -1157,6 +1154,7 @@ body.games-settings-open { overflow: hidden; }
   "網路狀況已改變": "The network connection changed",
   "收到回應，無法驗證內容": "Response received; content could not be verified",
   "收到跨網站回應，可能是網站內容或學校封鎖提示；請直接開啟確認": "A cross-site response was received. It may be the site or a school block page; open it to confirm",
+  "收到跨網站回應": "Cross-site response received",
   "收到正常回應": "Response received",
   "需直接開啟確認登入或存取限制": "Open directly to check login or access restrictions",
   "檢查已取消或裝置離線": "Check cancelled or device offline",
@@ -1186,12 +1184,13 @@ body.games-settings-open { overflow: hidden; }
       [/^正在檢查目前網路… 已隱藏 (\d+) 個連結，可在設定查看。$/, (_, n) => 'Checking the network… ' + n + ' hidden links. Review them in settings.'],
       [/^已隱藏 (\d+) 個連結 · 可在設定查看、重試或恢復顯示。$/, (_, n) => n + ' hidden links · View, recheck, or restore them in settings.'],
       [/^正在檢查 (\d+) \/ (\d+) 個網址…$/, (_, n, total) => 'Checking ' + n + ' / ' + total + ' URLs…'],
-      [/^檢查完成：(\d+) 個連續失敗、(\d+) 個回應較慢、(\d+) 個逾時、(\d+) 個無法判定。無法判定不會隱藏。(?:另有 (\d+) 個由你手動隱藏的連結，與本次檢查無關。)?$/, (_, failed, slow, timeout, unknown, manual) => 'Check complete: ' + failed + ' failed, ' + slow + ' slow, ' + timeout + ' timed out, ' + unknown + ' uncertain. Uncertain links were not hidden.' + (manual ? ' ' + manual + ' link(s) were hidden manually and are unrelated to this check.' : '')],
+      [/^檢查完成：(\d+) 個可連線、(\d+) 個連續失敗、(\d+) 個回應較慢、(\d+) 個逾時、(\d+) 個需要確認。需要確認的連結不會隱藏。(?:另有 (\d+) 個由你手動隱藏的連結，與本次檢查無關。)?$/, (_, reachable, failed, slow, timeout, unknown, manual) => 'Check complete: ' + reachable + ' reachable, ' + failed + ' failed, ' + slow + ' slow, ' + timeout + ' timed out, ' + unknown + ' need review. Links needing review were not hidden.' + (manual ? ' ' + manual + ' link(s) were hidden manually and are unrelated to this check.' : '')],
       [/^檢查完成：(\d+) 個連續失敗、(\d+) 個回應較慢、(\d+) 個逾時、(\d+) 個無法判定。失敗項目會保留到下次手動檢查。$/, (_, failed, slow, timeout, unknown) => 'Check complete: ' + failed + ' failed, ' + slow + ' slow, ' + timeout + ' timed out, ' + unknown + ' uncertain. Failed links remain hidden until the next manual check.'],
       [/^沿用上次檢查：(\d+) 個確認失敗的連結仍隱藏；需要時再按「檢查一次」。$/, (_, n) => 'Using the previous check: ' + n + ' confirmed failed link(s) remain hidden. Click “Check once” when needed.'],
       [/^沿用上次檢查：(\d+) 個連結仍隱藏；需要時再按「檢查一次」。$/, (_, n) => 'Using the previous check: ' + n + ' links remain hidden. Click “Check once” when needed.'],
       [/^尚未檢查；目前有 (\d+) 個由你手動隱藏的連結。$/, (_, n) => 'Not checked yet. ' + n + ' link(s) are currently hidden manually.'],
       [/^回應較慢（([\d.]+) 秒），需直接開啟確認$/, (_, n) => 'Slow response (' + n + ' seconds). Open directly to check.'],
+      [/^收到跨網站回應，但速度較慢（([\d.]+) 秒）$/, (_, n) => 'Cross-site response received, but it was slow (' + n + ' seconds).'],
       [/^逾時（([\d.]+) 秒內沒有回應），保留連結$/, (_, n) => 'Timed out (no response within ' + n + ' seconds). Link kept.'],
       [/^連續兩次失敗（(.+)）$/, (_, reason) => 'Two failed attempts (' + translateText(reason) + ')'],
       [/^已準備 (\d+) × (\d+)px 的裝置圖片，請按「儲存變更」。$/, (_, w, h) => 'Image ready: ' + w + ' × ' + h + ' px. Click “Save changes”.'],
@@ -2387,7 +2386,9 @@ body.games-settings-open { overflow: hidden; }
       if (!online() || signal?.aborted) return { kind: 'unknown', reason: '網路狀況已改變' };
       const durationMs = Math.max(0, now() - started);
       if (response.type === 'opaque') {
-        return { kind: 'unknown', durationMs, reason: '收到跨網站回應，可能是網站內容或學校封鎖提示；請直接開啟確認' };
+        // no-cors 的 opaque 代表瀏覽器確實收到跨站回應，只是不能讀取內容。
+        if (durationMs >= slowMs) return { kind: 'slow', durationMs, reason: `收到跨網站回應，但速度較慢（${(durationMs / 1000).toFixed(1)} 秒）` };
+        return { kind: 'response', durationMs, reason: '收到跨網站回應' };
       }
       if (response.ok) {
         if (durationMs >= slowMs) return { kind: 'slow', durationMs, reason: `回應較慢（${(durationMs / 1000).toFixed(1)} 秒），需直接開啟確認` };
@@ -2644,13 +2645,14 @@ body.games-settings-open { overflow: hidden; }
           onlyUrls ? urls : null
         );
         savePreferences();
+        const reachable = [...next.values()].filter(result => result.kind === 'response').length;
         const failures = [...next.values()].filter(result => result.kind === 'failed').length;
         const slow = [...next.values()].filter(result => result.kind === 'slow').length;
         const timeouts = [...next.values()].filter(result => result.kind === 'timeout').length;
         const unknown = [...next.values()].filter(result => result.kind === 'unknown').length;
         const hidden = hiddenCounts();
         const manualNote = hidden.manual ? `另有 ${hidden.manual} 個由你手動隱藏的連結，與本次檢查無關。` : '';
-        checkStatus.textContent = `檢查完成：${failures} 個連續失敗、${slow} 個回應較慢、${timeouts} 個逾時、${unknown} 個無法判定。無法判定不會隱藏。${manualNote}`;
+        checkStatus.textContent = `檢查完成：${reachable} 個可連線、${failures} 個連續失敗、${slow} 個回應較慢、${timeouts} 個逾時、${unknown} 個需要確認。需要確認的連結不會隱藏。${manualNote}`;
       } finally {
         if (activeScan === controller) {
           activeScan = null;

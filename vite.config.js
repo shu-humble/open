@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs'
 // 頁面功能已包含在 Games.html；這裡只補上動態引用的既有資源。
 const gamesStaticFiles = [
   'games-icon-192.png', 'games-icon-512.png', 'games-manifest.webmanifest',
-  '骨牌區域遊戲.html', '黑白棋 .html', '黑白棋 icon.png', '塔防遊戲.html', '塔防遊戲-icon.svg', '棋感訓練-icon.svg'
+  '骨牌區域遊戲.html', '黑白棋 .html', '黑白棋 icon.png', '塔防遊戲.html', '塔防遊戲-icon.svg', '棋感訓練-icon.svg', 'pixel-studio/icon.svg'
 ]
 
 export default defineConfig({
@@ -31,7 +31,8 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         games: resolve(__dirname, 'Games.html'),
-        chessIntuition: resolve(__dirname, '棋感訓練.html')
+        chessIntuition: resolve(__dirname, '棋感訓練.html'),
+        pixelFoundry: resolve(__dirname, '像素工坊.html')
       }
     }
   }

@@ -6173,13 +6173,13 @@ body.focus-mode-active {
                     <span class="section-title">GOLD DAY</span><br>
                     <a href="https://classroom.google.com/u/0/c/ODcyMjc0OTY1NDQ1" title="Google Classroom">	Physics </a>|
                     <a href="https://docs.google.com/document/d/1UMoxgqrp2z4jld4j1Zs9CWi9OLTFTGZKyxZj9AncerY/edit?usp=classroom_web&amp;authuser=0" title="物理日程"><img src="https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png" class="icon-img"></a>
-                    <a href="https://mylabmastering.pearson.com/courses/14340360/menu/334ee3cd-863b-48fa-93f1-c24720681f6e" title="Mastering"><img src="https://teaching.utoronto.ca/wp-content/uploads/Pearson-logo-1.png" class="icon-img"></a>
+                    <a href="https://mylabmastering.pearson.com/courses/14340360/menu/334ee3cd-863b-48fa-93f1-c24720681f6e" title="Mastering"><img src="assets/schedule-icons/pearson-trimmed.png" class="icon-img"></a>
                     <a href="https://www.webassign.net/v4cgi/login.pl?pid=549198&eISBN=9781337827614&courseKey=WA-production-1691091&copyActivityDates=N&titleIsbn=9781337827614&_gl=1*nqquan*_gcl_au*Nzc3MTM4Mjc2LjE3ODc3NDIxMzc.*_ga*MTgxNTA5MzU5NS4xNzg3NzQxOTQ3*_ga_1Z1VMVSHXM*czE3OTE4NjE2MTEkbzQkZzEkdDE3OTE4NjI1NzgkajU3JGwwJGgw" title="Mastering"><img src="https://student.cengage.com/dashboard/favicon.ico" class="icon-img"></a> <br>
                     <a href="https://classroom.google.com/u/0/" title="Google Classroom">Senior SRT S1 </a><br>
 
                     <a href="https://classroom.google.com/u/0/c/ODU1ODEwNzQ4MDg4" title="Google Classroom">Precalculus </a>|
                     <a href="https://docs.google.com/document/d/16EI-I5CkqaMs5iq2pAtr-JT1mHUnZX10z0ewTzW2q-k/edit?usp=classroom_web&amp;authuser=0" title="初級微積分日程"><img src="https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png" class="icon-img"></a>
-                    <a href="https://mylabmastering.pearson.com/courses/14332284/menu/330eaea3-21b4-4e9e-8fbe-3d75ee8f13d6" title="Mastering"><img src="https://teaching.utoronto.ca/wp-content/uploads/Pearson-logo-1.png" class="icon-img"></a>
+                    <a href="https://mylabmastering.pearson.com/courses/14332284/menu/330eaea3-21b4-4e9e-8fbe-3d75ee8f13d6" title="Mastering"><img src="assets/schedule-icons/pearson-trimmed.png" class="icon-img"></a>
                     <a id="graphing-calculator-link" href="https://www.geogebra.org/" class="link-logo" title="GeoGebra"></a>
                     <a href="https://www.mathway.com/Trigonometry" class="link-logo" title="Mathway Trigonometry"></a><br>
                    
@@ -6737,6 +6737,45 @@ body.focus-mode-active {
   }
 
   function defaultSource(linkUrl) { return automaticSources(linkUrl)[0]; }
+
+  const croppedIcons = new Map();
+  async function trimIcon(image) {
+    const source = image.currentSrc || image.src;
+    if (!source || source === image.dataset.trimmedIcon) return;
+    if (!croppedIcons.has(source)) croppedIcons.set(source, (async () => {
+      try {
+        const probe = new Image();
+        probe.crossOrigin = 'anonymous';
+        probe.src = source;
+        await probe.decode();
+        if (probe.naturalWidth * probe.naturalHeight > 16777216) return null;
+        const canvas = document.createElement('canvas');
+        canvas.width = probe.naturalWidth; canvas.height = probe.naturalHeight;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(probe, 0, 0);
+        const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let left=canvas.width, top=canvas.height, right=-1, bottom=-1;
+        for(let y=0;y<canvas.height;y++) for(let x=0;x<canvas.width;x++) {
+          const i=(y*canvas.width+x)*4;
+          if(data[i+3]<=8 || (data[i]>=248 && data[i+1]>=248 && data[i+2]>=248)) continue;
+          left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);
+        }
+        if(right<0 || (left===0 && top===0 && right===canvas.width-1 && bottom===canvas.height-1)) return null;
+        // Keep a small safety margin around antialiased edges.
+        left=Math.max(0,left-2);top=Math.max(0,top-2);
+        right=Math.min(canvas.width-1,right+2);bottom=Math.min(canvas.height-1,bottom+2);
+        const out=document.createElement('canvas');out.width=right-left+1;out.height=bottom-top+1;
+        out.getContext('2d').drawImage(canvas,left,top,out.width,out.height,0,0,out.width,out.height);
+        return out.toDataURL('image/png');
+      } catch { return null; }
+    })());
+    const trimmed = await croppedIcons.get(source);
+    if(trimmed && image.src===source){image.dataset.trimmedIcon=trimmed;image.src=trimmed;}
+  }
+  document.addEventListener('load', event => {
+    if(event.target instanceof HTMLImageElement && event.target.matches('.icon-img')) trimIcon(event.target);
+  }, true);
+  document.querySelectorAll('img.icon-img').forEach(image=>{if(image.complete && image.naturalWidth)trimIcon(image);});
 
   function assign(image, source, linkUrl) {
     // 舊版儲存的 36px / 64px 自動網址，也改用同網域快取及高解析度來源。

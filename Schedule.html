@@ -1477,7 +1477,7 @@ body.focus-mode-active {
     --next-note-bar: #d8f1fc;
     position: fixed;
     top: clamp(8px, 1vw, 16px);
-    left: clamp(118px, 10vw, 150px);
+    left: var(--sticky-note-add-left, 118px);
     z-index: 9997;
     display: inline-flex;
     min-height: 44px;
@@ -6172,13 +6172,13 @@ body.focus-mode-active {
                 <td class="gold-day">
                     <span class="section-title">GOLD DAY</span><br>
                     <a href="https://classroom.google.com/u/0/c/ODcyMjc0OTY1NDQ1" title="Google Classroom">	Physics </a>|
-                    <a href="https://docs.google.com/document/d/1UMoxgqrp2z4jld4j1Zs9CWi9OLTFTGZKyxZj9AncerY/edit?usp=classroom_web&amp;authuser=0" title="物理日程"><img src="https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png" class="icon-img"></a>
+                    <a href="https://docs.google.com/document/d/1HegLDXE7vWKHXxck-CiXBqOalapz2n3cjYZIJA-Dxq0/edit?usp=classroom_web" title="物理日程"><img src="https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png" class="icon-img"></a>
                     <a href="https://mylabmastering.pearson.com/courses/14340360/menu/334ee3cd-863b-48fa-93f1-c24720681f6e" title="Mastering"><img src="assets/schedule-icons/pearson-trimmed.png" class="icon-img"></a>
                     <a href="https://www.webassign.net/v4cgi/login.pl?pid=549198&eISBN=9781337827614&courseKey=WA-production-1691091&copyActivityDates=N&titleIsbn=9781337827614&_gl=1*nqquan*_gcl_au*Nzc3MTM4Mjc2LjE3ODc3NDIxMzc.*_ga*MTgxNTA5MzU5NS4xNzg3NzQxOTQ3*_ga_1Z1VMVSHXM*czE3OTE4NjE2MTEkbzQkZzEkdDE3OTE4NjI1NzgkajU3JGwwJGgw" title="Mastering"><img src="https://student.cengage.com/dashboard/favicon.ico" class="icon-img"></a> <br>
                     <a href="https://classroom.google.com/u/0/" title="Google Classroom">Senior SRT S1 </a><br>
 
                     <a href="https://classroom.google.com/u/0/c/ODU1ODEwNzQ4MDg4" title="Google Classroom">Precalculus </a>|
-                    <a href="https://docs.google.com/document/d/14tmHuALHpWQmmJHZNoxYpIdXI7kPCeMkpotp0iO4X-E/edit?usp=classroom_web" title="初級微積分日程"><img src="https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png" class="icon-img"></a>
+                    <a href="https://docs.google.com/document/d/1DHfTm1Fi4GyRA_GCEaYJzYSUnH0L6kX_SI_BACEQv8s/edit?tab=t.0" title="初級微積分日程"><img src="https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png" class="icon-img"></a>
                     <a href="https://mylabmastering.pearson.com/courses/14332284/menu/330eaea3-21b4-4e9e-8fbe-3d75ee8f13d6" title="Mastering"><img src="assets/schedule-icons/pearson-trimmed.png" class="icon-img"></a>
                     <a id="graphing-calculator-link" href="https://www.geogebra.org/" class="link-logo" title="GeoGebra"></a>
                     <a href="https://www.mathway.com/Trigonometry" class="link-logo" title="Mathway Trigonometry"></a><br>
@@ -6793,6 +6793,21 @@ body.focus-mode-active {
   }
 
   window.ScheduleIcons = { assign, defaultSource, automaticSources, isAutomaticSource };
+})();
+</script>
+
+<script>
+(() => {
+    const settingsButton = document.getElementById('google-account-button');
+    const addButton = document.getElementById('sticky-note-add');
+    function positionAddButton() {
+        const bounds = settingsButton.getBoundingClientRect();
+        addButton.style.setProperty('--sticky-note-add-left', (bounds.right + 10) + 'px');
+    }
+    const observer = new ResizeObserver(positionAddButton);
+    observer.observe(settingsButton);
+    window.addEventListener('resize', positionAddButton);
+    positionAddButton();
 })();
 </script>
 </body>

@@ -583,6 +583,12 @@
         .grid { display: block; }
         .editor { max-width: var(--paper-width, 880px); margin: 22px auto; padding: 36px 48px; }
         .editable { min-height: 65vh; }
+        .reading-highlight { position: fixed; inset: 0; pointer-events: none; z-index: 10; mix-blend-mode: multiply; }
+        .reading-highlight span { position: absolute; background: #ffe86680; border-radius: 3px; }
+        .reading-marker { position: fixed; z-index: 55; width: 14px; min-height: 20px; padding: 0; border: 0; border-left: 3px solid #2563eb; background: transparent; cursor: ew-resize; touch-action: none; overflow: visible; }
+        .reading-marker::after { content: ''; position: absolute; bottom: -7px; left: -8px; width: 14px; height: 14px; border-radius: 50%; background: #2563eb; }
+        .sync-reading { position: fixed; right: 16px; top: 55%; z-index: 70; background: #174ea6; color: white; border: 0; border-radius: 24px; padding: 12px 18px; box-shadow: 0 3px 12px #172b4d40; }
+        .reading-marker[hidden], .sync-reading[hidden] { display: none; }
         .workspace-ribbon { position: sticky; top: 0; z-index: 60; background: #fff; border: 1px solid #dce2ea; border-radius: 12px; box-shadow: 0 4px 12px #172b4d12; }
         .ribbon-navigation { display: flex; align-items: center; gap: 4px; padding: 6px 10px 0; border-bottom: 1px solid var(--line); }
         .ribbon-tabs { display: flex; gap: 4px; overflow-x: auto; min-width: 0; }
@@ -726,6 +732,9 @@
         let isApplyingHighlights = false;
         let isSpeakingLoop = false;
         let speechSession = 0;
+        let readingOffset = 0;
+        let readingDocument = null;
+        let draggingReading = false;
         let activeUtterance = null;
         let lastCaretOffset = 0;
         let lastMatches = [];
@@ -752,10 +761,12 @@
         }
 
         function setEditorText(text) {
+            stopReading();
             contentInput.innerText = text || '';
         }
 
         function setEditorHtml(html) {
+            stopReading();
             contentInput.innerHTML = html || '';
         }
 
@@ -1364,6 +1375,7 @@
             isSpeakingLoop = false;
             activeUtterance = null;
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            updateReadingPosition();
         }
 
         function speechErrorMessage(code) {
@@ -1383,9 +1395,10 @@
             return message + ' (' + code + ')';
         }
 
-        function speakText() {
-            const text = getEditorText().trim();
-            if (!text) {
+        function speakText(startOffset = 0) {
+            readingDocument = buildReadingDocument();
+            const text = readingDocument.text;
+            if (!text.trim()) {
                 alert('請先寫下文章內容。');
                 return;
             }
@@ -1397,19 +1410,30 @@
             isSpeakingLoop = true;
             const session = speechSession;
             // Bound each request, preserving every character and splitting at sentence boundaries.
-            const chunks = (text.match(/[^。！？.!?\n]{1,180}[。！？.!?\n]?|[。！？.!?\n]/gu) || [text]).filter(chunk => chunk.trim());
+            const offset = typeof startOffset === 'number' ? Math.max(0, Math.min(startOffset, text.length - 1)) : 0;
+            const chunks = [...text.slice(offset).matchAll(/[^。！？.!?\n]{1,180}[。！？.!?\n]?|[。！？.!?\n]/gu)]
+                .filter(match => match[0].trim()).map(match => ({ text: match[0], start: offset + match.index }));
+            if (!chunks.length) { stopReading(); return; }
             let index = 0;
             function readChunk() {
                 if (session !== speechSession || !isSpeakingLoop) return;
-                const utter = new SpeechSynthesisUtterance(chunks[index]);
+                const utter = new SpeechSynthesisUtterance(chunks[index].text);
                 activeUtterance = utter;
-                utter.lang = detectLanguage(chunks[index]);
+                utter.lang = detectLanguage(chunks[index].text);
                 const voice = getPreferredVoice(utter.lang);
                 if (voice) utter.voice = voice;
                 utter.rate = parseFloat(speechRate.value) || 1;
                 utter.pitch = parseFloat(speechPitch.value) || 1;
                 utter.onstart = () => {
-                    if (session === speechSession) speechStatus.textContent = '狀態：朗讀中';
+                    if (session !== speechSession) return;
+                    speechStatus.textContent = '狀態：朗讀中';
+                    readingOffset = chunks[index].start;
+                    updateReadingPosition();
+                };
+                utter.onboundary = event => {
+                    if (session !== speechSession || draggingReading) return;
+                    readingOffset = chunks[index].start + event.charIndex;
+                    updateReadingPosition();
                 };
                 utter.onend = () => {
                     if (session !== speechSession || !isSpeakingLoop) return;
@@ -1420,6 +1444,7 @@
                     if (session !== speechSession) return;
                     isSpeakingLoop = false;
                     activeUtterance = null;
+                    updateReadingPosition();
                     speechStatus.textContent = ['canceled', 'interrupted'].includes(event.error)
                         ? '狀態：停止' : speechErrorMessage(event.error || 'unknown');
                 };
@@ -1434,6 +1459,124 @@
             speechStatus.textContent = document.documentElement.lang === 'en' ? 'Starting speech…' : '正在啟動朗讀…';
             readChunk();
         }
+
+        // Build offsets directly from DOM text runs, including visual paragraph separators.
+        function buildReadingDocument() {
+            let text = '';
+            const runs = [];
+            function newline() { if (text && !text.endsWith('\n')) text += '\n'; }
+            function visit(node) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    runs.push({ node, start: text.length, length: node.textContent.length });
+                    text += node.textContent;
+                    return;
+                }
+                if (node.nodeType !== Node.ELEMENT_NODE) return;
+                if (node.tagName === 'BR') { text += '\n'; return; }
+                const block = /^(DIV|P|LI|H[1-6]|BLOCKQUOTE|TR)$/.test(node.tagName);
+                if (block) newline();
+                node.childNodes.forEach(visit);
+                if (block) newline();
+            }
+            contentInput.childNodes.forEach(visit);
+            return { text, runs };
+        }
+
+        function readingPoint(offset) {
+            const runs = readingDocument.runs;
+            const run = runs.find(item => item.start + item.length > offset) || runs[runs.length - 1];
+            return run ? { node: run.node, offset: Math.max(0, Math.min(offset - run.start, run.length)) } : null;
+        }
+
+        function readingRange(start, end) {
+            const first = readingPoint(start), last = readingPoint(end);
+            if (!first || !last) return null;
+            const range = document.createRange();
+            range.setStart(first.node, first.offset); range.setEnd(last.node, last.offset);
+            return range;
+        }
+
+        function updateReadingPosition() {
+            readingHighlight.replaceChildren();
+            readingMarker.hidden = true; syncReading.hidden = true;
+            if (!readingDocument || (!isSpeakingLoop && !draggingReading)) return;
+            const text = readingDocument.text;
+            const offset = Math.min(readingOffset, text.length - 1);
+            let start = offset, end = offset;
+            while (start > 0 && !/[。！？.!?\n]/.test(text[start - 1])) start--;
+            while (end < text.length && !/[。！？.!?\n]/.test(text[end])) end++;
+            end = Math.min(text.length, end + 1);
+            const sentence = readingRange(start, end);
+            if (sentence) for (const rect of sentence.getClientRects()) {
+                const mark = document.createElement('span');
+                Object.assign(mark.style, { left: rect.left + 'px', top: rect.top + 'px', width: rect.width + 'px', height: rect.height + 'px' });
+                readingHighlight.append(mark);
+            }
+            const range = readingRange(offset, Math.min(offset + 1, text.length));
+            const rect = range?.getBoundingClientRect();
+            if (!rect || !rect.height) return;
+            const toolbarBottom = document.querySelector('.workspace-ribbon').getBoundingClientRect().bottom;
+            const visible = rect.top >= Math.max(0, toolbarBottom) && rect.bottom <= window.innerHeight && rect.right > 0 && rect.left < window.innerWidth;
+            readingMarker.hidden = !visible && !draggingReading;
+            Object.assign(readingMarker.style, { left: Math.max(0, rect.left - 7) + 'px', top: rect.top + 'px', height: rect.height + 'px' });
+            readingMarker.setAttribute('aria-valuenow', String(offset));
+            readingMarker.setAttribute('aria-valuemax', String(text.length));
+            const english = document.documentElement.lang === 'en';
+            readingMarker.setAttribute('aria-label', english ? 'Drag reading cursor to seek' : '拖曳朗讀游標以快轉或倒帶');
+            syncReading.textContent = english ? 'Sync reading' : '同步朗讀';
+            syncReading.hidden = visible || draggingReading;
+        }
+
+        const readingHighlight = document.createElement('div');
+        readingHighlight.className = 'reading-highlight'; readingHighlight.setAttribute('aria-hidden', 'true');
+        const readingMarker = document.createElement('button');
+        readingMarker.type = 'button'; readingMarker.className = 'reading-marker'; readingMarker.hidden = true;
+        readingMarker.setAttribute('role', 'slider'); readingMarker.setAttribute('aria-valuemin', '0');
+        const syncReading = document.createElement('button');
+        syncReading.type = 'button'; syncReading.className = 'sync-reading'; syncReading.hidden = true;
+        document.body.append(readingHighlight, readingMarker, syncReading);
+        readingMarker.addEventListener('pointerdown', event => {
+            if (event.button !== 0) return;
+            event.preventDefault(); draggingReading = true;
+            readingMarker.setPointerCapture(event.pointerId);
+            stopReading();
+        });
+        readingMarker.addEventListener('pointermove', event => {
+            if (!draggingReading) return;
+            if (event.clientY < 60) window.scrollBy(0, -24);
+            if (event.clientY > window.innerHeight - 60) window.scrollBy(0, 24);
+            const position = document.caretPositionFromPoint?.(event.clientX, event.clientY);
+            const range = position ? null : document.caretRangeFromPoint?.(event.clientX, event.clientY);
+            const node = position?.offsetNode || range?.startContainer;
+            const run = readingDocument.runs.find(item => item.node === node);
+            if (!run) return;
+            readingOffset = run.start + (position?.offset ?? range.startOffset);
+            updateReadingPosition();
+        });
+        function finishReadingDrag() {
+            if (!draggingReading) return;
+            draggingReading = false; speakText(readingOffset);
+        }
+        readingMarker.addEventListener('pointerup', finishReadingDrag);
+        readingMarker.addEventListener('pointercancel', finishReadingDrag);
+        readingMarker.addEventListener('keydown', event => {
+            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+            event.preventDefault();
+            const next = event.key === 'Home' ? 0 : event.key === 'End' ? readingDocument.text.length - 1 : readingOffset + (event.key === 'ArrowRight' ? 20 : -20);
+            speakText(next);
+        });
+        syncReading.addEventListener('click', () => {
+            const rect = readingRange(readingOffset, readingOffset + 1)?.getBoundingClientRect();
+            if (!rect) return;
+            const toolbarBottom = document.querySelector('.workspace-ribbon').getBoundingClientRect().bottom;
+            window.scrollBy({ top: rect.top - toolbarBottom - Math.max(32, (window.innerHeight - toolbarBottom) / 3), behavior: 'smooth' });
+        });
+        window.addEventListener('scroll', updateReadingPosition, { passive: true });
+        window.addEventListener('resize', updateReadingPosition);
+        const readingLayoutObserver = new ResizeObserver(updateReadingPosition);
+        readingLayoutObserver.observe(contentInput);
+        readingLayoutObserver.observe(document.querySelector('.workspace-ribbon'));
+        contentInput.addEventListener('input', () => { stopReading(); });
 
         function localChecks(text) {
             const issues = [];

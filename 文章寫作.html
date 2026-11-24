@@ -524,6 +524,9 @@
                     <h2>文章朗讀</h2>
                     <p class="helper-row">使用瀏覽器語音朗讀，優先選擇符合文章語言的本機語音。</p>
                     <div class="loop-controls">
+                        <label for="readingProgress">朗讀進度</label>
+                        <input type="range" id="readingProgress" min="0" max="1000" step="1" value="0" aria-describedby="readingProgressValue">
+                        <output id="readingProgressValue" for="readingProgress">0%</output>
                         <label for="speechRate">朗讀速度</label>
                         <input type="range" id="speechRate" min="0.25" max="4" step="0.05" value="1" aria-describedby="speechRateValue">
                         <output id="speechRateValue" for="speechRate">1×</output>
@@ -584,6 +587,20 @@
         .grid { display: block; }
         .editor { max-width: var(--paper-width, 880px); margin: 22px auto; padding: 36px 48px; }
         .editable { min-height: 65vh; }
+        html[data-theme="dark"] { color-scheme: dark; --ink: #e5eaf2; --muted: #a9b5c8; --line: #435068; --card: #202a3b; }
+        html[data-theme="dark"] body { background: #111827; }
+        html[data-theme="dark"] .workspace-ribbon, html[data-theme="dark"] .card,
+        html[data-theme="dark"] .stat, html[data-theme="dark"] .stat-strip { background: #202a3b; color: #e5eaf2; }
+        html[data-theme="dark"] .editor, html[data-theme="dark"] #contentInput { background: #202a3b !important; color: #e5eaf2 !important; }
+        html[data-theme="dark"] .toggle { background: #172131; color: #e5eaf2; }
+        html[data-theme="dark"] input, html[data-theme="dark"] select,
+        html[data-theme="dark"] .btn-ghost, html[data-theme="dark"] .article-item,
+        html[data-theme="dark"] .review-item, html[data-theme="dark"] .translate-output,
+        html[data-theme="dark"] .suggestion-box { background: #172131; color: #e5eaf2; border-color: #435068; }
+        html[data-theme="dark"] .ribbon-tabs button { color: #b9c7db; }
+        html[data-theme="dark"] .ribbon-tabs button[aria-selected="true"] { background: #263f65; color: #c8ddff; }
+        html[data-theme="dark"] .reading-highlight { mix-blend-mode: normal; }
+        html[data-theme="dark"] .reading-highlight span { background: #e8b70035; border-bottom: 2px solid #e8b700; }
         .reading-highlight { position: fixed; inset: 0; pointer-events: none; z-index: 10; mix-blend-mode: multiply; }
         .reading-highlight span { position: absolute; background: #ffe86680; border-radius: 3px; }
         .reading-marker { position: fixed; z-index: 55; width: 14px; min-height: 20px; padding: 0; border: 0; border-left: 3px solid #2563eb; background: transparent; cursor: ew-resize; touch-action: none; overflow: visible; }
@@ -591,7 +608,10 @@
         .sync-reading { position: fixed; right: 16px; top: 55%; z-index: 70; background: #174ea6; color: white; border: 0; border-radius: 24px; padding: 12px 18px; box-shadow: 0 3px 12px #172b4d40; }
         .reading-marker[hidden], .sync-reading[hidden] { display: none; }
         .workspace-ribbon { position: sticky; top: 0; z-index: 60; background: #fff; border: 1px solid #dce2ea; border-radius: 12px; box-shadow: 0 4px 12px #172b4d12; }
-        .ribbon-navigation { display: flex; align-items: center; gap: 4px; padding: 6px 10px 0; border-bottom: 1px solid var(--line); }
+        .workspace-ribbon.is-unpinned { position: relative; }
+        .ribbon-navigation > button { font-size: 12px; padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: inherit; white-space: nowrap; }
+        .ribbon-navigation > button[aria-pressed="true"] { background: #174ea6; color: #fff; }
+        .ribbon-navigation { flex-wrap: wrap; display: flex; align-items: center; gap: 4px; padding: 6px 10px 0; border-bottom: 1px solid var(--line); }
         .ribbon-tabs { display: flex; gap: 4px; overflow-x: auto; min-width: 0; }
         .ribbon-tabs button { border: 0; background: transparent; border-radius: 6px 6px 0 0; padding: 12px 16px; color: #536174; white-space: nowrap; }
         .ribbon-tabs button[aria-selected="true"] { color: #174ea6; background: #edf4ff; box-shadow: inset 0 -3px #2563eb; }
@@ -603,7 +623,17 @@
         .ribbon-panel .toolbar, .ribbon-panel .font-controls, .ribbon-panel .spacing-controls, .ribbon-panel .color-controls { margin-top: 0; }
         .ribbon-panel .color-controls, .ribbon-panel .helper-row { margin-top: 10px; }
         .ribbon-panel .review { margin-top: 0; }
-        .ribbon-panel .article-list { max-height: 170px; overflow-y: auto; }
+        .split-tool-panel:not([hidden]) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; overflow: hidden; }
+        .tool-panel-left, .tool-panel-right { min-width: 0; max-height: min(32vh, 260px); overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+        .tool-panel-right { border-left: 1px solid var(--line); padding-left: 18px; }
+        .ribbon-panel .tool-panel-right .card { margin-top: 0; }
+        .ribbon-panel .article-list { max-height: none; }
+        @media(max-width: 680px) {
+            .split-tool-panel:not([hidden]) { grid-template-columns: 1fr; }
+            .tool-panel-left, .tool-panel-right { max-height: 140px; }
+            .tool-panel-right { border-left: 0; border-top: 1px solid var(--line); padding: 10px 0 0; }
+            .split-tool-panel { max-height: 48vh; }
+        }
         .ribbon-panel footer { margin-top: 10px; }
         .ribbon-panel #langSelect { max-width: 240px; }
         #contentInput { scroll-margin-top: 260px; }
@@ -628,7 +658,7 @@
             const editor = document.querySelector('.editor');
             const ribbon = document.createElement('section');
             ribbon.className = 'workspace-ribbon';
-            ribbon.innerHTML = `<div class="ribbon-navigation"><div class="ribbon-tabs" role="tablist" aria-label="文章工具"></div><select class="interface-language" aria-label="介面語言"><option value="auto">自動 / Auto</option><option value="zh">繁體中文</option><option value="en">English</option></select></div>`;
+            ribbon.innerHTML = `<div class="ribbon-navigation"><div class="ribbon-tabs" role="tablist" aria-label="文章工具"></div><button type="button" id="pinToolbar" aria-pressed="true">釘選工具列</button><button type="button" id="toggleTheme" aria-pressed="false">深色模式</button><select class="interface-language" aria-label="介面語言"><option value="auto">自動 / Auto</option><option value="zh">繁體中文</option><option value="en">English</option></select></div>`;
             grid.before(ribbon);
             const sections = [
                 ['file', '檔案', 'File'], ['home', '常用', 'Home'],
@@ -667,10 +697,32 @@
             const sidebarCards = [...document.querySelectorAll('.sidebar > .card')];
             panels.file.append(editor.querySelector('.toolbar'), editor.querySelector('.helper-row'));
             panels.file.append(editor.querySelector('.helper-row'), sidebarCards[2], document.querySelector('footer'));
+            const fileActions = document.createElement('div');
+            fileActions.className = 'tool-panel-left';
+            const articleLibrary = document.createElement('div');
+            articleLibrary.className = 'tool-panel-right';
+            articleLibrary.setAttribute('role', 'region');
+            articleLibrary.setAttribute('aria-label', '我的文章 / My documents');
+            articleLibrary.tabIndex = 0;
+            articleLibrary.append(sidebarCards[2]);
+            fileActions.append(...panels.file.childNodes);
+            panels.file.classList.add('split-tool-panel');
+            panels.file.append(fileActions, articleLibrary);
             panels.home.append(editor.querySelector('.font-controls'), editor.querySelector('.color-controls'));
             panels.layout.append(editor.querySelector('.spacing-controls'));
             panels.review.append(document.querySelector('.review'), sidebarCards[0]);
             panels.review.prepend(document.getElementById('liveCheckToggle').closest('label'));
+            const reviewTools = document.createElement('div');
+            reviewTools.className = 'tool-panel-left';
+            const translationTools = document.createElement('div');
+            translationTools.className = 'tool-panel-right';
+            translationTools.setAttribute('role', 'region');
+            translationTools.setAttribute('aria-label', '翻譯助手 / Translation');
+            translationTools.tabIndex = 0;
+            translationTools.append(sidebarCards[0]);
+            reviewTools.append(...panels.review.childNodes);
+            panels.review.classList.add('split-tool-panel');
+            panels.review.append(reviewTools, translationTools);
             panels.speech.append(sidebarCards[1]);
             document.querySelector('.sidebar').remove();
             activate('home');
@@ -736,6 +788,7 @@
         let readingOffset = 0;
         let readingDocument = null;
         let draggingReading = false;
+        let seekingProgress = false;
         let activeUtterance = null;
         let lastCaretOffset = 0;
         let lastMatches = [];
@@ -1520,6 +1573,11 @@
         }
 
         function updateReadingPosition() {
+            if (!seekingProgress && readingDocument) {
+                const progress = Math.round(readingOffset / Math.max(1, readingDocument.text.length - 1) * 1000);
+                document.getElementById('readingProgress').value = String(progress);
+                document.getElementById('readingProgressValue').textContent = (progress / 10).toFixed(1) + '%';
+            }
             readingHighlight.replaceChildren();
             readingMarker.hidden = true; syncReading.hidden = true;
             if (!readingDocument || (!isSpeakingLoop && !draggingReading)) return;
@@ -1538,7 +1596,7 @@
             const range = readingRange(offset, Math.min(offset + 1, text.length));
             const rect = range?.getBoundingClientRect();
             if (!rect || !rect.height) return;
-            const toolbarBottom = document.querySelector('.workspace-ribbon').getBoundingClientRect().bottom;
+            const toolbarBottom = Math.max(0, document.querySelector('.workspace-ribbon').getBoundingClientRect().bottom);
             const visible = rect.top >= Math.max(0, toolbarBottom) && rect.bottom <= window.innerHeight && rect.right > 0 && rect.left < window.innerWidth;
             readingMarker.hidden = !visible && !draggingReading;
             Object.assign(readingMarker.style, { left: Math.max(0, rect.left - 7) + 'px', top: rect.top + 'px', height: rect.height + 'px' });
@@ -1550,6 +1608,23 @@
             syncReading.hidden = visible || draggingReading;
         }
 
+        const progressControl = document.getElementById('readingProgress');
+        progressControl.addEventListener('input', () => {
+            seekingProgress = true;
+            stopReading();
+            readingDocument = buildReadingDocument();
+            readingOffset = Math.round(Number(progressControl.value) / 1000 * Math.max(0, readingDocument.text.length - 1));
+            document.getElementById('readingProgressValue').textContent = (Number(progressControl.value) / 10).toFixed(1) + '%';
+        });
+        progressControl.addEventListener('change', () => {
+            seekingProgress = false;
+            if (Number(progressControl.value) === 1000) {
+                stopReading();
+                speechStatus.textContent = '狀態：停止';
+                return;
+            }
+            speakText(readingOffset);
+        });
         const readingHighlight = document.createElement('div');
         readingHighlight.className = 'reading-highlight'; readingHighlight.setAttribute('aria-hidden', 'true');
         const readingMarker = document.createElement('button');
@@ -2098,6 +2173,36 @@
     </script>
     <script>
         (() => {
+            const ribbon = document.querySelector('.workspace-ribbon');
+            const pin = document.getElementById('pinToolbar');
+            const theme = document.getElementById('toggleTheme');
+            const preference = window.matchMedia('(prefers-color-scheme: dark)');
+            function readPreference(key) { try { return localStorage.getItem(key); } catch { return null; } }
+            function savePreference(key, value) { try { localStorage.setItem(key, value); } catch {} }
+            function setPinned(pinned) {
+                ribbon.classList.toggle('is-unpinned', !pinned);
+                pin.setAttribute('aria-pressed', String(pinned));
+                updateReadingPosition();
+            }
+            function setDark(dark) {
+                document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+                theme.setAttribute('aria-pressed', String(dark));
+            }
+            setPinned(readPreference('vowWriter_toolbarPinned') !== 'false');
+            setDark(readPreference('vowWriter_theme') ? readPreference('vowWriter_theme') === 'dark' : preference.matches);
+            pin.addEventListener('click', () => {
+                const pinned = pin.getAttribute('aria-pressed') !== 'true';
+                setPinned(pinned); savePreference('vowWriter_toolbarPinned', String(pinned));
+            });
+            theme.addEventListener('click', () => {
+                const dark = theme.getAttribute('aria-pressed') !== 'true';
+                setDark(dark); savePreference('vowWriter_theme', dark ? 'dark' : 'light');
+            });
+            preference.addEventListener('change', event => { if (!readPreference('vowWriter_theme')) setDark(event.matches); });
+        })();
+    </script>
+    <script>
+        (() => {
             const languageKey = 'vowWriter_interfaceLanguage_v1';
             const selector = document.querySelector('.interface-language');
             const translations = new Map([
@@ -2116,7 +2221,7 @@
                 ['輸入中/英，按 Enter 產生翻譯，會自動插入到文章並清空輸入。', 'Enter Chinese or English and press Enter to translate and insert at the cursor.'],
                 ['等待輸入…', 'Waiting for text…'], ['文章朗讀', 'Read aloud'],
                 ['使用瀏覽器語音朗讀，優先選擇符合文章語言的本機語音。', 'Read with browser voices, preferring local voices matching the document language.'],
-                ['朗讀速度', 'Speed'], ['朗讀音高', 'Pitch'], ['開始朗讀', 'Start reading'], ['暫停', 'Stop'],
+                ['朗讀進度', 'Reading position'], ['釘選工具列', 'Pin toolbar'], ['深色模式', 'Dark mode'], ['朗讀速度', 'Speed'], ['朗讀音高', 'Pitch'], ['開始朗讀', 'Start reading'], ['暫停', 'Stop'],
                 ['狀態：等待中', 'Ready to read'], ['我的文章', 'My documents'], ['搜尋標題', 'Search titles'],
                 ['時間：新 → 舊', 'Newest first'], ['時間：舊 → 新', 'Oldest first'], ['標題：A → Z', 'Title: A → Z'], ['標題：Z → A', 'Title: Z → A'],
                 ['錯字與文法審查', 'Spelling and grammar'], ['線上 + 本機', 'Online + local'],

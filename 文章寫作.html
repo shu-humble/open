@@ -467,6 +467,9 @@
                     <span id="fontSizeLabel">16px</span>
                 </div>
                 <div class="spacing-controls">
+                    <label for="paperWidth">紙張寬度</label>
+                    <input type="range" id="paperWidth" min="480" max="1200" step="10" value="880" aria-describedby="paperWidthValue">
+                    <output id="paperWidthValue" for="paperWidth">880 px</output>
                     <span>行距（自訂）</span>
                     <input type="number" id="lineSpacingCustom" min="0.8" max="3" step="0.05" value="1.6">
                     <label class="toggle">
@@ -519,7 +522,7 @@
 
                 <section class="card">
                     <h2>文章朗讀</h2>
-                    <p class="helper-row">使用瀏覽器內建語音朗讀，會優先挑選 Google 語音。</p>
+                    <p class="helper-row">使用瀏覽器語音朗讀，優先選擇符合文章語言的本機語音。</p>
                     <div class="loop-controls">
                         <label for="speechRate">朗讀速度</label>
                         <input type="range" id="speechRate" min="0.6" max="1.6" step="0.1" value="1">
@@ -578,7 +581,7 @@
         .stat-strip { box-shadow: none; padding: 4px; }
         .stat { padding: 4px 10px; }
         .grid { display: block; }
-        .editor { max-width: 880px; margin: 22px auto; padding: 36px 48px; }
+        .editor { max-width: var(--paper-width, 880px); margin: 22px auto; padding: 36px 48px; }
         .editable { min-height: 65vh; }
         .workspace-ribbon { position: sticky; top: 0; z-index: 60; background: #fff; border: 1px solid #dce2ea; border-radius: 12px; box-shadow: 0 4px 12px #172b4d12; }
         .ribbon-navigation { display: flex; align-items: center; gap: 4px; padding: 6px 10px 0; border-bottom: 1px solid var(--line); }
@@ -722,11 +725,14 @@
         let lastCheckSnapshot = '';
         let isApplyingHighlights = false;
         let isSpeakingLoop = false;
+        let speechSession = 0;
+        let activeUtterance = null;
         let lastCaretOffset = 0;
         let lastMatches = [];
         let activeSuggestion = null;
         let editorFontSize = 16;
         let lineSpacingValue = 1.6;
+        let paperWidthValue = 880;
         let paraSpaceValue = 1.6;
         let editorBgColor = '#ffffff';
         let editorTextColor = '#1f2937';
@@ -918,6 +924,7 @@
                 if (typeof data.sort === 'string') sortSelect.value = data.sort;
                 if (typeof data.search === 'string') searchInput.value = data.search;
                 if (typeof data.fontSize === 'number') editorFontSize = data.fontSize;
+                if (Number.isFinite(data.paperWidth)) paperWidthValue = Math.max(480, Math.min(data.paperWidth, 1200));
                 if (typeof data.lineSpacing === 'number') lineSpacingValue = data.lineSpacing;
                 if (typeof data.paraSpace === 'number') paraSpaceValue = data.paraSpace;
                 if (typeof data.paraBefore === 'boolean') paraBeforeToggle.checked = data.paraBefore;
@@ -940,6 +947,7 @@
                 sort: sortSelect.value,
                 search: searchInput.value,
                 fontSize: editorFontSize,
+                paperWidth: paperWidthValue,
                 lineSpacing: lineSpacingValue,
                 paraSpace: paraSpaceValue,
                 paraBefore: paraBeforeToggle.checked,
@@ -1342,12 +1350,37 @@
         }
 
         function getPreferredVoice(lang) {
-            const voices = window.speechSynthesis.getVoices();
-            if (!voices.length) return null;
-            const langPrefix = (lang || '').split('-')[0].toLowerCase();
-            const byLang = voices.filter(v => v.lang.toLowerCase().startsWith(langPrefix));
-            const google = byLang.find(v => /google/i.test(v.name)) || voices.find(v => /google/i.test(v.name));
-            return google || byLang[0] || voices[0];
+            const prefix = lang.split('-')[0].toLowerCase();
+            const voices = window.speechSynthesis.getVoices().filter(voice =>
+                voice.lang.toLowerCase().split('-')[0] === prefix);
+            return voices.find(voice => voice.localService && voice.lang.toLowerCase() === lang.toLowerCase())
+                || voices.find(voice => voice.localService)
+                || voices.find(voice => voice.lang.toLowerCase() === lang.toLowerCase())
+                || voices[0] || null;
+        }
+
+        function stopReading() {
+            speechSession++;
+            isSpeakingLoop = false;
+            activeUtterance = null;
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        }
+
+        function speechErrorMessage(code) {
+            const errors = {
+                'audio-busy': ['音效裝置忙碌，請稍後重試。', 'Audio device is busy. Please retry.'],
+                'audio-hardware': ['找不到可用的音效裝置。', 'No audio output device is available.'],
+                'network': ['語音服務連線失敗，請檢查網路或改用具有本機語音的瀏覽器。', 'Speech service connection failed. Check your connection or use a browser with local voices.'],
+                'synthesis-unavailable': ['此瀏覽器沒有可用的語音引擎，請使用 Chrome 或 Edge 重試。', 'No speech engine is available. Try Chrome or Edge.'],
+                'synthesis-failed': ['語音引擎無法產生聲音，請使用 Chrome 或 Edge 重試。', 'Speech synthesis failed. Try Chrome or Edge.'],
+                'language-unavailable': ['系統沒有這個語言的語音，請安裝對應的語音套件後重試。', 'Install a system voice for this language and retry.'],
+                'voice-unavailable': ['選取的語音無法使用，請重新整理後重試。', 'The selected voice is unavailable. Reload and retry.'],
+                'text-too-long': ['語音引擎拒絕這段文字，請縮短段落後重試。', 'The speech engine rejected this text. Try a shorter paragraph.'],
+                'not-allowed': ['瀏覽器未允許朗讀，請在一般 Chrome 或 Edge 分頁中點擊開始朗讀。', 'Speech was blocked. Open the page in Chrome or Edge and click Start reading.']
+            };
+            const english = document.documentElement.lang === 'en';
+            const message = errors[code]?.[english ? 1 : 0] || (english ? 'Speech failed. Please retry.' : '朗讀失敗，請重試。');
+            return message + ' (' + code + ')';
         }
 
         function speakText() {
@@ -1356,32 +1389,50 @@
                 alert('請先寫下文章內容。');
                 return;
             }
-            if (!('speechSynthesis' in window)) {
-                alert('此瀏覽器不支援朗讀。');
+            if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
+                speechStatus.textContent = speechErrorMessage('synthesis-unavailable');
                 return;
             }
+            stopReading();
             isSpeakingLoop = true;
-            window.speechSynthesis.cancel();
-            const utter = new SpeechSynthesisUtterance(text);
-            const autoLang = detectLanguage(text);
-            const voice = getPreferredVoice(autoLang);
-            if (voice) utter.voice = voice;
-            utter.rate = parseFloat(speechRate.value) || 1;
-            utter.pitch = parseFloat(speechPitch.value) || 1;
-            utter.lang = autoLang || (voice ? voice.lang : 'zh-TW');
-            utter.onstart = () => { speechStatus.textContent = '狀態：朗讀中'; };
-            utter.onend = () => {
-                if (isSpeakingLoop) {
-                    speakText();
-                } else {
-                    speechStatus.textContent = '狀態：停止';
+            const session = speechSession;
+            // Bound each request, preserving every character and splitting at sentence boundaries.
+            const chunks = (text.match(/[^。！？.!?\n]{1,180}[。！？.!?\n]?|[。！？.!?\n]/gu) || [text]).filter(chunk => chunk.trim());
+            let index = 0;
+            function readChunk() {
+                if (session !== speechSession || !isSpeakingLoop) return;
+                const utter = new SpeechSynthesisUtterance(chunks[index]);
+                activeUtterance = utter;
+                utter.lang = detectLanguage(chunks[index]);
+                const voice = getPreferredVoice(utter.lang);
+                if (voice) utter.voice = voice;
+                utter.rate = parseFloat(speechRate.value) || 1;
+                utter.pitch = parseFloat(speechPitch.value) || 1;
+                utter.onstart = () => {
+                    if (session === speechSession) speechStatus.textContent = '狀態：朗讀中';
+                };
+                utter.onend = () => {
+                    if (session !== speechSession || !isSpeakingLoop) return;
+                    index = (index + 1) % chunks.length;
+                    setTimeout(readChunk, 80);
+                };
+                utter.onerror = event => {
+                    if (session !== speechSession) return;
+                    isSpeakingLoop = false;
+                    activeUtterance = null;
+                    speechStatus.textContent = ['canceled', 'interrupted'].includes(event.error)
+                        ? '狀態：停止' : speechErrorMessage(event.error || 'unknown');
+                };
+                try {
+                    window.speechSynthesis.speak(utter);
+                } catch (error) {
+                    isSpeakingLoop = false;
+                    activeUtterance = null;
+                    speechStatus.textContent = speechErrorMessage(error.name || 'unknown');
                 }
-            };
-            utter.onerror = () => {
-                isSpeakingLoop = false;
-                speechStatus.textContent = '狀態：朗讀失敗';
-            };
-            window.speechSynthesis.speak(utter);
+            }
+            speechStatus.textContent = document.documentElement.lang === 'en' ? 'Starting speech…' : '正在啟動朗讀…';
+            readChunk();
         }
 
         function localChecks(text) {
@@ -1677,8 +1728,7 @@
         });
         speakBtn.addEventListener('click', speakText);
         stopSpeakBtn.addEventListener('click', () => {
-            isSpeakingLoop = false;
-            window.speechSynthesis.cancel();
+            stopReading();
             speechStatus.textContent = '狀態：暫停';
         });
         speechRate.addEventListener('input', saveSettings);
@@ -1699,6 +1749,17 @@
         fontBigger.addEventListener('click', () => {
             editorFontSize += 1;
             applyFontSize();
+            saveSettings();
+        });
+        const paperWidthControl = document.getElementById('paperWidth');
+        function applyPaperWidth() {
+            document.querySelector('.editor').style.setProperty('--paper-width', paperWidthValue + 'px');
+            paperWidthControl.value = String(paperWidthValue);
+            document.getElementById('paperWidthValue').textContent = paperWidthValue + ' px';
+        }
+        paperWidthControl.addEventListener('input', () => {
+            paperWidthValue = Number(paperWidthControl.value);
+            applyPaperWidth();
             saveSettings();
         });
         lineSpacingCustom.addEventListener('input', () => {
@@ -1837,6 +1898,7 @@
         loadArticles();
         loadAutosaveSetting();
         loadSettings();
+        applyPaperWidth();
         renderList();
         updateStats();
         updateLangDisplay(getEditorText());
@@ -1851,7 +1913,7 @@
             document.execCommand('defaultParagraphSeparator', false, 'div');
         }
         if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = () => {};
+            window.speechSynthesis.getVoices();
         }
         const initialTitle = getQueryTitle();
         if (initialTitle) {
@@ -1878,7 +1940,7 @@
                 ['文章標題', 'Document title'], ['文章內容', 'Document body'],
                 ['例如：我的寫作宣言', 'For example: My writing pledge'], ['在這裡寫下你的文章...', 'Start writing here…'],
                 ['儲存文章', 'Save'], ['新增文章', 'New document'], ['匯出文字', 'Export text'], ['刪除本文', 'Delete document'],
-                ['文字大小', 'Font size'], ['行距（自訂）', 'Line spacing'],
+                ['紙張寬度', 'Paper width'], ['文字大小', 'Font size'], ['行距（自訂）', 'Line spacing'],
                 ['段落前留白', 'Space before paragraph'], ['段落後留白', 'Space after paragraph'],
                 ['背景', 'Page color'], ['文字', 'Text color'], ['螢光筆', 'Highlight'], ['重設', 'Reset'],
                 ['自動儲存：關', 'Autosave: Off'], ['自動儲存：開', 'Autosave: On'],
@@ -1886,7 +1948,7 @@
                 ['翻譯助手', 'Translation'], ['輸入要翻譯的文字', 'Enter text to translate'], ['翻譯', 'Translate'],
                 ['輸入中/英，按 Enter 產生翻譯，會自動插入到文章並清空輸入。', 'Enter Chinese or English and press Enter to translate and insert at the cursor.'],
                 ['等待輸入…', 'Waiting for text…'], ['文章朗讀', 'Read aloud'],
-                ['使用瀏覽器內建語音朗讀，會優先挑選 Google 語音。', 'Read with available browser voices, preferring Google voices.'],
+                ['使用瀏覽器語音朗讀，優先選擇符合文章語言的本機語音。', 'Read with browser voices, preferring local voices matching the document language.'],
                 ['朗讀速度', 'Speed'], ['朗讀音高', 'Pitch'], ['開始朗讀', 'Start reading'], ['暫停', 'Stop'],
                 ['狀態：等待中', 'Ready to read'], ['我的文章', 'My documents'], ['搜尋標題', 'Search titles'],
                 ['時間：新 → 舊', 'Newest first'], ['時間：舊 → 新', 'Oldest first'], ['標題：A → Z', 'Title: A → Z'], ['標題：Z → A', 'Title: Z → A'],

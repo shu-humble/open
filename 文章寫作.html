@@ -527,14 +527,18 @@
                         <label for="readingProgress">朗讀進度</label>
                         <input type="range" id="readingProgress" min="0" max="1000" step="1" value="0" aria-describedby="readingProgressValue">
                         <output id="readingProgressValue" for="readingProgress">0%</output>
-                        <label for="speechRate">朗讀速度</label>
+                        <label for="speechRate">中文／其他語速</label>
                         <input type="range" id="speechRate" min="0.25" max="4" step="0.05" value="1" aria-describedby="speechRateValue">
                         <output id="speechRateValue" for="speechRate">1×</output>
+                        <label for="englishSpeechRate">英文語速</label>
+                        <input type="range" id="englishSpeechRate" min="0.25" max="4" step="0.05" value="1" aria-describedby="englishSpeechRateValue">
+                        <output id="englishSpeechRateValue" for="englishSpeechRate">1×</output>
                         <label for="speechPitch">朗讀音高</label>
                         <input type="range" id="speechPitch" min="0.6" max="1.6" step="0.1" value="1">
                         <div class="toolbar">
                             <button class="btn-primary keep-caret" id="speakBtn">開始朗讀</button>
-                            <button class="btn-ghost keep-caret" id="stopSpeakBtn">暫停</button>
+                            <button class="btn-ghost keep-caret" id="pauseSpeakBtn" disabled>暫停</button>
+                            <button class="btn-ghost keep-caret" id="stopSpeakBtn">停止</button>
                         </div>
                     </div>
                     <div class="loop-status" id="speechStatus">狀態：等待中</div>
@@ -608,7 +612,11 @@
         .sync-reading { position: fixed; right: 16px; top: 55%; z-index: 70; background: #174ea6; color: white; border: 0; border-radius: 24px; padding: 12px 18px; box-shadow: 0 3px 12px #172b4d40; }
         .reading-marker[hidden], .sync-reading[hidden] { display: none; }
         .workspace-ribbon { position: sticky; top: 0; z-index: 60; background: #fff; border: 1px solid #dce2ea; border-radius: 12px; box-shadow: 0 4px 12px #172b4d12; }
-        .workspace-ribbon.is-unpinned { position: relative; }
+        .workspace-ribbon.is-unpinned:not(.ribbon-open) > .ribbon-panel { display: none !important; }
+        .workspace-ribbon.is-unpinned.ribbon-open > .ribbon-panel:not([hidden]) { position: absolute; top: 100%; left: -1px; right: -1px; background: var(--card); border: 1px solid var(--line); border-radius: 0 0 12px 12px; box-shadow: 0 10px 20px #0003; }
+        .reading-launcher { position: fixed; right: 20px; bottom: 28px; z-index: 80; display: grid; justify-items: center; gap: 4px; padding: 10px 14px; border: 1px solid #3971d2; border-radius: 16px; background: #e8f1ff; color: #174ea6; font-size: 12px; box-shadow: 0 4px 16px #0003; cursor: grab; touch-action: none; }
+        .reading-launcher svg { width: 25px; height: 38px; pointer-events: none; }
+        .reading-launcher.is-dragging { cursor: grabbing; pointer-events: none; opacity: .8; }
         .ribbon-navigation > button { font-size: 12px; padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: inherit; white-space: nowrap; }
         .ribbon-navigation > button[aria-pressed="true"] { background: #174ea6; color: #fff; }
         .ribbon-navigation { flex-wrap: wrap; display: flex; align-items: center; gap: 4px; padding: 6px 10px 0; border-bottom: 1px solid var(--line); }
@@ -666,6 +674,7 @@
             ];
             const panels = {};
             function activate(name, focus = false) {
+                if (ribbon.classList.contains('is-unpinned')) ribbon.classList.add('ribbon-open');
                 for (const [key] of sections) {
                     const button = document.getElementById('tab-' + key);
                     button.setAttribute('aria-selected', String(key === name));
@@ -766,6 +775,7 @@
         const resetColorsBtn = document.getElementById('resetColorsBtn');
         const highlightColorPicker = document.getElementById('highlightColorPicker');
         const speechRate = document.getElementById('speechRate');
+        const englishSpeechRate = document.getElementById('englishSpeechRate');
         const speechPitch = document.getElementById('speechPitch');
         const speakBtn = document.getElementById('speakBtn');
         const stopSpeakBtn = document.getElementById('stopSpeakBtn');
@@ -784,6 +794,8 @@
         let lastCheckSnapshot = '';
         let isApplyingHighlights = false;
         let isSpeakingLoop = false;
+        let speechPaused = false;
+        let pendingSpeechChunk = null;
         let speechSession = 0;
         let readingOffset = 0;
         let readingDocument = null;
@@ -982,6 +994,7 @@
             if (!raw) return;
             try {
                 const data = JSON.parse(raw);
+                if (Number.isFinite(data.englishSpeechRate)) englishSpeechRate.value = data.englishSpeechRate;
                 if (typeof data.speechRate === 'number') speechRate.value = data.speechRate;
                 if (typeof data.speechPitch === 'number') speechPitch.value = data.speechPitch;
                 if (typeof data.liveCheck === 'boolean') liveCheckToggle.checked = data.liveCheck;
@@ -1006,6 +1019,7 @@
         function saveSettings() {
             const payload = {
                 speechRate: parseFloat(speechRate.value) || 1,
+                englishSpeechRate: parseFloat(englishSpeechRate.value) || 1,
                 speechPitch: parseFloat(speechPitch.value) || 1,
                 liveCheck: liveCheckToggle.checked,
                 autosave: autosaveToggle.checked,
@@ -1427,9 +1441,37 @@
         function stopReading() {
             speechSession++;
             isSpeakingLoop = false;
+            speechPaused = false;
+            pendingSpeechChunk = null;
             activeUtterance = null;
+            updateSpeechButtons();
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             updateReadingPosition();
+        }
+
+        function updateSpeechButtons() {
+            const english = document.documentElement.lang === 'en';
+            speakBtn.textContent = speechPaused ? (english ? 'Resume reading' : '繼續朗讀') : (english ? 'Start reading' : '開始朗讀');
+            document.getElementById('pauseSpeakBtn').disabled = !isSpeakingLoop || speechPaused;
+        }
+
+        function pauseReading() {
+            if (!isSpeakingLoop || speechPaused) return;
+            speechPaused = true;
+            window.speechSynthesis.pause();
+            speechStatus.textContent = '狀態：暫停';
+            updateSpeechButtons();
+        }
+
+        function resumeReading() {
+            if (!speechPaused) return;
+            speechPaused = false;
+            window.speechSynthesis.resume();
+            const pending = pendingSpeechChunk;
+            pendingSpeechChunk = null;
+            if (pending) pending();
+            speechStatus.textContent = '狀態：朗讀中';
+            updateSpeechButtons();
         }
 
         function speechErrorMessage(code) {
@@ -1469,6 +1511,7 @@
         }
 
         function updateSpeechRate() {
+            document.getElementById('englishSpeechRateValue').textContent = Number(englishSpeechRate.value).toFixed(2).replace(/\.?0+$/, '') + '×';
             document.getElementById('speechRateValue').textContent = Number(speechRate.value).toFixed(2).replace(/\.?0+$/, '') + '×';
         }
 
@@ -1484,7 +1527,9 @@
                 return;
             }
             stopReading();
+            window.speechSynthesis.resume();
             isSpeakingLoop = true;
+            updateSpeechButtons();
             const session = speechSession;
             // Bound each request, preserving every character and splitting at sentence boundaries.
             const offset = typeof startOffset === 'number' ? Math.max(0, Math.min(startOffset, text.length - 1)) : 0;
@@ -1493,16 +1538,17 @@
             let index = 0;
             function readChunk() {
                 if (session !== speechSession || !isSpeakingLoop) return;
+                if (speechPaused) { pendingSpeechChunk = readChunk; return; }
                 const utter = new SpeechSynthesisUtterance(chunks[index].text);
                 activeUtterance = utter;
                 utter.lang = chunks[index].lang;
                 const voice = getPreferredVoice(utter.lang);
                 if (voice) utter.voice = voice;
-                utter.rate = parseFloat(speechRate.value) || 1;
+                utter.rate = parseFloat(utter.lang.startsWith('en') ? englishSpeechRate.value : speechRate.value) || 1;
                 utter.pitch = parseFloat(speechPitch.value) || 1;
                 utter.onstart = () => {
                     if (session !== speechSession) return;
-                    speechStatus.textContent = '狀態：朗讀中';
+                    speechStatus.textContent = speechPaused ? '狀態：暫停' : '狀態：朗讀中';
                     readingOffset = chunks[index].start;
                     updateReadingPosition();
                 };
@@ -1513,12 +1559,15 @@
                 };
                 utter.onend = () => {
                     if (session !== speechSession || !isSpeakingLoop) return;
+                    activeUtterance = null;
                     index = (index + 1) % chunks.length;
                     setTimeout(readChunk, 80);
                 };
                 utter.onerror = event => {
                     if (session !== speechSession) return;
                     isSpeakingLoop = false;
+                    speechPaused = false;
+                    updateSpeechButtons();
                     activeUtterance = null;
                     updateReadingPosition();
                     speechStatus.textContent = ['canceled', 'interrupted'].includes(event.error)
@@ -1607,6 +1656,68 @@
             syncReading.textContent = english ? 'Sync reading' : '同步朗讀';
             syncReading.hidden = visible || draggingReading;
         }
+
+        const readingLauncher = document.createElement('button');
+        readingLauncher.type = 'button'; readingLauncher.className = 'reading-launcher';
+        readingLauncher.innerHTML = '<svg viewBox="0 0 30 48" aria-hidden="true"><path d="M15 44V8" stroke="#174ea6" stroke-width="3"/><path d="M15 4C3 4 3 21 15 27C27 21 27 4 15 4Z" fill="#2563eb"/><circle cx="15" cy="13" r="3" fill="white"/></svg><span>拖曳浮標到文章</span>';
+        readingLauncher.setAttribute('aria-label', '拖曳藍色浮標到文章任意位置開始朗讀，或點擊浮標後點選文章');
+        document.body.append(readingLauncher);
+        let launcherDrag = null;
+        let launcherArmed = false;
+        let ignoreLauncherClick = false;
+        function readingOffsetAtPoint(x, y) {
+            const hit = document.elementFromPoint(x, y);
+            if (!hit || !contentInput.contains(hit)) return null;
+            const position = document.caretPositionFromPoint?.(x, y);
+            const range = position ? null : document.caretRangeFromPoint?.(x, y);
+            const node = position?.offsetNode || range?.startContainer;
+            const run = readingDocument.runs.find(item => item.node === node);
+            return run ? run.start + (position?.offset ?? range.startOffset) : null;
+        }
+        readingLauncher.addEventListener('pointerdown', event => {
+            if (event.button !== 0) return;
+            event.preventDefault();
+            readingDocument = buildReadingDocument();
+            launcherDrag = { x: event.clientX, y: event.clientY, original: readingOffset, playing: isSpeakingLoop && !speechPaused, target: null, moved: false };
+            pauseReading();
+            readingLauncher.setPointerCapture(event.pointerId);
+        });
+        readingLauncher.addEventListener('pointermove', event => {
+            if (!launcherDrag || Math.hypot(event.clientX - launcherDrag.x, event.clientY - launcherDrag.y) < 5) return;
+            launcherDrag.moved = true; draggingReading = true;
+            readingLauncher.classList.add('is-dragging');
+            Object.assign(readingLauncher.style, { left: (event.clientX - 25) + 'px', top: (event.clientY - 25) + 'px', right: 'auto', bottom: 'auto' });
+            if (event.clientY < 70) window.scrollBy(0, -24);
+            if (event.clientY > window.innerHeight - 70) window.scrollBy(0, 24);
+            launcherDrag.target = readingOffsetAtPoint(event.clientX, event.clientY);
+            if (launcherDrag.target !== null) { readingOffset = launcherDrag.target; updateReadingPosition(); }
+        });
+        function finishLauncherDrag(event) {
+            if (!launcherDrag) return;
+            const drag = launcherDrag; launcherDrag = null; draggingReading = false;
+            ignoreLauncherClick = drag.moved;
+            readingLauncher.classList.remove('is-dragging'); readingLauncher.removeAttribute('style');
+            if (event.type !== 'pointercancel' && drag.moved && drag.target !== null) speakText(drag.target);
+            else {
+                readingOffset = drag.original;
+                if (drag.playing) resumeReading();
+                updateReadingPosition();
+            }
+        }
+        readingLauncher.addEventListener('pointerup', finishLauncherDrag);
+        readingLauncher.addEventListener('pointercancel', finishLauncherDrag);
+        readingLauncher.addEventListener('click', () => {
+            if (ignoreLauncherClick) { ignoreLauncherClick = false; return; }
+            launcherArmed = !launcherArmed;
+            readingLauncher.setAttribute('aria-pressed', String(launcherArmed));
+        });
+        contentInput.addEventListener('pointerup', event => {
+            if (!launcherArmed) return;
+            readingDocument = buildReadingDocument();
+            const offset = readingOffsetAtPoint(event.clientX, event.clientY);
+            launcherArmed = false; readingLauncher.setAttribute('aria-pressed', 'false');
+            if (offset !== null) speakText(offset);
+        });
 
         const progressControl = document.getElementById('readingProgress');
         progressControl.addEventListener('input', () => {
@@ -1967,12 +2078,16 @@
             }
             saveSettings();
         });
-        speakBtn.addEventListener('click', speakText);
+        speakBtn.addEventListener('click', () => { if (speechPaused) resumeReading(); else speakText(); });
+        document.getElementById('pauseSpeakBtn').addEventListener('click', pauseReading);
         stopSpeakBtn.addEventListener('click', () => {
             stopReading();
-            speechStatus.textContent = '狀態：暫停';
+            readingOffset = 0;
+            updateReadingPosition();
+            speechStatus.textContent = '狀態：停止';
         });
         speechRate.addEventListener('input', () => { updateSpeechRate(); saveSettings(); });
+        englishSpeechRate.addEventListener('input', () => { updateSpeechRate(); saveSettings(); });
         speechPitch.addEventListener('input', saveSettings);
         searchInput.addEventListener('input', () => {
             renderList();
@@ -2181,9 +2296,16 @@
             function savePreference(key, value) { try { localStorage.setItem(key, value); } catch {} }
             function setPinned(pinned) {
                 ribbon.classList.toggle('is-unpinned', !pinned);
+                ribbon.classList.remove('ribbon-open');
                 pin.setAttribute('aria-pressed', String(pinned));
                 updateReadingPosition();
             }
+            document.addEventListener('pointerdown', event => {
+                if (!ribbon.contains(event.target)) ribbon.classList.remove('ribbon-open');
+            });
+            ribbon.addEventListener('keydown', event => {
+                if (event.key === 'Escape') ribbon.classList.remove('ribbon-open');
+            });
             function setDark(dark) {
                 document.documentElement.dataset.theme = dark ? 'dark' : 'light';
                 theme.setAttribute('aria-pressed', String(dark));
@@ -2221,7 +2343,7 @@
                 ['輸入中/英，按 Enter 產生翻譯，會自動插入到文章並清空輸入。', 'Enter Chinese or English and press Enter to translate and insert at the cursor.'],
                 ['等待輸入…', 'Waiting for text…'], ['文章朗讀', 'Read aloud'],
                 ['使用瀏覽器語音朗讀，優先選擇符合文章語言的本機語音。', 'Read with browser voices, preferring local voices matching the document language.'],
-                ['朗讀進度', 'Reading position'], ['釘選工具列', 'Pin toolbar'], ['深色模式', 'Dark mode'], ['朗讀速度', 'Speed'], ['朗讀音高', 'Pitch'], ['開始朗讀', 'Start reading'], ['暫停', 'Stop'],
+                ['朗讀進度', 'Reading position'], ['釘選工具列', 'Pin toolbar'], ['深色模式', 'Dark mode'], ['中文／其他語速', 'Chinese / other speed'], ['英文語速', 'English speed'], ['朗讀速度', 'Speed'], ['朗讀音高', 'Pitch'], ['開始朗讀', 'Start reading'], ['暫停', 'Pause'], ['停止', 'Stop'],
                 ['狀態：等待中', 'Ready to read'], ['我的文章', 'My documents'], ['搜尋標題', 'Search titles'],
                 ['時間：新 → 舊', 'Newest first'], ['時間：舊 → 新', 'Oldest first'], ['標題：A → Z', 'Title: A → Z'], ['標題：Z → A', 'Title: Z → A'],
                 ['錯字與文法審查', 'Spelling and grammar'], ['線上 + 本機', 'Online + local'],
@@ -2242,7 +2364,7 @@
             ]);
             // Keep source labels for switching back without touching document or translation output.
             const records = [];
-            const excluded = '#contentInput, #titleInput, #articleList, #translateOutput, #reviewResults, #suggestionBox, #autosaveStatus, #saveHint, #storageUsage, #speechStatus, #reviewStatus, script, style';
+            const excluded = '#contentInput, #titleInput, #articleList, #translateOutput, #reviewResults, #suggestionBox, #speakBtn, #autosaveStatus, #saveHint, #storageUsage, #speechStatus, #reviewStatus, script, style';
             const walker = document.createTreeWalker(document.querySelector('.app'), NodeFilter.SHOW_TEXT);
             while (walker.nextNode()) {
                 const node = walker.currentNode;
@@ -2284,8 +2406,11 @@
                 for (const tab of document.querySelectorAll('[role="tab"]')) tab.textContent = english ? tab.dataset.en : tab.dataset.zh;
                 document.querySelector('[role="tablist"]').setAttribute('aria-label', english ? 'Document tools' : '文章工具');
                 selector.setAttribute('aria-label', english ? 'Interface language' : '介面語言');
+                readingLauncher.querySelector('span').textContent = english ? 'Drag to read here' : '拖曳浮標到文章';
+                readingLauncher.setAttribute('aria-label', english ? 'Drag the blue marker onto text, or click it then click the document' : '拖曳藍色浮標到文章任意位置開始朗讀，或點擊浮標後點選文章');
                 statusNodes.forEach(translateStatus);
                 updateLangDisplay(getEditorText());
+                updateSpeechButtons();
             }
             try { selector.value = localStorage.getItem(languageKey) || 'auto'; } catch {}
             if (!selector.value) selector.value = 'auto';

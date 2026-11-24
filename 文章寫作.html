@@ -471,11 +471,11 @@
                     <input type="number" id="lineSpacingCustom" min="0.8" max="3" step="0.05" value="1.6">
                     <label class="toggle">
                         <input type="checkbox" id="paraBeforeToggle">
-                        Add space before paragraph
+                        段落前留白
                     </label>
                     <label class="toggle">
                         <input type="checkbox" id="paraAfterToggle" checked>
-                        Add space after paragraph
+                        段落後留白
                     </label>
                     <input type="number" id="paraSpaceSize" min="0" max="3" step="0.1" value="1.6">
                 </div>
@@ -569,6 +569,103 @@
         </footer>
     </div>
 
+    <style>
+        body { padding: 16px 18px 40px; background: #eef1f5; }
+        .app { max-width: 1280px; }
+        .hero { margin-bottom: 14px; gap: 12px; }
+        .hero h1 { font-size: 24px; }
+        .hero p { font-size: 13px; }
+        .stat-strip { box-shadow: none; padding: 4px; }
+        .stat { padding: 4px 10px; }
+        .grid { display: block; }
+        .editor { max-width: 880px; margin: 22px auto; padding: 36px 48px; }
+        .editable { min-height: 65vh; }
+        .workspace-ribbon { position: sticky; top: 0; z-index: 60; background: #fff; border: 1px solid #dce2ea; border-radius: 12px; box-shadow: 0 4px 12px #172b4d12; }
+        .ribbon-navigation { display: flex; align-items: center; gap: 4px; padding: 6px 10px 0; border-bottom: 1px solid var(--line); }
+        .ribbon-tabs { display: flex; gap: 4px; overflow-x: auto; min-width: 0; }
+        .ribbon-tabs button { border: 0; background: transparent; border-radius: 6px 6px 0 0; padding: 12px 16px; color: #536174; white-space: nowrap; }
+        .ribbon-tabs button[aria-selected="true"] { color: #174ea6; background: #edf4ff; box-shadow: inset 0 -3px #2563eb; }
+        .interface-language { margin: 0 0 6px auto; width: auto; max-width: 180px; padding: 7px; font-size: 12px; }
+        .ribbon-panel { padding: 12px 16px; max-height: min(42vh, 340px); overflow-y: auto; overscroll-behavior: contain; }
+        .ribbon-panel[hidden] { display: none; }
+        .ribbon-panel .card { box-shadow: none; padding: 0; border: 0; margin: 12px 0 0; }
+        .ribbon-panel h2 { font-size: 15px; margin: 0 0 8px; }
+        .ribbon-panel .toolbar, .ribbon-panel .font-controls, .ribbon-panel .spacing-controls, .ribbon-panel .color-controls { margin-top: 0; }
+        .ribbon-panel .color-controls, .ribbon-panel .helper-row { margin-top: 10px; }
+        .ribbon-panel .review { margin-top: 0; }
+        .ribbon-panel .article-list { max-height: 170px; overflow-y: auto; }
+        .ribbon-panel footer { margin-top: 10px; }
+        .ribbon-panel #langSelect { max-width: 240px; }
+        #contentInput { scroll-margin-top: 260px; }
+        @media(max-width: 680px) {
+            body { padding: 8px 8px 24px; }
+            .hero { align-items: flex-start; }
+            .hero h1 { font-size: 20px; }
+            .hero p { display: none; }
+            .stat-strip { width: 100%; }
+            .editor { padding: 22px 18px; margin-top: 12px; }
+            .ribbon-navigation { flex-wrap: wrap; }
+            .ribbon-tabs { width: 100%; }
+            .ribbon-tabs button { padding: 10px 12px; }
+            .interface-language { margin: 4px 0 6px auto; }
+            .ribbon-panel { padding: 10px; max-height: 32vh; }
+        }
+    </style>
+    <script>
+        // Move the original controls so existing IDs, article storage and editor actions stay connected.
+        (() => {
+            const grid = document.querySelector('.grid');
+            const editor = document.querySelector('.editor');
+            const ribbon = document.createElement('section');
+            ribbon.className = 'workspace-ribbon';
+            ribbon.innerHTML = `<div class="ribbon-navigation"><div class="ribbon-tabs" role="tablist" aria-label="文章工具"></div><select class="interface-language" aria-label="介面語言"><option value="auto">自動 / Auto</option><option value="zh">繁體中文</option><option value="en">English</option></select></div>`;
+            grid.before(ribbon);
+            const sections = [
+                ['file', '檔案', 'File'], ['home', '常用', 'Home'],
+                ['layout', '版面配置', 'Layout'], ['review', '校閱', 'Review'], ['speech', '朗讀', 'Read aloud']
+            ];
+            const panels = {};
+            function activate(name, focus = false) {
+                for (const [key] of sections) {
+                    const button = document.getElementById('tab-' + key);
+                    button.setAttribute('aria-selected', String(key === name));
+                    button.tabIndex = key === name ? 0 : -1;
+                    panels[key].hidden = key !== name;
+                }
+                if (focus) document.getElementById('tab-' + name).focus();
+            }
+            sections.forEach(([name, zh, en], index) => {
+                const button = document.createElement('button');
+                button.type = 'button'; button.id = 'tab-' + name;
+                button.setAttribute('role', 'tab'); button.setAttribute('aria-controls', 'panel-' + name);
+                button.dataset.zh = zh; button.dataset.en = en; button.textContent = zh;
+                const panel = document.createElement('div');
+                panel.id = 'panel-' + name; panel.className = 'ribbon-panel';
+                panel.setAttribute('role', 'tabpanel'); panel.setAttribute('aria-labelledby', button.id);
+                panels[name] = panel;
+                ribbon.querySelector('[role="tablist"]').append(button); ribbon.append(panel);
+                button.addEventListener('click', () => activate(name));
+                button.addEventListener('keydown', event => {
+                    const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
+                    if (!keys.includes(event.key)) return;
+                    event.preventDefault();
+                    const next = event.key === 'Home' ? 0 : event.key === 'End' ? sections.length - 1 :
+                        (index + (event.key === 'ArrowRight' ? 1 : -1) + sections.length) % sections.length;
+                    activate(sections[next][0], true);
+                });
+            });
+            const sidebarCards = [...document.querySelectorAll('.sidebar > .card')];
+            panels.file.append(editor.querySelector('.toolbar'), editor.querySelector('.helper-row'));
+            panels.file.append(editor.querySelector('.helper-row'), sidebarCards[2], document.querySelector('footer'));
+            panels.home.append(editor.querySelector('.font-controls'), editor.querySelector('.color-controls'));
+            panels.layout.append(editor.querySelector('.spacing-controls'));
+            panels.review.append(document.querySelector('.review'), sidebarCards[0]);
+            panels.review.prepend(document.getElementById('liveCheckToggle').closest('label'));
+            panels.speech.append(sidebarCards[1]);
+            document.querySelector('.sidebar').remove();
+            activate('home');
+        })();
+    </script>
     <script>
         const storageKey = 'vowWriter_articles_v1';
         const autosaveKey = 'vowWriter_autosave_v1';
@@ -1046,23 +1143,21 @@
         function formatTime(ts) {
             if (!ts) return '--';
             const date = new Date(ts);
-            return date.toLocaleString('zh-TW', { hour12: false });
+            return date.toLocaleString(document.documentElement.lang, { hour12: false });
         }
 
         function detectLanguage(text) {
-            if (!text) return 'zh-TW';
-            const hasLatin = /[A-Za-z]/.test(text);
-            const hasCJK = /[\u4e00-\u9fff]/.test(text);
-            if (hasLatin && !hasCJK) return 'en-US';
-            if (hasCJK && !hasLatin) return 'zh-TW';
-            // Mixed content: prefer English for grammar fixes, keep Chinese as fallback.
-            return 'en-US';
+            const chinese = (text.match(/[\u4e00-\u9fff]/g) || []).length;
+            const englishWords = (text.match(/[A-Za-z]+/g) || []).length;
+            if (!chinese && !englishWords) return document.documentElement.lang.startsWith('en') ? 'en-US' : 'zh-TW';
+            return chinese >= englishWords ? 'zh-TW' : 'en-US';
         }
 
         function updateLangDisplay(text) {
             const lang = detectLanguage(text);
+            contentInput.lang = lang;
             const label = lang === 'en-US' ? 'English' : '繁體中文';
-            langSelect.value = `自動辨識（${label}）`;
+            langSelect.value = document.documentElement.lang === 'en' ? `Detected: ${label === 'English' ? 'English' : 'Traditional Chinese'}` : `自動辨識（${label}）`;
         }
 
         function detectTranslateLang(text) {
@@ -1771,6 +1866,104 @@
             if (!getEditorText().trim()) return;
             saveCurrent();
         });
+    </script>
+    <script>
+        (() => {
+            const languageKey = 'vowWriter_interfaceLanguage_v1';
+            const selector = document.querySelector('.interface-language');
+            const translations = new Map([
+                ['立志寫作｜文章誓言', 'Writing Studio'],
+                ['在這裡立下你的文章誓言，寫下它、保存它，並讓它重複出現與朗讀，幫你把目標刻進日常。', 'Write, save and read your articles in one workspace.'],
+                ['字數', 'Words'], ['字元', 'Characters'], ['最後更新', 'Last updated'],
+                ['文章標題', 'Document title'], ['文章內容', 'Document body'],
+                ['例如：我的寫作宣言', 'For example: My writing pledge'], ['在這裡寫下你的文章...', 'Start writing here…'],
+                ['儲存文章', 'Save'], ['新增文章', 'New document'], ['匯出文字', 'Export text'], ['刪除本文', 'Delete document'],
+                ['文字大小', 'Font size'], ['行距（自訂）', 'Line spacing'],
+                ['段落前留白', 'Space before paragraph'], ['段落後留白', 'Space after paragraph'],
+                ['背景', 'Page color'], ['文字', 'Text color'], ['螢光筆', 'Highlight'], ['重設', 'Reset'],
+                ['自動儲存：關', 'Autosave: Off'], ['自動儲存：開', 'Autosave: On'],
+                ['開啟自動儲存', 'Enable autosave'], ['即時拼字（瀏覽器）', 'Live spelling (browser)'],
+                ['翻譯助手', 'Translation'], ['輸入要翻譯的文字', 'Enter text to translate'], ['翻譯', 'Translate'],
+                ['輸入中/英，按 Enter 產生翻譯，會自動插入到文章並清空輸入。', 'Enter Chinese or English and press Enter to translate and insert at the cursor.'],
+                ['等待輸入…', 'Waiting for text…'], ['文章朗讀', 'Read aloud'],
+                ['使用瀏覽器內建語音朗讀，會優先挑選 Google 語音。', 'Read with available browser voices, preferring Google voices.'],
+                ['朗讀速度', 'Speed'], ['朗讀音高', 'Pitch'], ['開始朗讀', 'Start reading'], ['暫停', 'Stop'],
+                ['狀態：等待中', 'Ready to read'], ['我的文章', 'My documents'], ['搜尋標題', 'Search titles'],
+                ['時間：新 → 舊', 'Newest first'], ['時間：舊 → 新', 'Oldest first'], ['標題：A → Z', 'Title: A → Z'], ['標題：Z → A', 'Title: Z → A'],
+                ['錯字與文法審查', 'Spelling and grammar'], ['線上 + 本機', 'Online + local'],
+                ['編輯區使用瀏覽器內建拼字檢查（紅波浪線）。線上文法檢查需手動點擊按鈕（公共 API 不允許持續自動請求）。', 'Browser spelling uses red underlines. Run online grammar checks manually with the button.'],
+                ['開始檢查', 'Check document'], ['一鍵修正', 'Apply all fixes'], ['清除結果', 'Clear results'],
+                ['線上檢查：等待中', 'Grammar check: Ready'], ['線上檢查：等待中（請按開始檢查）', 'Grammar check: Click Check document to start'],
+                ['提示：文章會儲存在瀏覽器的本機儲存空間。若要跨裝置同步，可手動匯出文字或複製貼上到雲端。', 'Documents are stored in this browser. Export text or copy to the cloud to use on another device.'],
+                ['儲存容量：計算中...', 'Calculating storage…'], ['已儲存', 'Saved'], ['尚未儲存', 'Unsaved'],
+                ['儲存容量：無法計算', 'Storage unavailable'],
+                ['狀態：朗讀中', 'Reading aloud'], ['狀態：停止', 'Reading stopped'],
+                ['狀態：朗讀失敗', 'Reading failed'], ['狀態：暫停', 'Reading paused'],
+                ['線上檢查：內容已修改，請重新檢查', 'Content changed. Run a new check.'],
+                ['線上檢查：已套用建議', 'Suggestion applied'],
+                ['線上檢查：沒有可套用的建議', 'No suggestions to apply'],
+                ['線上檢查：已一鍵修正', 'All fixes applied'],
+                ['線上檢查：檢查中...', 'Checking grammar…'],
+                ['線上檢查：失敗或被限制，已顯示本機檢查結果', 'Online check unavailable. Showing local results.']
+            ]);
+            // Keep source labels for switching back without touching document or translation output.
+            const records = [];
+            const excluded = '#contentInput, #titleInput, #articleList, #translateOutput, #reviewResults, #suggestionBox, #autosaveStatus, #saveHint, #storageUsage, #speechStatus, #reviewStatus, script, style';
+            const walker = document.createTreeWalker(document.querySelector('.app'), NodeFilter.SHOW_TEXT);
+            while (walker.nextNode()) {
+                const node = walker.currentNode;
+                if (node.parentElement.closest(excluded)) continue;
+                const original = node.textContent.trim();
+                if (translations.has(original)) records.push({ node, original, prefix: node.textContent.match(/^\s*/)[0], suffix: node.textContent.match(/\s*$/)[0] });
+            }
+            const attributes = [];
+            for (const element of document.querySelectorAll('[placeholder], [data-placeholder]')) {
+                for (const name of ['placeholder', 'data-placeholder']) {
+                    const original = element.getAttribute(name);
+                    if (translations.has(original)) attributes.push({ element, name, original });
+                }
+            }
+            const statusNodes = ['autosaveStatus', 'saveHint', 'storageUsage', 'speechStatus', 'reviewStatus'].map(id => document.getElementById(id));
+            const statusSources = new WeakMap();
+            let english = false;
+            function translateStatus(element) {
+                const current = element.textContent;
+                const last = statusSources.get(element);
+                const original = last && current === last.output ? last.original : current;
+                let output = original;
+                if (english) {
+                    output = translations.get(original) || original
+                        .replace(/^儲存容量：(.*) MB（localStorage 估算）$/, 'Storage: $1 MB (estimated)')
+                        .replace(/^已儲存[：:]\s*/, 'Saved: ')
+                        .replace(/^線上檢查：完成（找到 (\d+) 個問題，語言 (.+)）$/, 'Check complete: $1 issues ($2)');
+                }
+                statusSources.set(element, { original, output });
+                if (current !== output) element.textContent = output;
+            }
+            function applyLanguage() {
+                const preferences = navigator.languages?.length ? navigator.languages : [navigator.language || 'zh'];
+                english = (selector.value === 'auto' ? preferences[0].toLowerCase().startsWith('zh') ? 'zh' : 'en' : selector.value) === 'en';
+                document.documentElement.lang = english ? 'en' : 'zh-Hant';
+                document.title = english ? 'Writing Studio' : '立志寫作｜文章誓言';
+                for (const record of records) record.node.textContent = record.prefix + (english ? translations.get(record.original) : record.original) + record.suffix;
+                for (const record of attributes) record.element.setAttribute(record.name, english ? translations.get(record.original) : record.original);
+                for (const tab of document.querySelectorAll('[role="tab"]')) tab.textContent = english ? tab.dataset.en : tab.dataset.zh;
+                document.querySelector('[role="tablist"]').setAttribute('aria-label', english ? 'Document tools' : '文章工具');
+                selector.setAttribute('aria-label', english ? 'Interface language' : '介面語言');
+                statusNodes.forEach(translateStatus);
+                updateLangDisplay(getEditorText());
+            }
+            try { selector.value = localStorage.getItem(languageKey) || 'auto'; } catch {}
+            if (!selector.value) selector.value = 'auto';
+            selector.addEventListener('change', () => {
+                try { localStorage.setItem(languageKey, selector.value); } catch {}
+                applyLanguage();
+            });
+            window.addEventListener('languagechange', applyLanguage);
+            const observer = new MutationObserver(() => statusNodes.forEach(translateStatus));
+            statusNodes.forEach(element => observer.observe(element, { childList: true, characterData: true, subtree: true }));
+            applyLanguage();
+        })();
     </script>
 </body>
 </html>
